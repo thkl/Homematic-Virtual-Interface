@@ -15,6 +15,7 @@ var Device = function(deviceType,adress) {
 	this.channels = [];
     this.paramsets = [];
     this.version = 1;
+    this.firmware = "1.0";
     
     var cfgFile = "devices/" + deviceType +".json";
 	fs.accessSync(cfgFile, fs.F_OK);
@@ -86,6 +87,19 @@ util.inherits(Device, EventEmitter);
    });
    return result;
  }
+
+
+ Device.prototype.getChannelWithTypeAndIndex = function(type,cindex) {
+   var result = undefined;
+   
+   this.channels.forEach(function (channel) {
+     if ((type == channel.type) && (cindex == channel.index)) {
+      result = channel;
+     }
+   });
+   return result;
+ }
+
  
  Device.prototype.getDeviceDescription = function(paramset) {
    
@@ -104,7 +118,7 @@ util.inherits(Device, EventEmitter);
 
    result ['ADDRESS'] = this.adress ;
    result ['CHILDREN'] = chAdrNames ;
-   result ['FIRMWARE'] = "1.0";
+   result ['FIRMWARE'] = this.firmware;
    result ['FLAGS'] = 1 ;
    result ['INTERFACE'] = "HM_Virtual" ;
    result ['PARAMSETS'] = psetNames;

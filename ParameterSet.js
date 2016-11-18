@@ -97,13 +97,14 @@ ParameterSet.prototype.setValue = function(parameterName,value) {
 
 ParameterSet.prototype.updateValue = function(parameterName,value) {
    var that = this;
-
+   var result = undefined;
    this.parameter.forEach(function (p) {
      if (p.name == parameterName) {
-        var oldValue = p.value;
         p.value=value;
+        result = p;
      }
    });
+   return result;
 }
 
 

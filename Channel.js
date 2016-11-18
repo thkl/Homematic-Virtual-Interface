@@ -1,7 +1,6 @@
 "use strict";
 
 var debug = require('debug')('HomeMaticHueBridge.Channel');
-var inherits = require('util').inherits;
 var ParameterSet = require("./ParameterSet.js").ParameterSet;
 var Parameter = require("./Parameter.js").Parameter;
 const EventEmitter = require('events');
@@ -163,17 +162,21 @@ Channel.prototype.setValue = function(parameterName,value) {
    return result;
 }
   
-Channel.prototype.updateValue = function(parameterName,value) {
-  var result = [];
-  this.paramsets.forEach(function (pSet) {
-    if (pSet.name == "VALUES") {
-      result = pSet.updateValue(parameterName,value);
-    }
-   });
-   return result;
+Channel.prototype.updateValue = function(parameterName,value,notification) {
+
+  var pv = this.getParameterObject(parameterName);
+  if (pv!=undefined) {
+     pv.value = value;
+  
+     if (notification!=undefined) {
+	   this.publishUpdateEvent([pv]);
+     }
+
+  }
 }
 
- 
+
+
 Channel.prototype.startUpdating = function(parameterName) {
  
   var pw = this.getParameterObject("WORKING");
@@ -195,18 +198,18 @@ Channel.prototype.startUpdating = function(parameterName) {
 
 Channel.prototype.endUpdating = function(parameterName) {
   var pw = this.getParameterObject("WORKING");
-  var upChannels = [];
+  var upParameters = [];
   if (pw!=undefined) {
 	this.setValue("WORKING",false);
-	upChannels.push(pw);
+	upParameters.push(pw);
   }
   
   var pv = this.getParameterObject(parameterName);
   if (pv!=undefined) {
-	upChannels.push(pv);
+	upParameters.push(pv);
   }
   
-  this.publishUpdateEvent(upChannels);
+  this.publishUpdateEvent(upParameters);
 }
 
 Channel.prototype.publishUpdateEvent = function(parameterNames) {

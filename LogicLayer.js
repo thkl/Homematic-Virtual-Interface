@@ -7,11 +7,12 @@ var fs = require('fs');
 var Channel = require("./Channel.js").Channel;
 var Device = require("./Device.js").Device;
 
-
+const chalk = require('chalk');
+const log = console.log;
 
 
 var HomematicLogicalLayer = function (ccuIP) {
-    debug("Welcome. Will Create a logical layer for CCU at " + ccuIP);
+    log(chalk.gray("welcome. will create a logical layer for CCU at " + ccuIP));
 	this.server;
 	this.clients = [];
 	this.devices = [];
@@ -27,10 +28,10 @@ HomematicLogicalLayer.prototype.init = function() {
 
 	var ip = this.getIPAddress();
 	if (ip == "0.0.0.0") {
-      debug("Cannot fetch my own ip");
+      log(chalk.red("Cannot fetch my own ip"));
 	}
 
-    debug("MyIP is " + ip);
+    log(chalk.gray("MyIP is " + ip));
 
 	this.server = xmlrpc.createServer({
       host: ip,
@@ -41,7 +42,7 @@ HomematicLogicalLayer.prototype.init = function() {
       debug("Method " + method + " does not exist. - " + JSON.stringify(params));
 	});
 
-	debug("XML-RPC server for interface HmHue is listening on port " + localPort);
+	log(chalk.gray("XML-RPC server for interface HmHue is listening on port " + localPort));
 
 
  	this.methods = {
@@ -53,7 +54,7 @@ HomematicLogicalLayer.prototype.init = function() {
     
     'listDevices': function listDevices(err, params, callback) {
        		debug('rpc < listDevices', err, params);
-       		var devices = that.sendMyDevices();
+       		var devices = that.getMyDevices();
        		debug("RPC listDevices Response %s Errors: %s",JSON.stringify(devices),err);
             callback(null, devices);
     },
@@ -64,7 +65,6 @@ HomematicLogicalLayer.prototype.init = function() {
     		var adress = params[0];
 			var found = false;
 			that.devices.forEach(function (device) {
-			  debug("Found Adress" + device.adress);
 	    	  if (device.adress == adress) {
 	    	    var re = device.getDeviceDescription()
 	    	    debug('repl  >', null, JSON.stringify(re));
@@ -219,12 +219,35 @@ HomematicLogicalLayer.prototype.init = function() {
 
 	},
 
+
+
+	'reportValueUsage': function reportValueUsage(err, params, callback) {
+			debug('rpc < reportValueUsage', err, params);
+			// thank you for the fish ...
+			callback(null,[]);
+	},
+
+
 	'deleteDevice': function deleteDevice(err, params, callback) {
 			debug('rpc < deleteDevice', err, params);
 			var adress = params[0];
 			var mode = params[1];
 			debug('repl  >', null);
 			callback(null,[]);
+			
+			// call Bridge and set Flag
+			
+			// rega callback
+			
+			that.sendRPCMessage("deleteDevices",[adress], function(error, value) {});
+			/*
+			if (that.rpcClient!=undefined) {
+	            that.rpcClient.methodCall("deleteDevices", [that.callInterfaceBackId,[adress]] , function(error, value) {
+    				debug("RPC deleteDevices Response %s Errors: %s",JSON.stringify(that.sendMyDevices()),error);
+    			});
+            }
+            */
+            
 	},
 
 
@@ -273,14 +296,16 @@ HomematicLogicalLayer.prototype.init = function() {
             that.createRPCClient();
             callback(null, []);
             that.callInterfaceBackId = intf;
+            that.sendRPCMessage("newDevices",that.getMyDevices(), function(error, value) {});
+            /*
+            
             if (that.rpcClient!=undefined) {
-	            that.rpcClient.methodCall("newDevices", [intf,that.sendMyDevices()] , function(error, value) {
+	            that.rpcClient.methodCall("newDevices", [that.callInterfaceBackId,that.getMyDevices()] , function(error, value) {
     				debug("RPC newDevices Response %s Errors: %s",JSON.stringify(that.sendMyDevices()),error);
     			});
             }
-			
+			*/
 			}
-
     }
 
     
@@ -313,7 +338,7 @@ HomematicLogicalLayer.prototype.sendRPCEvent = function(adress,parameters) {
    that.rpcClient.methodCall("system.multicall", [eventPayload] , function(error, value) {
     				debug("RPC system.multicall Response %s Errors: %s",JSON.stringify(eventPayload),error);
    });
-	}
+  }
 }
 
 
@@ -325,7 +350,7 @@ HomematicLogicalLayer.prototype.createRPCClient = function() {
     });
 }
 
-HomematicLogicalLayer.prototype.sendMyDevices = function() {
+HomematicLogicalLayer.prototype.getMyDevices = function() {
       var result = [];
       
       this.devices.forEach(function (device) {
@@ -339,14 +364,23 @@ HomematicLogicalLayer.prototype.sendMyDevices = function() {
      return result; 
 }
 
+HomematicLogicalLayer.prototype.sendRPCMessage = function(method,payload,callback) {
+  if (this.rpcClient!=undefined) {
+	 this.rpcClient.methodCall(method, [this.callInterfaceBackId,payload] , function(error, value) {
+    				debug("RPC %s Response %s Errors: %s",method,JSON.stringify(payload),error);
+    				if (callback!=undefined) {
+    				  callback(error,value);
+    				}
+    });
+  }
+}
+
 HomematicLogicalLayer.prototype.addDevice = function(device) {
    debug("Add new Device to HM Layer");
    this.devices.push(device);
    var that = this;
    // Add Listener to Working Events to publish
-   
    device.on("event_device_channel_value_change", function(parameter){
-     debug("Have to send a event Notification for " + JSON.stringify(parameter));
      that.sendRPCEvent(parameter.channel,parameter.parameters);
    });
    

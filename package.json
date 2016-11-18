@@ -5,12 +5,12 @@
   "license": "ISC",
   
   "scripts": {
-    "start": "DEBUG=* node index.js || true"
+    "start": "node index.js || true"
   },
   
   "repository": {
     "type": "git",
-    "url": "git://github.com/thkl/.git"
+    "url": "git://github.com/thkl/Homematic-Hue-Interface.git"
   },
   
   "engines": {
@@ -22,6 +22,7 @@
     "request": "^2.65.0",
     "sax": "0.4.x",
     "node-hue-api":">2.0.0",
+     "chalk": "^1.1.1",
     "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5"
    }
 }

@@ -160,7 +160,7 @@
   	"name" : "MASTER",
   	"id" : "switch_dev_master",
     "parameter" : [
-    	{"name" : "INTERNAL_KEYS_VISIBLE","vdefault": false,"flags": 3,"max": true,"min": false,"operations": 3,"tab_order": 1,"type": "BOOL"},
+    	{"name" : "INTERNAL_KEYS_VISIBLE","vdefault": false,"flags": 1,"max": true,"min": false,"operations": 3,"tab_order": 1,"type": "BOOL"},
     	{"name" : "LOCAL_RESET_DISABLE","vdefault": false,"flags": 1,"max": true,"min": false,"operations": 3,"tab_order": 0,"type": "BOOL"}
      ]
    }]

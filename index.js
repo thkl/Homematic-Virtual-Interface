@@ -5,39 +5,121 @@ var HueApi = require("node-hue-api").HueApi;
 var HueDevice = require(__dirname + "/HueDevice.js").HueDevice;
 var debug = require('debug')('HM Hue Bridge');
 var Config = require(__dirname + '/settings.js').Config;
+var ConfigServer = require(__dirname + '/ConfigurationServer.js').ConfigurationServer;
+const chalk = require('chalk');
+const log = console.log;
 
-debug("Homematic Hue Bridge");
+
+
+log(chalk.gray("Homematic Hue Bridge"));
+log(chalk.gray("2016 by thkl https://github.com/thkl/Homematic-Hue-Interface"));
+log(chalk.gray("============================================================"));
 
 var configuration = new Config();
+var configServer = new ConfigServer();
 
-var hm_layer = new HomematicLogicalLayer(configuration.settings["ccu_ip"]);
 var mappedDevices = [];
-
+var hue_ipAdress;
+var hue_userName;
 var hue_api;
-
 var max = 3;
 
-debug("Hue Bridge Init at " + configuration.settings["hue_bridge_ip"]);
-hue_api = new HueApi(configuration.settings["hue_bridge_ip"], configuration.settings["hue_username"]);
+var locateBridge = function (callback) {
+
+	log(chalk.gray("trying to find your Hue bridge ..."));
+	var hue = require("node-hue-api");
+	
+	hue.upnpSearch(6000).then(function (bridges) {
+          log(chalk.gray("Scan complete",bridges[0].ipaddress));
+          hue_ipAdress = bridges[0].ipaddress;
+          callback(null,hue_ipAdress);
+    }).done();
+    
+}
 
 
+function checkUsername() {
+   
+   if ((configuration.settings["hue_username"]==undefined) || (configuration.settings["hue_username"]=="")) {
+       log(chalk.gray("trying to create a new user at your bridge"));
+	   var api = new HueApi(hue_ipAdress);
+        api.createUser(hue_ipAdress,function(err, user) {
+          // try and help explain this particular error
+          
+          if (err && err.message == "link button not pressed") {
+            log(chalk.red("Please press the link button on your Philips Hue bridge within 30 seconds."));
+            setTimeout(function() {checkUsername();}, 30000);
+          } else {
+            log(chalk.red("Please save the new user to your config.json --> " +user));
+            hue_userName = user;
+            return true;
+          }
+        });
+   } else {
+     hue_userName = configuration.settings["hue_username"];
+	 return true;   
+   }
+}
+
+
+// Make a connection to the HUE Bridge... if there are no credentials .. try to find a bridge
+
+if ((configuration.settings["hue_bridge_ip"]!=undefined) && (configuration.settings["hue_bridge_ip"]!="")) {
+    hue_ipAdress = configuration.settings["hue_bridge_ip"]
+	log(chalk.gray("Hue Bridge Init at " + hue_ipAdress));
+
+	if (checkUsername()==true) {
+	        initialize_interface()
+    }
+
+} else {
+	
+	locateBridge.call(this, function (err, ip_address) {
+        if (err) throw err;
+
+        // TODO: Find a way to persist this
+        hue_ipAdress = ip_address;
+        log(chalk.red("Save the Philips Hue bridge ip address "+ hue_ipAdress +" to your config to skip discovery."));
+
+        if (checkUsername()==true) {
+	        initialize_interface()
+        }
+
+     });
+}
+	
+function initialize_interface() {
+
+hue_api = new HueApi(hue_ipAdress,hue_userName);
+
+var hm_layer = new HomematicLogicalLayer(configuration.settings["ccu_ip"]);
 // --------------------------
 // Fetch Lights
 hue_api.lights(function(err, lights) {
 
   if ((lights != undefined) && (lights["lights"]!=undefined)) {
   	lights["lights"].forEach(function (light) {
-  	   if (max > 0) {
     		debug("Adding new Light " + light["name"]);
     		mappedDevices.push(new HueDevice(hm_layer,hue_api,light));
-			max = max - 1;
-       }
   });
   }  
   
  
 });
 
+configServer.on("config_server_http_event",function(command){
+  var url = command.url;
+  
+  debug("Configuration Server Event",url);
+  if (url == "/?installmode") {
+    // query new devices from Hue and send them to Rega
+    debug("Send my Devices to Rega");
+    hm_layer.sendRPCMessage("newDevices",hm_layer.getMyDevices(), function(error, value) {});
+  }
+
+});
+
 hm_layer.init();
-
-
+log(chalk.gray("hm interface layer is up and listening ...."));
+log(chalk.gray("please restart your ccu to establish a connection"));
+} 
