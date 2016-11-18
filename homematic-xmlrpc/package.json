@@ -1,0 +1,113 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "homematic-xmlrpc",
+        "scope": null,
+        "escapedName": "homematic-xmlrpc",
+        "name": "homematic-xmlrpc",
+        "rawSpec": "",
+        "spec": "latest",
+        "type": "tag"
+      },
+      "/Users/thomaskluge/Documents/hmbridge"
+    ]
+  ],
+  "_from": "homematic-xmlrpc@latest",
+  "_id": "homematic-xmlrpc@1.0.2",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/homematic-xmlrpc",
+  "_nodeVersion": "6.2.2",
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/homematic-xmlrpc-1.0.2.tgz_1470249922210_0.0280358565505594"
+  },
+  "_npmUser": {
+    "name": "hobbyquaker",
+    "email": "hq@ccu.io"
+  },
+  "_npmVersion": "3.9.5",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "homematic-xmlrpc",
+    "scope": null,
+    "escapedName": "homematic-xmlrpc",
+    "name": "homematic-xmlrpc",
+    "rawSpec": "",
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/homematic-xmlrpc/-/homematic-xmlrpc-1.0.2.tgz",
+  "_shasum": "a21904a12c04f65cba9ea7fbfb9ac2e05f09208e",
+  "_shrinkwrap": null,
+  "_spec": "homematic-xmlrpc",
+  "_where": "/Users/thomaskluge/Documents/hmbridge",
+  "author": {
+    "name": "hobbyquaker",
+    "email": "hq@ccu.io",
+    "url": "https://github.com/hobbyquaker"
+  },
+  "bugs": {
+    "url": "https://github.com/hobbyquaker/homematic-xmlrpc/issues"
+  },
+  "dependencies": {
+    "sax": "0.4.x",
+    "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5"
+  },
+  "description": "A pure JavaScript XML-RPC client and server.",
+  "devDependencies": {
+    "vows": "0.7.x"
+  },
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "dist": {
+    "shasum": "a21904a12c04f65cba9ea7fbfb9ac2e05f09208e",
+    "tarball": "https://registry.npmjs.org/homematic-xmlrpc/-/homematic-xmlrpc-1.0.2.tgz"
+  },
+  "engines": {
+    "node": ">=0.8",
+    "npm": ">=1.0.0"
+  },
+  "gitHead": "7fd1758553091a89ed2c51e7c540b3276e887938",
+  "homepage": "https://github.com/hobbyquaker/homematic-xmlrpc",
+  "keywords": [
+    "xml-rpc",
+    "xmlrpc",
+    "xml",
+    "rpc",
+    "homematic",
+    "bidcos"
+  ],
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/baalexander/node-xmlrpc/raw/master/LICENSE"
+    }
+  ],
+  "main": "./lib/xmlrpc.js",
+  "maintainers": [
+    {
+      "name": "hobbyquaker",
+      "email": "hq@ccu.io"
+    }
+  ],
+  "name": "homematic-xmlrpc",
+  "optionalDependencies": {},
+  "preferGlobal": false,
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hobbyquaker/homematic-xmlrpc.git"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "version": "1.0.2"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "HomeMaticHueBridge",
+  "version": "0.0.1",
+  "description": "Homematic Hue Bridge",
+  "license": "ISC",
+  
+  "scripts": {
+    "start": "DEBUG=* node index.js || true"
+  },
+  
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thkl/.git"
+  },
+  
+  "engines": {
+    "node": ">=0.12.0"
+  },
+  
+  "dependencies": {
+    "debug": "^2.2.0",
+    "request": "^2.65.0",
+    "sax": "0.4.x",
+    "node-hue-api":">2.0.0",
+    "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5"
+   }
+}

@@ -1,0 +1,167 @@
+{
+  "channels": [
+    {
+      "adress": "0",
+      "type": "MAINTENANCE",
+      "flags":  3,
+      "direction" : 0,
+      "paramsets": [
+        {
+          "name" : "MASTER",
+          "id" : "maint_ch_master",
+          "parameter" : []
+        },
+        
+        {
+          "name" : "VALUES",
+          "id" : "maint_ch_values",
+          "parameter" : [
+          {"name": "AES_KEY","vdefault": 0,"flags": 0,"max": 127,"min": 0,"operations": 1,"tab_order": 9,"type": "INTEGER"},
+          {"name": "CONFIG_PENDING","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 2,"type": "BOOL"},
+          {"name": "DEVICE_IN_BOOTLOADER","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 7,"type": "BOOL"},
+          {"name": "DUTYCYCLE","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 4,"type": "BOOL"},
+          {"name": "LOWBAT","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 3,"type": "BOOL"},
+          {"name": "RSSI_DEVICE","vdefault": 0,"flags": 1,"max": 2147483647,"min": 2147483648,"operations": 5,"tab_order": 5,"type": "INTEGER"},
+          {"name": "RSSI_PEER","vdefault": 0,"flags": 1,"max": 2147483647,"min": 2147483648,"operations": 5,"tab_order": 6,"type": "INTEGER"},
+          {"name": "STICKY_UNREACH","vdefault": 0,"flags": 25, "max": 1,"min": 0,"operations": 7,"tab_order": 1,"type": "BOOL"},
+          {"name": "UNREACH","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 0,"type": "BOOL"},
+          {"name": "UPDATE_PENDING","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 8,"type": "BOOL"}]
+       }],
+      "version": 41
+   },
+    
+    {
+      "adress": "1",
+      "type": "DIMMER",
+      "flags":  1,
+      "direction" : 2,
+      "paramsets": [
+        {
+          "name" : "MASTER",
+          "id" : "dimmer_ch_master",
+          "parameter" : [
+          {
+          "name": "AES_KEY","vdefault": 0,"flags": 0,"max": 127,"min": 0,"operations": 1,"tab_order": 0,"type": "INTEGER"
+          }]
+        },
+        
+        {
+          "name" : "VALUES",
+          "id" : "dimmer_ch_values",
+          "parameter" : [
+		{"name": "DIRECTION", "vdefault": 0,"flags": 3, "max": 3,"min": 0,"operations": 5,"tab_order": 6,"type": "ENUM","valuelist": ["NONE","UP","DOWN","UNDEFINED"]},
+        {"name": "INHIBIT","control": "NONE","vdefault": false,"flags": 1,"max": true,"min": false,"operations": 7,"tab_order": 5,"type": "BOOL"},
+        {"name": "INSTALL_TEST","vdefault": false,"flags": 3,"max": true,"min": false,"operations": 2,"tab_order": 7,"type": "ACTION"},
+        {"name": "LEVEL","control": "DIMMER.LEVEL","vdefault": 0.0,"flags": 1.0,"max": 1.0,"min": 0.0,"operations": 7,"tab_order": 0,"type": "FLOAT","unit": "100%"},
+        {"name": "OLD_LEVEL","control": "DIMMER.OLD_LEVEL","vdefault": 0,"flags": 1,"max": 1,"min": 0,"operations": 2,"tab_order": 1,"type": "ACTION"},
+        {"name": "ON_TIME","control": "NONE","vdefault": 0,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 3,"type": "FLOAT","unit": "s"},
+        {"name": "RAMP_STOP","control": "NONE","vdefault": false,"flags": 1,"max": true,"min": false,"operations": 2,"tab_order": 4,"type": "ACTION"},
+        {"name": "RAMP_TIME","control": "NONE","vdefault": 0.5,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 2,"type": "FLOAT","unit": "s"},
+        {"name": "WORKING","vdefault": false,"flags": 1,"max": true,"min": false,"operations": 2,"tab_order": 8,"type": "BOOL"}
+		 ]
+       }],
+      "version": 41
+   },
+   
+   {
+      "adress": "2",
+      "type": "RGBW_COLOR",
+      "flags":  1,
+      "direction" : 2,
+      "paramsets": [
+        {
+          "name" : "MASTER",
+          "id" : "rgbw_color_ch_master",
+          "parameter" : [
+          	{"name": "AES_KEY","vdefault": 0,"flags": 0,"max": 127,"min": 0,"operations": 1,"tab_order": 0,"type": "INTEGER"},
+          	{"name": "WHITE_ADJUSTMENT_VALUE_BLUE","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 2,"type": "INTEGER","UNIT":"%"},
+          	{"name": "WHITE_ADJUSTMENT_VALUE_GREEN","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 1,"type": "INTEGER","UNIT":"%"},
+          	{"name": "WHITE_ADJUSTMENT_VALUE_RED","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 2,"type": "INTEGER","UNIT":"%"}
+          ]
+        },
+        
+        {
+          "name" : "LINK",
+          "id" : "rgbw_color_ch_link",
+          "parameter" : [
+          	{"name": "LONG_ACT_HSV_COLOR_VALUE","vdefault": 0,"flags": 1,"max": 255,"min": 0,"operations": 3,"tab_order": 1,"type": "INTEGER"},
+          	{"name": "SHORT_ACT_HSV_COLOR_VALUE","vdefault": 0,"flags": 1,"max": 255,"min": 0,"operations": 3,"tab_order": 0,"type": "INTEGER"}
+          ]
+        },
+        {
+          "name" : "VALUES",
+          "id" : "rgbw_color_ch_values",
+          "parameter" : [
+	    {"name": "ACT_BRIGHTNESS","control": "NONE","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 4,"type": "INTEGER"},
+	    {"name": "ACT_BRIGHTNESS_STORE","control": "NONE","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 5,"type": "INTEGER"},
+	    {"name": "ACT_HSV_COLOR_VALUE","control": "NONE","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 6,"type": "INTEGER"},
+	    {"name": "ACT_HSV_COLOR_VALUE_STORE","control": "NONE","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 7,"type": "INTEGER"},
+	    {"name": "COLOR","control": "RGBW_COLOR.COLOR","vdefault": 0,"flags": 1,"max": 255,"min": 0,"operations": 7,"tab_order": 0,"type": "INTEGER"},
+        {"name": "INHIBIT","control": "NONE","vdefault": false,"flags": 1,"max": true,"min": false,"operations": 7,"tab_order": 3,"type": "BOOL"},
+        {"name": "ON_TIME","control": "NONE","vdefault": 0,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 1,"type": "FLOAT","unit": "s"},
+        {"name": "ON_TIME_STORE","control": "NONE","vdefault": 0,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 8,"type": "FLOAT","unit": "s"},
+        {"name": "RAMP_TIME","control": "NONE","vdefault": 0.5,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 2,"type": "FLOAT","unit": "s"},
+        {"name": "RAMP_TIME_STORE","control": "NONE","vdefault": 0.5,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 9,"type": "FLOAT","unit": "s"},
+        {"name": "USER_COLOR","control": "NONE","flags": 1, "operations": 2,"tab_order": 0,"type": "STRING"}
+	   ]
+       }],
+      "version": 41
+   },
+   
+   {
+      "adress": "3",
+      "type": "RGBW_AUTOMATIC",
+      "flags":  1,
+      "direction" : 2,
+      "paramsets": [
+        {
+          "name" : "MASTER",
+          "id" : "rgbw_automatic_ch_master",
+          "parameter" : [
+          	{"name": "AES_KEY","vdefault": 0,"flags": 0,"max": 127,"min": 0,"operations": 1,"tab_order": 0,"type": "INTEGER"},
+          	{"name": "COLOR_CHANGE_SPEED","vdefault": 10,"flags": 1,"max": 255,"min": 0,"operations": 3,"tab_order": 0,"type": "INTEGER","UNIT":"s/U"}
+          ]
+        },
+        {
+          "name" : "VALUES",
+          "id" : "rgbw_automatic_ch_values",
+          "parameter" : [
+	    {"name": "ACT_BRIGHTNESS","control": "RGBW_AUTOMATIC.BRIGHTNES","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 4,"type": "INTEGER"},
+	    {"name": "ACT_BRIGHTNESS_STORE","control": "NONE","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 5,"type": "INTEGER"},
+	    {"name": "ACT_COLOR_PROGRAM_STORE","control": "NONE","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 6,"type": "INTEGER"},
+	    {"name": "ACT_MAX_BOARDER","control": "RGBW_AUTOMATIC.MAX_BOARDER","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 7,"type": "INTEGER"},
+	    {"name": "ACT_MAX_BORDER_STORE","control": "NONE","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 8,"type": "INTEGER"},
+	    {"name": "ACT_MIN_BOARDER","control": "RGBW_AUTOMATIC.MIN_BOARDER","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 9,"type": "INTEGER"},
+	    {"name": "ACT_MIN_BORDER_STORE","control": "NONE","vdefault": 0,"flags": 3,"max": 255,"min": 0,"operations": 2,"tab_order": 10,"type": "INTEGER"},
+
+
+        {"name": "INHIBIT","control": "NONE","vdefault": false,"flags": 1,"max": true,"min": false,"operations": 7,"tab_order": 3,"type": "BOOL"},
+        {"name": "ON_TIME","control": "RGBW_AUTOMATIC.ON_TIME","vdefault": 0,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 1,"type": "FLOAT","unit": "s"},
+        {"name": "ON_TIME_STORE","control": "NONE","vdefault": 0,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 11,"type": "FLOAT","unit": "s"},
+
+        {"name": "PROGRAM","control": "RGBW_AUTOMATIC.PROGRAM","vdefault": 0,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 0,"type": "INTEGER"},
+
+
+        {"name": "RAMP_TIME","control": "RGBW_AUTOMATIC.RAMP_TIME","vdefault": 0.5,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 2,"type": "FLOAT","unit": "s"},
+        {"name": "RAMP_TIME_STORE","control": "NONE","vdefault": 0.5,"flags": 1,"max": 85825945.6,"min": 0,"operations": 2,"tab_order": 12,"type": "FLOAT","unit": "s"},
+        {"name": "USER_PROGRAM","control": "NONE","flags": 1, "operations": 2,"tab_order": 0,"type": "STRING"}
+	   ]
+       }],
+      "version": 41
+   }
+
+   
+   ],
+   
+  "type": "HM-LC-RGBW-WM",
+  "version": 41,
+  "paramsets": [
+  {
+  	"name" : "MASTER",
+  	"id" : "switch_dev_master",
+    "parameter" : [
+    	{"name" : "INTERNAL_KEYS_VISIBLE","vdefault": false,"flags": 3,"max": true,"min": false,"operations": 3,"tab_order": 1,"type": "BOOL"},
+    	{"name" : "LOCAL_RESET_DISABLE","vdefault": false,"flags": 1,"max": true,"min": false,"operations": 3,"tab_order": 0,"type": "BOOL"}
+     ]
+   }]
+  }
