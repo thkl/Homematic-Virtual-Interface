@@ -297,6 +297,7 @@ HomematicLogicalLayer.prototype.init = function() {
             callback(null, []);
             that.callInterfaceBackId = intf;
             that.sendRPCMessage("newDevices",that.getMyDevices(), function(error, value) {});
+            log(chalk.green("connection request from your ccu .. live is good"));
             /*
             
             if (that.rpcClient!=undefined) {
