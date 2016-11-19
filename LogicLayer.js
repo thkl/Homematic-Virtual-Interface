@@ -322,6 +322,9 @@ HomematicLogicalLayer.prototype.init = function() {
 	if (lastInterfaceID != undefined) {
 		this.interfaceCallbackId = lastInterfaceID;
 		this.createRPCClient();
+		log(chalk.gray("using last known interface  %s id for communication",lastInterfaceID));
+	} else {
+		log(chalk.gray("please restart your ccu to establish a connection"));
 	}
 }
 

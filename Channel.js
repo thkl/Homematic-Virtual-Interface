@@ -81,12 +81,16 @@ util.inherits(Channel, EventEmitter);
   var result = [];
   
   if (paramset == this.adress) {
-    paramset = "LINK";
+    paramset = "LINKS";
+    debug("Link paramset Request")
   }
   
   this.paramsets.forEach(function (pSet) {
+	  debug("We have here : %s",pSet.name)
+
     if (pSet.name == paramset) {
-      result = pSet.getParamsetDescription();
+		debug("Paramset %s found" +  pSet.name);
+		result = pSet.getParamsetDescription();
     }
    });
    return result;
@@ -96,7 +100,7 @@ util.inherits(Channel, EventEmitter);
   var result = [];
 
   if (paramset == this.adress) {
-    paramset = "LINK";
+    paramset = "LINKS";
   }
 
   this.paramsets.forEach(function (pSet) {
@@ -115,7 +119,7 @@ Channel.prototype.putParamset = function(paramset,parameter) {
   }
 
   if (paramset == this.adress) {
-    paramset = "LINK";
+    paramset = "LINKS";
   }
   
   this.paramsets.forEach(function (pSet) {
@@ -221,7 +225,7 @@ Channel.prototype.getParamsetId = function(paramset) {
   var result = [];
 
   if (paramset == this.adress) {
-    paramset = "LINK";
+    paramset = "LINKS";
   }
 
   this.paramsets.forEach(function (pSet) {

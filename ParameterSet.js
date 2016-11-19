@@ -6,6 +6,7 @@ const util = require('util')
 
 
 var ParameterSet = function(name,id) {
+	debug("Create new Paramset %s" , name)
   this.name = name;
   this.parameter = [];
   this.id = id;

@@ -123,5 +123,4 @@ configServer.on("config_server_http_event",function(command){
 
 hm_layer.init();
 log(chalk.gray("hm interface layer is up and listening ...."));
-log(chalk.gray("please restart your ccu to establish a connection"));
 } 
