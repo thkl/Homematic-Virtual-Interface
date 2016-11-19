@@ -39,8 +39,8 @@ var locateBridge = function (callback) {
 
 
 function checkUsername() {
-   
-   if ((configuration.settings["hue_username"]==undefined) || (configuration.settings["hue_username"]=="")) {
+   var that = this;
+   if ((configuration.getValue("hue_username")==undefined) || (configuration.getValue("hue_username")=="")) {
        log(chalk.gray("trying to create a new user at your bridge"));
 	   var api = new HueApi(hue_ipAdress);
         api.createUser(hue_ipAdress,function(err, user) {
@@ -50,7 +50,8 @@ function checkUsername() {
             log(chalk.red("Please press the link button on your Philips Hue bridge within 30 seconds."));
             setTimeout(function() {checkUsername();}, 30000);
           } else {
-            log(chalk.red("Please save the new user to your config.json --> " +user));
+	        configuration.setValue("hue_username",user); 
+            log(chalk.gray("saved your user to config.json"));
             hue_userName = user;
             return true;
           }
@@ -64,7 +65,7 @@ function checkUsername() {
 
 // Make a connection to the HUE Bridge... if there are no credentials .. try to find a bridge
 
-if ((configuration.settings["hue_bridge_ip"]!=undefined) && (configuration.settings["hue_bridge_ip"]!="")) {
+if ((configuration.getValue("hue_bridge_ip")!=undefined) && (configuration.getValue("hue_bridge_ip")!="")) {
     hue_ipAdress = configuration.settings["hue_bridge_ip"]
 	log(chalk.gray("Hue Bridge Init at " + hue_ipAdress));
 
@@ -79,7 +80,8 @@ if ((configuration.settings["hue_bridge_ip"]!=undefined) && (configuration.setti
 
         // TODO: Find a way to persist this
         hue_ipAdress = ip_address;
-        log(chalk.red("Save the Philips Hue bridge ip address "+ hue_ipAdress +" to your config to skip discovery."));
+        configuration.setValue("hue_bridge_ip",hue_ipAdress); 
+        log(chalk.gray("Saved the Philips Hue bridge ip address "+ hue_ipAdress +" to your config to skip discovery."));
 
         if (checkUsername()==true) {
 	        initialize_interface()
@@ -92,7 +94,7 @@ function initialize_interface() {
 
 hue_api = new HueApi(hue_ipAdress,hue_userName);
 
-var hm_layer = new HomematicLogicalLayer(configuration.settings["ccu_ip"]);
+var hm_layer = new HomematicLogicalLayer(configuration);
 // --------------------------
 // Fetch Lights
 hue_api.lights(function(err, lights) {

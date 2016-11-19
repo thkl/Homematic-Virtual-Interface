@@ -1,25 +1,32 @@
 "use strict";
 
-var xmlrpc = require("./homematic-xmlrpc");
+var xmlrpc = require(__dirname + "/homematic-xmlrpc");
 var request = require("request");
 var debug = require('debug')('HomematicLogicalLayer');
 var fs = require('fs');
-var Channel = require("./Channel.js").Channel;
-var Device = require("./Device.js").Device;
+var Channel = require(__dirname + "/Channel.js").Channel;
+var Device = require(__dirname + "/Device.js").Device;
 
 const chalk = require('chalk');
 const log = console.log;
 
 
-var HomematicLogicalLayer = function (ccuIP) {
-    log(chalk.gray("welcome. will create a logical layer for CCU at " + ccuIP));
+var HomematicLogicalLayer = function (config) {
 	this.server;
 	this.clients = [];
 	this.devices = [];
 	this.rpcClient;
 	this.interfaceID;
-	this.callInterfaceBackId;
-	this.ccuIP = ccuIP;
+	this.interfaceCallbackId;
+	this.config = config;
+	
+	this.ccuIP = this.config.getValue("ccu_ip");
+	if (this.ccuIP == undefined) {
+		log(chalk.red("please setup your ccu ip in config.json"));
+	} else {
+	    log(chalk.gray("welcome. will create a logical layer for CCU at " + this.ccuIP));
+	}
+
 }
 
 HomematicLogicalLayer.prototype.init = function() {
@@ -295,17 +302,10 @@ HomematicLogicalLayer.prototype.init = function() {
             if (intf != "HmHue_java") {
             that.createRPCClient();
             callback(null, []);
-            that.callInterfaceBackId = intf;
+            that.interfaceCallbackId = intf;
+            that.config.setValue("interface_id",intf);
             that.sendRPCMessage("newDevices",that.getMyDevices(), function(error, value) {});
             log(chalk.green("connection request from your ccu .. live is good"));
-            /*
-            
-            if (that.rpcClient!=undefined) {
-	            that.rpcClient.methodCall("newDevices", [that.callInterfaceBackId,that.getMyDevices()] , function(error, value) {
-    				debug("RPC newDevices Response %s Errors: %s",JSON.stringify(that.sendMyDevices()),error);
-    			});
-            }
-			*/
 			}
     }
 
@@ -317,7 +317,12 @@ HomematicLogicalLayer.prototype.init = function() {
            that.server.on(m, that.methods[m]);
     });
     
-
+	// try to init a rpc client depending on the latest InterfaceIC
+	var lastInterfaceID = this.config.getValue("interface_id");
+	if (lastInterfaceID != undefined) {
+		this.interfaceCallbackId = lastInterfaceID;
+		this.createRPCClient();
+	}
 }
 
 HomematicLogicalLayer.prototype.sendRPCEvent = function(adress,parameters) {
@@ -327,9 +332,9 @@ HomematicLogicalLayer.prototype.sendRPCEvent = function(adress,parameters) {
    parameters.forEach(function (parameter) {
    
       if (parameter.type=="FLOAT") {
-          eventPayload.push({"methodName":"event","params":[that.callInterfaceBackId,adress,parameter.name,{"explicitDouble":parameter.value}]})
+          eventPayload.push({"methodName":"event","params":[that.interfaceCallbackId,adress,parameter.name,{"explicitDouble":parameter.value}]})
 	  } else {
-	      eventPayload.push({"methodName":"event","params":[that.callInterfaceBackId,adress,parameter.name,parameter.value]})
+	      eventPayload.push({"methodName":"event","params":[that.interfaceCallbackId,adress,parameter.name,parameter.value]})
       }
    
    })
@@ -367,7 +372,7 @@ HomematicLogicalLayer.prototype.getMyDevices = function() {
 
 HomematicLogicalLayer.prototype.sendRPCMessage = function(method,payload,callback) {
   if (this.rpcClient!=undefined) {
-	 this.rpcClient.methodCall(method, [this.callInterfaceBackId,payload] , function(error, value) {
+	 this.rpcClient.methodCall(method, [this.interfaceCallbackId,payload] , function(error, value) {
     				debug("RPC %s Response %s Errors: %s",method,JSON.stringify(payload),error);
     				if (callback!=undefined) {
     				  callback(error,value);
