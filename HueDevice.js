@@ -16,6 +16,7 @@
 		this.lightId = light["id"];
 		this.transitiontime = 4; // Default Hue
 		this.onTime = 0;
+		this.lastLevel = 0;
 		this.hmDevice = new Device("HM-LC-RGBW-WM","HUE0000" + this.lightId );
 		this.hmDevice.firmware = light["swversion"];
 		this.bridge.addDevice(this.hmDevice);
@@ -51,6 +52,21 @@
 	       // reset the transition and on time 
 	       that.transitiontime = 4;
 	       that.onTime = 0;
+	       if (newValue > 0) {
+		       that.lastLevel = newValue;
+	       }
+	     }
+
+
+		 if (parameter.name == "OLD_LEVEL") {
+	       if (newValue==true) {
+		      if (that.lastLevel == 0) {
+			      that.lastLevel = 1;
+		      }
+		      that.setLevel(that.lastLevel); 
+	       
+	       }
+	       
 	     }
 
 
@@ -80,23 +96,24 @@
 	HueDevice.prototype.setColor = function(newColor) {
 		var that = this;
 		var newState = {};
-	    if (newValue == 200) {
+	    if (newColor == 200) {
 	      // SpeZiale
-		  newState["rgb"] = {r:255,g:255,b:255};
+		  	newState["rgb"] = {r:255,g:255,b:255};
 
 	    } else {
-	        newState["hue"] = (newValue/199)*65535;
+	        newState["hue"] = (newColor/199)*65535;
 	    }
 
 		debug("Hue Value set to " + JSON.stringify(newState) );
+	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
 
-		if (channel != undefined) {
-	        channel.startUpdating("COLOR");
+		if (co_channel != undefined) {
+	        co_channel.startUpdating("COLOR");
 		}
 
 	    that.api.setLightState(that.lightId,newState, function(err, result) {
-	      if (channel != undefined) {
-	        channel.endUpdating("COLOR");
+	      if (co_channel != undefined) {
+	        co_channel.endUpdating("COLOR");
 	      }
 	    });
 	}
@@ -106,7 +123,7 @@
 	    var that = this;
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 		di_channel.startUpdating("LEVEL");
-
+		di_channel.updateValue("LEVEL",newLevel);
 		var newState = {"transitiontime":that.transitiontime};
 	      if (newLevel > 0) {
 	        newState["on"] = true;
@@ -137,7 +154,7 @@
 	    if ((di_channel!=undefined) && (co_channel!=undefined)) {
 
 	    if (state==true) {
-	        di_channel.updateValue("LEVEL",(bri/255),true);
+	        di_channel.updateValue("LEVEL",(bri/254),true);
 	        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
 	    	} else {
 	        di_channel.updateValue("LEVEL",0,true);
