@@ -6,7 +6,7 @@
 	var debug = require('debug')('HomeMaticHueBridge.HueDevice');
 
 
-	var HueDevice = function(hmbridge, hueApi ,light) {
+	var HueDevice = function(hmbridge, hueApi ,light,serialprefix) {
 
 		debug("Setup new HUE Bridge Device");
 
@@ -14,10 +14,11 @@
 		this.api =  hueApi;
 		this.bridge = hmbridge;
 		this.lightId = light["id"];
+		this.isGroup = (light["uniqueid"] == undefined);
 		this.transitiontime = 4; // Default Hue
 		this.onTime = 0;
 		this.lastLevel = 0;
-		this.hmDevice = new Device("HM-LC-RGBW-WM","HUE0000" + this.lightId );
+		this.hmDevice = new Device("HM-LC-RGBW-WM", serialprefix  + this.lightId );
 		this.hmDevice.firmware = light["swversion"];
 		this.bridge.addDevice(this.hmDevice);
 
@@ -111,11 +112,24 @@
 	        co_channel.startUpdating("COLOR");
 		}
 
+
+
+		if (that.isGroup == true) {
+
+	    that.api.setGroupLightState(that.lightId,newState, function(err, result) {
+	      if (co_channel != undefined) {
+	        co_channel.endUpdating("COLOR");
+	      }
+	    });
+			
+		} else {
 	    that.api.setLightState(that.lightId,newState, function(err, result) {
 	      if (co_channel != undefined) {
 	        co_channel.endUpdating("COLOR");
 	      }
 	    });
+		}
+
 	}
 
 
@@ -134,15 +148,55 @@
 	        newState["bri"] = 0;
 	    }
 		debug(JSON.stringify(newState));
+		
+		
+		if (that.isGroup == true) {
+
+	    that.api.setGroupLightState(that.lightId,newState, function(err, result) {
+	     if (di_channel != undefined) {
+	        di_channel.endUpdating("LEVEL");
+	      }
+	    });
+
+		} else {
+
 		that.api.setLightState(that.lightId,newState, function(err, result) {
 	      if (di_channel != undefined) {
 	        di_channel.endUpdating("LEVEL");
 	      }
 	    });
+	    }
 	}
 
 	HueDevice.prototype.refreshDevice = function(device) {
 	  var that = this;
+	  
+	  if (that.isGroup == true) {
+	  
+	  this.api.getGroup(this.lightId, function(err, result) {
+	    var state = result["action"]["on"];
+	    var bri = result["action"]["bri"];
+	    var hue = result["action"]["hue"];
+
+	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
+	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
+
+	    if ((di_channel!=undefined) && (co_channel!=undefined)) {
+
+	    if (state==true) {
+	        di_channel.updateValue("LEVEL",(bri/254),true);
+	        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
+	    	} else {
+	        di_channel.updateValue("LEVEL",0,true);
+	    	}
+	    }
+
+	  });
+
+	}
+	  else {
+		  
+
 	  this.api.lightStatus(this.lightId, function(err, result) {
 	    var state = result["state"]["on"];
 	    var bri = result["state"]["bri"];
@@ -162,6 +216,7 @@
 	    }
 
 	  });
+	}
 
 	 this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();

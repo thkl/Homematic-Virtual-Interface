@@ -102,11 +102,26 @@ hue_api.lights(function(err, lights) {
   if ((lights != undefined) && (lights["lights"]!=undefined)) {
   	lights["lights"].forEach(function (light) {
     		debug("Adding new Light " + light["name"]);
-    		mappedDevices.push(new HueDevice(hm_layer,hue_api,light));
+    		mappedDevices.push(new HueDevice(hm_layer,hue_api,light,"HUE0000"));
   });
   }  
   
  
+});
+
+// Fetch the Groups
+
+hue_api.groups(function(err, groups) {
+	
+  if (groups != undefined) {
+	var id = 1;
+  	groups.forEach(function (group) {
+    		debug("Adding new Group " + group["name"]);
+    		group["id"] = id;
+    		mappedDevices.push(new HueDevice(hm_layer,hue_api,group,"HUEGROUP00"));
+    		id = id +1;
+  });
+  }  
 });
 
 configServer.on("config_server_http_event",function(command){
