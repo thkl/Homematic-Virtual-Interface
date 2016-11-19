@@ -30,20 +30,24 @@
 			var channel = that.hmDevice.getChannel(parameter.channel);
 
 			if (parameter.name == "INSTALL_TEST") {
-
-			if (channel != undefined) {
-	      	  channel.startUpdating("INSTALL_TEST");
+				that.alert();
+				channel.endUpdating("INSTALL_TEST");
 	      	}
 
-	      that.api.setLightState(that.lightId,{"alert":"lselect"}, function(err, result) {
-		     if (channel != undefined) {
-	        channel.updateValue("INSTALL_TEST",false);
-	        channel.endUpdating("INSTALL_TEST");
-	      }
-	      });
 
-	      }
-
+			if (parameter.name == "PROGRAM") {
+				switch(newValue) {
+					case 0:
+						that.effect("none");
+					break;
+					case 1:
+					case 2:
+					case 3:
+						that.effect("colorloop");
+					break;
+    			}
+				channel.endUpdating("PROGRAM");
+	      	}
 
 	      if (parameter.name == "LEVEL") {
 	       that.setLevel(newValue);
@@ -70,8 +74,6 @@
 	       
 	     }
 
-
-
 	    if ((parameter.name == "RAMP_TIME") && (channel.index == "1")) {
 		  that.transitiontime = newValue*10;
 		}
@@ -81,7 +83,7 @@
 		}
 
 
-	     if (parameter.name == "COLOR") {
+	    if (parameter.name == "COLOR") {
 		  that.setColor(newValue);
 	     }
 
@@ -93,6 +95,25 @@
 		 }, 1000);
 
 	}
+	
+	
+	HueDevice.prototype.alert = function() {
+		if (this.isGroup == true) {
+		     this.api.setGroupLightState(this.lightId,{"alert":"lselect"}, function(err, result) {});
+		} else {
+			this.api.setLightState(this.lightId,{"alert":"lselect"}, function(err, result) {});
+		}
+	}
+
+
+	HueDevice.prototype.effect = function(effectname) {
+		if (this.isGroup == true) {
+		     this.api.setGroupLightState(this.lightId,{"effect":effectname}, function(err, result) {});
+		} else {
+			this.api.setLightState(this.lightId,{"effect":effectname}, function(err, result) {});
+		}
+	}
+
 
 	HueDevice.prototype.setColor = function(newColor) {
 		var that = this;
@@ -174,9 +195,10 @@
 	  if (that.isGroup == true) {
 	  
 	  this.api.getGroup(this.lightId, function(err, result) {
-	    var state = result["action"]["on"];
-	    var bri = result["action"]["bri"];
-	    var hue = result["action"]["hue"];
+		  debug(JSON.stringify(result));
+	    var state = result["lastAction"]["on"];
+	    var bri = result["lastAction"]["bri"];
+	    var hue = result["lastAction"]["hue"];
 
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
