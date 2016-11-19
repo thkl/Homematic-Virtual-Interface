@@ -4,6 +4,7 @@ var debug = require('debug')('HomeMaticHueBridge.Device');
 var ParameterSet = require("./ParameterSet.js").ParameterSet;
 var Parameter = require("./Parameter.js").Parameter;
 var fs = require('fs');
+var path = require('path');
 var Channel = require("./Channel.js").Channel;
 const EventEmitter = require('events');
 const util = require('util');
@@ -16,8 +17,9 @@ var Device = function(deviceType,adress) {
     this.paramsets = [];
     this.version = 1;
     this.firmware = "1.0";
-    
-    var cfgFile = "devices/" + deviceType +".json";
+    var cfgFile = path.join(path.dirname(fs.realpathSync(__filename)), '/devices' , deviceType) + '.json';
+	debug("Config at "+cfgFile);
+   
 	fs.accessSync(cfgFile, fs.F_OK);
     var data = fs.readFileSync(cfgFile	).toString();
 	if (data != undefined) {
