@@ -1,14 +1,14 @@
 	"use strict";
 
 
-	var Channel = require("./Channel.js").Channel;
-	var Device = require("./Device.js").Device;
+	var Channel = require(__dirname + "/HomematicChannel.js").HomematicChannel;
+	var Device = require(__dirname +"/HomematicDevice.js").HomematicDevice;
 	var debug = require('debug')('HomeMaticHueBridge.HueDevice');
 
 
 	var HueDevice = function(hmbridge, hueApi ,light,serialprefix) {
 
-		debug("Setup new HUE Bridge Device");
+		debug("Setup new HUE Bridged Device");
 
 		var that = this;
 		this.api =  hueApi;
