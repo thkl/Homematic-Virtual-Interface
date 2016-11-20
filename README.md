@@ -4,6 +4,7 @@ Add your HUE Lamps as a RGBW Device to HM
 
 This is work in progress.
 
+
 Configuration:
 
 fill the config.json ....
@@ -28,4 +29,6 @@ add the service to /etc/config_templates/InterfacesList.xml  at your ccu
 and restart the ccu twice
 
 
-All your Hue Lamps will shown at your ccu's inbox
+* all your Hue lamps will shown as a RGBW device at your ccu's inbox
+* all your groups will also shown as a RGBW device
+* all your scenes will mapped to remote control devices
