@@ -2,6 +2,9 @@
 
 var HueApi = require("node-hue-api").HueApi;
 var HueDevice = require(__dirname + "/HueDevice.js").HueDevice;
+var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
+
+
 var debug = require('debug')('Hue Bridge');
 const chalk = require('chalk');
 const log = console.log;
@@ -20,7 +23,8 @@ var HueBridge = function() {
 HueBridge.prototype.init = function(configuration,hmlayer) {
 	var that = this;
 	this.configuration = configuration;
-	
+    this.hm_layer = hmlayer;
+
 	
 	if ((this.configuration.getValue("hue_bridge_ip")!=undefined) && (this.configuration.getValue("hue_bridge_ip")!="")) {
     this.hue_ipAdress = this.configuration.getValue("hue_bridge_ip");
@@ -50,7 +54,6 @@ HueBridge.prototype.init = function(configuration,hmlayer) {
 
      });
 }
-  this.hm_layer = hmlayer;
 }
 
 
@@ -105,12 +108,15 @@ HueBridge.prototype.queryBridgeAndMapDevices = function() {
 
 this.hue_api = new HueApi(this.hue_ipAdress,this.hue_userName);
 
+this.sceneManager = new HueSceneManager(this.hm_layer,this.hue_api);
+
 // --------------------------
 // Fetch Lights
 this.queryLights();
 // Fetch the Groups
 this.queryGroups();
-
+// Fetch all Scenes
+this.queryScenes();
 }
 
 
@@ -124,9 +130,8 @@ HueBridge.prototype.queryLights = function() {
     		var hd = new HueDevice(that.hm_layer,that.hue_api,light,"HUE0000");
     		that.mappedDevices.push(hd);
   		});
-  		}
-  	log(chalk.green("Lightinit completed with " + lights.length + " devices mapped."));
-  
+  		log(chalk.green("Lightinit completed with " + lights["lights"].length + " devices mapped."));
+  	}
 	});
 }
 
@@ -147,6 +152,25 @@ HueBridge.prototype.queryGroups = function() {
   	log(chalk.green("Groupinit completed with "+ groups.length +" devices mapped."));
 	});
 }
+
+HueBridge.prototype.queryScenes = function() {
+	var that = this;
+	var scnt = 0;
+	this.hue_api.getScenes(function(err, scenes) {
+	scenes.forEach(function (scene) {
+		
+		//if (scene["recycle"]==false) {
+			scnt = scnt + 1;
+			that.sceneManager.addScene(scene);
+		//}
+		
+	});
+  	that.sceneManager.publish();
+  	log(chalk.green("Sceneinit completed with "+ scnt +" scenes mapped."));
+  	log(chalk.gray(that.sceneManager.listMapping()));
+	});
+}
+
 
 
 module.exports = {

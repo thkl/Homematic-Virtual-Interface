@@ -385,7 +385,7 @@ HomematicLogicalLayer.prototype.sendRPCMessage = function(method,payload,callbac
 }
 
 HomematicLogicalLayer.prototype.addDevice = function(device) {
-   debug("Add new Device to HM Layer");
+   debug("Add new Device to HomematicLogicLayer " + device.adress);
    this.devices.push(device);
    var that = this;
    // Add Listener to Working Events to publish

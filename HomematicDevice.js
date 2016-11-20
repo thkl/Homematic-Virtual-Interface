@@ -29,14 +29,27 @@ var HomematicDevice = function(deviceType,adress) {
 	 	this.type = deviceType;
 	 	this.adress = adress;
 	 	json["channels"].forEach(function (channel) {
-			
-		   
-
-		   var hm_channel = new HomematicChannel(adress,deviceType,channel["adress"],
+			var cadress = channel["adress"];
+			// check this channel definition is valid for multiple adresses
+			if (Array.isArray(cadress)) {
+				// map each one to the same channeltype
+			  cadress.map(function(adr){
+				var hm_channel = new HomematicChannel(adress,deviceType,adr,
 		   								channel["type"],channel["flags"],
 		   								channel["direction"],channel["paramsets"],
 		   								channel["version"]);
-		   that.addChannel(hm_channel);
+		   		that.addChannel(hm_channel);
+				  
+				  
+			  });
+			} else {
+				// single one ... normal init
+				var hm_channel = new HomematicChannel(adress,deviceType,cadress,
+		   								channel["type"],channel["flags"],
+		   								channel["direction"],channel["paramsets"],
+		   								channel["version"]);
+		   		that.addChannel(hm_channel);
+			}
 		   
 		});
 		
