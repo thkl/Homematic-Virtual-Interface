@@ -11,7 +11,7 @@
 
 
 dir="/home/pi/"
-cmd="hmhue"
+cmd="hmvi"
 user="pi"
 
 name=`basename $0`

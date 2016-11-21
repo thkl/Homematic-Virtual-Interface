@@ -1,30 +1,33 @@
 	"use strict";
 
+	var HomematicDevice;
 
-	var Channel = require(__dirname + "/HomematicChannel.js").HomematicChannel;
-	var Device = require(__dirname +"/HomematicDevice.js").HomematicDevice;
-	var debug = require('debug')('HomeMaticHueBridge.HueDevice');
+	var HueDevice = function(plugin, hueApi ,light,serialprefix) {
 
-
-	var HueDevice = function(hmbridge, hueApi ,light,serialprefix) {
-
-		debug("Setup new HUE Bridged Device");
 
 		var that = this;
 		this.api =  hueApi;
-		this.bridge = hmbridge;
+		this.log = plugin.log;
+		this.bridge = plugin.server.getBridge();
+		
+		HomematicDevice = plugin.server.homematicDevice;
+		
 		this.lightId = light["id"];
 		this.isGroup = (light["uniqueid"] == undefined);
 		this.transitiontime = 4; // Default Hue
 		this.onTime = 0;
 		this.lastLevel = 0;
-		this.hmDevice = new Device("HM-LC-RGBW-WM", serialprefix  + this.lightId );
+
+		this.log.debug("Setup new HUE Bridged Device for server ");
+
+
+		this.hmDevice = new HomematicDevice("HM-LC-RGBW-WM", serialprefix  + this.lightId );
 		this.hmDevice.firmware = light["swversion"];
 		this.bridge.addDevice(this.hmDevice);
 
 		this.hmDevice.on('device_channel_value_change', function(parameter){
 			
-			debug("Value was changed " + JSON.stringify(parameter) );
+			that.log.debug("Value was changed " + JSON.stringify(parameter) );
 			var newValue = parameter.newValue;
 			
 			var channel = that.hmDevice.getChannel(parameter.channel);
@@ -126,7 +129,7 @@
 	        newState["hue"] = (newColor/199)*65535;
 	    }
 
-		debug("Hue Value set to " + JSON.stringify(newState) );
+		this.log.debug("Hue Value set to " + JSON.stringify(newState) );
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
 
 		if (co_channel != undefined) {

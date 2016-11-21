@@ -1,5 +1,6 @@
-# Homematic-Hue-Interface
-Add your HUE Lamps as a RGBW Device to HM
+# Homematic-Virtual-Interface
+this is a virtual Interface for Homematic CCU.
+You may add serval plugins to connect other devices to your CCU
 
 
 This is work in progress.
@@ -12,7 +13,9 @@ fill the config.json ....
 
 Start:
 
-npm start
+ ```
+bin/hmvi
+ ```
 
 
 
@@ -20,14 +23,15 @@ add the service to /etc/config_templates/InterfacesList.xml  at your ccu
 
  ```
  <ipc>
-    <name>HmHue</name>
+    <name>HM_VirtualInterface</name>
     <url>xmlrpc://IPADRESS:7000/</url>
-    <info>HmHue</info>
+    <info>HM_VirtualInterface</info>
  </ipc>
  ```
   
 and restart the ccu twice
 
+Add plugins to the plugins directory. There is a example Hue Plugin with the following functionality
 
 * all your Hue lamps will shown as a RGBW device at your ccu's inbox
 * all your groups will also shown as a RGBW device

@@ -1,21 +1,30 @@
-	"use strict";
+"use strict";
 
+//
+//  HueSceneManager.js
+//  Homematic Virtual Interface Plugin
+//
+//  Created by Thomas Kluge on 20.11.16.
+//  Copyright © 2016 kSquare.de. All rights reserved.
+//
 
-var Channel = require(__dirname + "/HomematicChannel.js").HomematicChannel;
-var Device = require(__dirname +"/HomematicDevice.js").HomematicDevice;
-var debug = require('debug')('HomeMaticHueBridge.HueSceneManager');
-
-var HueSceneManager = function(hmbridge, hueApi) {
+var HomematicDevice;
+	
+var HueSceneManager = function(plugin, hueApi) {
 
     this.mappedScenes = [];
     this.hmDevices = [];
     this.hueApi = hueApi;
-    
-    if (hmbridge == undefined) {
+    this.log = plugin.log;
+    this.server = plugin.server;
+    this.bridge = plugin.server.getBridge();
+
+    if (this.bridge == undefined) {
 	   throw("HM Layer was not set correctly");
     }
-    this.bridge = hmbridge;
     
+	HomematicDevice = plugin.server.homematicDevice;
+
 }
 
 HueSceneManager.prototype.addScene = function(scene) {
@@ -48,7 +57,7 @@ HueSceneManager.prototype.publish = function() {
 }
 
 HueSceneManager.prototype.addHMRemote = function(remoteName) {
-	var hmDevice = new Device("HM-RC-19", remoteName);
+	var hmDevice = new HomematicDevice("HM-RC-19", remoteName);
     this.hmDevices.push(hmDevice);
     this.bridge.addDevice(hmDevice);
     var that = this;
@@ -60,7 +69,7 @@ HueSceneManager.prototype.addHMRemote = function(remoteName) {
 		if (parameter.name == "PRESS_SHORT") {
 			that.mappedScenes.map(function (scene){
 				if (scene["hmchannel"] == channel.adress) {
-					debug("Scene found " + scene["name"] +  " will run that");
+					this.log.debug("Scene found " + scene["name"] +  " will run that");
 					that.hueApi.activateScene(scene["id"],function(err, result) {});
 				}
 			});
@@ -68,13 +77,8 @@ HueSceneManager.prototype.addHMRemote = function(remoteName) {
 	});
 }
 
-HueSceneManager.prototype.listMapping = function() {
-  var resultStr;
-  
-  this.mappedScenes.map(function (scene){
-     resultStr = resultStr + "Scene : " + scene["name"] + " is mapped to remote control button " + scene["hmchannel"] + "<br />\n";
-  });
-  return resultStr;
+HueSceneManager.prototype.getMappedScenes = function() {
+  return this.mappedScenes;
 }
 
 module.exports = {

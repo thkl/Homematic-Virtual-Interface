@@ -1,35 +1,41 @@
+//
+//  HueBridge.js
+//  Homematic Virtual Interface Plugin
+//
+//  Created by Thomas Kluge on 20.11.16.
+//  Copyright © 2016 kSquare.de. All rights reserved.
+//
+
+
 "use strict";
 
 var HueApi = require("node-hue-api").HueApi;
 var HueDevice = require(__dirname + "/HueDevice.js").HueDevice;
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 
-
-var debug = require('debug')('Hue Bridge');
-const chalk = require('chalk');
-const log = console.log;
-
-var HueBridge = function() {
-	
+var HueBridge = function(plugin,server,log) {
+	this.plugin = plugin;
 	this.mappedDevices = [];
 	this.hue_ipAdress;
 	this.hue_userName;
 	this.hue_api;
-	this.hm_layer;
-	this.configuration;
+	this.server = server;
+	this.log = log;
+	this.lights = [];
+	this.groups = [];
 }
 
 
-HueBridge.prototype.init = function(configuration,hmlayer) {
+HueBridge.prototype.init = function() {
 	var that = this;
-	this.configuration = configuration;
-    this.hm_layer = hmlayer;
-
+	this.configuration = this.server.configuration;
+    this.hm_layer = this.server.getBridge();
+	
 	
 	if ((this.configuration.getValue("hue_bridge_ip")!=undefined) && (this.configuration.getValue("hue_bridge_ip")!="")) {
     this.hue_ipAdress = this.configuration.getValue("hue_bridge_ip");
     
-	log(chalk.gray("Hue Bridge Init at " + this.hue_ipAdress));
+	this.log.info("Hue Bridge Init at " + this.hue_ipAdress);
 
 	if (this.checkUsername()==true) {
 	    this.queryBridgeAndMapDevices()
@@ -42,14 +48,13 @@ HueBridge.prototype.init = function(configuration,hmlayer) {
 		if (ip_address != undefined) {
         that.hue_ipAdress = ip_address;
         that.configuration.setValue("hue_bridge_ip",that.hue_ipAdress); 
-        log(chalk.gray("Saved the Philips Hue bridge ip address "+ that.hue_ipAdress +" to your config to skip discovery."));
+        that.log.info("Saved the Philips Hue bridge ip address "+ that.hue_ipAdress +" to your config to skip discovery.");
 
         if (that.checkUsername()==true) {
 	        that.queryBridgeAndMapDevices()
         }
 		} else {
-	        log(chalk.red("No bridges this did not make sense .. giving up"));
-	        process.exit();
+	        that.log.error("No bridges this did not make sense .. giving up");
 		}
 
      });
@@ -58,17 +63,17 @@ HueBridge.prototype.init = function(configuration,hmlayer) {
 
 
 HueBridge.prototype.locateBridge = function (callback) {
-
-	log(chalk.gray("trying to find your Hue bridge ..."));
+	var that = this;
+	this.log.info("trying to find your Hue bridge ...");
 	var hue = require("node-hue-api");
 	
 	hue.upnpSearch(6000).then(function (bridges) {
 		if ((bridges != undefined) && (bridges.length > 0)) {
-		  log(chalk.gray("Scan complete",bridges[0].ipaddress));
+		  that.log.info("Scan complete",bridges[0].ipaddress);
           hue_ipAdress = bridges[0].ipaddress;
           callback(null,undefined);
 		} else {
-          log(chalk.gray("Scan complete but no bridges found"));
+          that.log.warn("Scan complete but no bridges found");
           callback(null,null);
 		}
     }).done();
@@ -79,17 +84,17 @@ HueBridge.prototype.locateBridge = function (callback) {
 HueBridge.prototype.checkUsername = function() {
    var that = this;
    if ((this.configuration.getValue("hue_username")==undefined) || (this.configuration.getValue("hue_username")=="")) {
-       log(chalk.gray("trying to create a new user at your bridge"));
+       this.log.info("trying to create a new user at your bridge");
 	   var api = new HueApi(that.hue_ipAdress);
         api.createUser(that.hue_ipAdress,function(err, user) {
           // try and help explain this particular error
           
           if (err && err.message == "link button not pressed") {
-            log(chalk.red("Please press the link button on your Philips Hue bridge within 30 seconds."));
+            that.log.warn("Please press the link button on your Philips Hue bridge within 30 seconds.");
             setTimeout(function() {checkUsername();}, 30000);
           } else {
 	        that.configuration.setValue("hue_username",user); 
-            log(chalk.gray("saved your user to config.json"));
+            that.log.info("saved your user to config.json");
             that.hue_userName = user;
             return true;
           }
@@ -108,7 +113,7 @@ HueBridge.prototype.queryBridgeAndMapDevices = function() {
 
 this.hue_api = new HueApi(this.hue_ipAdress,this.hue_userName);
 
-this.sceneManager = new HueSceneManager(this.hm_layer,this.hue_api);
+this.sceneManager = new HueSceneManager(this,this.hue_api);
 
 // --------------------------
 // Fetch Lights
@@ -117,6 +122,7 @@ this.queryLights();
 this.queryGroups();
 // Fetch all Scenes
 this.queryScenes();
+this.log.info("initialization completed");
 }
 
 
@@ -126,11 +132,13 @@ HueBridge.prototype.queryLights = function() {
 	
 	if ((lights != undefined) && (lights["lights"]!=undefined)) {
   		lights["lights"].forEach(function (light) {
-    		debug("Adding new Light " + light["name"] + " to " + that.hm_layer.ccuIP);
-    		var hd = new HueDevice(that.hm_layer,that.hue_api,light,"HUE0000");
+    		that.log.debug("Create new Light " + light["name"]);
+    		var hd = new HueDevice(that,that.hue_api,light,"HUE0000");
+    		light["hm_device_name"] = "HUE0000" + light["id"];
+    		that.lights.push(light);
     		that.mappedDevices.push(hd);
   		});
-  		log(chalk.green("Lightinit completed with " + lights["lights"].length + " devices mapped."));
+  	that.log.debug("Lightinit completed with " + that.lights.length + " devices mapped.");
   	}
 	});
 }
@@ -143,13 +151,15 @@ HueBridge.prototype.queryGroups = function() {
 	if (groups != undefined) {
 		var id = 1;
 		groups.forEach(function (group) {
-    		debug("Adding new Group " + group["name"]+ " to " + that.hm_layer.ccuIP);
+    		that.log.debug("Adding new Group " + group["name"]+ " to " + that.hm_layer.ccuIP);
     		group["id"] = id;
-    		that.mappedDevices.push(new HueDevice(that.hm_layer,that.hue_api,group,"HUEGROUP00"));
+    		group["hm_device_name"] = "HUEGROUP00" + group["id"];
+			that.mappedDevices.push(new HueDevice(that,that.hue_api,group,"HUEGROUP00"));
     		id = id +1;
+    		that.groups.push(group);
   		});
   	}  
-  	log(chalk.green("Groupinit completed with "+ groups.length +" devices mapped."));
+  	that.log.debug("Groupinit completed with "+ that.groups.length +" devices mapped.");
 	});
 }
 
@@ -166,12 +176,35 @@ HueBridge.prototype.queryScenes = function() {
 		
 	});
   	that.sceneManager.publish();
-  	log(chalk.green("Sceneinit completed with "+ scnt +" scenes mapped."));
-  	log(chalk.gray(that.sceneManager.listMapping()));
+  	that.log.debug("Sceneinit completed with "+ scnt +" scenes mapped.");
 	});
 }
 
+HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+	var listLights = "";
+	var listGroups = "";
+	var listScenes = "";
+	
+	var lighttemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_tmp.html",null);
+	var that = this;
 
+	this.lights.map(function (light){
+		listLights = listLights +  dispatched_request.fillTemplate(lighttemplate,{"lamp_name":light["name"],"lamp_hmdevice":light["hm_device_name"]});
+	});
+
+
+	this.groups.map(function (group){
+		listGroups = listGroups +  dispatched_request.fillTemplate(lighttemplate,{"lamp_name":group["name"],"lamp_hmdevice":group["hm_device_name"]});
+	});
+	
+	if (this.sceneManager != undefined) {
+		this.sceneManager.getMappedScenes().map(function (scene){
+			listScenes = listScenes +  dispatched_request.fillTemplate(lighttemplate,{"lamp_name":scene["name"],"lamp_hmdevice":scene["hmchannel"]});
+		});
+	} 
+
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listLights":listLights,"listGroups":listGroups,"listScenes":listScenes});
+}
 
 module.exports = {
   HueBridge : HueBridge

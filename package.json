@@ -1,11 +1,12 @@
 {
   "name": "Homematic-Hue-Interface",
-  "version": "0.0.4",
-  "description": "Homematic Hue Bridge",
+  "version": "0.0.5",
+  "description": "Homematic Virtual Interface",
   "license": "ISC",
   
   "scripts": {
-    "start": "node index.js || true"
+    "start": "node lib/index.js || true",
+    "dev": "DEBUG=* node lib/index.js -D || true"
   },
   
   "repository": {
@@ -18,12 +19,13 @@
   },
   
   "bin": {
-    "hmhue": "bin/hmhue"
+    "hmhue": "bin/hmvi"
   },
   
   "dependencies": {
     "debug": "^2.2.0",
     "request": "^2.65.0",
+    "commander": "2.8.1",
     "sax": "0.4.x",
     "node-hue-api":">2.0.0",
      "chalk": "^1.1.1",
