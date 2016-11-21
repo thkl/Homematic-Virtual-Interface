@@ -10,8 +10,8 @@
 ### END INIT INFO
 
 
-dir="/home/pi/"
-cmd="hmvi"
+dir="/home/pi/Homematic-Virtual-Interface"
+cmd="bin/hmvi"
 user="pi"
 
 name=`basename $0`
