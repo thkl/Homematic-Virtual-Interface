@@ -43,16 +43,14 @@ HueBridge.prototype.init = function() {
 
 } else {
 	
-	this.locateBridge( function (err, ip_address) {
+	this.locateBridge( function (err) {
         if (err) throw err;
-		if (ip_address != undefined) {
-        that.hue_ipAdress = ip_address;
-        that.configuration.setValue("hue_bridge_ip",that.hue_ipAdress); 
-        that.log.info("Saved the Philips Hue bridge ip address "+ that.hue_ipAdress +" to your config to skip discovery.");
-
-        if (that.checkUsername()==true) {
-	        that.queryBridgeAndMapDevices()
-        }
+		if (that.hue_ipAdress != undefined) {
+	        that.configuration.setValue("hue_bridge_ip",that.hue_ipAdress); 
+			that.log.info("Saved the Philips Hue bridge ip address "+ that.hue_ipAdress +" to your config to skip discovery.");
+			if (that.checkUsername()==true) {
+	        	that.queryBridgeAndMapDevices()
+			}
 		} else {
 	        that.log.error("No bridges this did not make sense .. giving up");
 		}
@@ -70,7 +68,7 @@ HueBridge.prototype.locateBridge = function (callback) {
 	hue.upnpSearch(6000).then(function (bridges) {
 		if ((bridges != undefined) && (bridges.length > 0)) {
 		  that.log.info("Scan complete",bridges[0].ipaddress);
-          hue_ipAdress = bridges[0].ipaddress;
+          that.hue_ipAdress = bridges[0].ipaddress;
           callback(null,undefined);
 		} else {
           that.log.warn("Scan complete but no bridges found");
@@ -91,7 +89,7 @@ HueBridge.prototype.checkUsername = function() {
           
           if (err && err.message == "link button not pressed") {
             that.log.warn("Please press the link button on your Philips Hue bridge within 30 seconds.");
-            setTimeout(function() {checkUsername();}, 30000);
+            setTimeout(function() {that.checkUsername();}, 10000);
           } else {
 	        that.configuration.setValue("hue_username",user); 
             that.log.info("saved your user to config.json");
