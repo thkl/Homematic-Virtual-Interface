@@ -1,6 +1,6 @@
 {
-  "name": "Homematic-Hue-Interface",
-  "version": "0.0.5",
+  "name": "Homematic-Virtual-Interface",
+  "version": "0.0.6",
   "description": "Homematic Virtual Interface",
   "license": "ISC",
   
@@ -11,7 +11,7 @@
   
   "repository": {
     "type": "git",
-    "url": "git://github.com/thkl/Homematic-Hue-Interface.git"
+    "url": "git://github.com/thkl/Homematic-Virtual-Interface.git"
   },
   
   "engines": {
@@ -27,8 +27,7 @@
     "request": "^2.65.0",
     "commander": "2.8.1",
     "sax": "0.4.x",
-    "node-hue-api":">2.0.0",
-     "chalk": "^1.1.1",
+    "chalk": "^1.1.1",
     "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5"
    }
 }
