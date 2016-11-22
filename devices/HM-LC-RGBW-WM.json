@@ -74,7 +74,9 @@
           	{"name": "AES_KEY","vdefault": 0,"flags": 0,"max": 127,"min": 0,"operations": 1,"tab_order": 0,"type": "INTEGER"},
           	{"name": "WHITE_ADJUSTMENT_VALUE_BLUE","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 2,"type": "INTEGER","UNIT":"%"},
           	{"name": "WHITE_ADJUSTMENT_VALUE_GREEN","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 1,"type": "INTEGER","UNIT":"%"},
-          	{"name": "WHITE_ADJUSTMENT_VALUE_RED","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 3,"type": "INTEGER","UNIT":"%"}
+          	{"name": "WHITE_ADJUSTMENT_VALUE_RED","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 3,"type": "INTEGER","UNIT":"%"},
+          	{"name": "DEFAULT_SATURATION","vdefault": 128,"flags": 1,"max": 255,"min": 0,"operations": 3,"tab_order": 4,"type": "INTEGER"},
+          	{"name": "WHITE_HUE_VALUE","vdefault": 39609,"flags": 1,"max": 65585,"min": 0,"operations": 3,"tab_order": 5,"type": "INTEGER"}
           ]
         },
         

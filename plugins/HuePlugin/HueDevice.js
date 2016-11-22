@@ -1,4 +1,5 @@
 	"use strict";
+var hueconf = require("node-hue-api");
 
 	var HomematicDevice;
 
@@ -123,10 +124,9 @@
 		var newState = {};
 	    if (newColor == 200) {
 	      // SpeZiale
-		  	newState["rgb"] = {r:255,g:255,b:255};
-
+   	        newState = {"hue":39609,"sat":0};
 	    } else {
-	        newState["hue"] = (newColor/199)*65535;
+	        newState = {"hue":(newColor/199)*65535,"sat":255};
 	    }
 
 		this.log.debug("Hue Value set to " + JSON.stringify(newState) );
@@ -226,7 +226,8 @@
 	    var state = result["state"]["on"];
 	    var bri = result["state"]["bri"];
 	    var hue = result["state"]["hue"];
-
+		var sat = result["state"]["sat"];
+		
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
 
@@ -234,7 +235,12 @@
 
 	    if (state==true) {
 	        di_channel.updateValue("LEVEL",(bri/254),true);
-	        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
+	        if (sat==0) {
+		        co_channel.updateValue("COLOR",200,true);
+	        } else {
+		        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
+	        }
+	        
 	    	} else {
 	        di_channel.updateValue("LEVEL",0,true);
 	    	}
