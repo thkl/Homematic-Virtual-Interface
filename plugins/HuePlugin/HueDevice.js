@@ -171,7 +171,7 @@
 	        newState["on"] = false;
 	        newState["bri"] = 0;
 	    }
-		debug(JSON.stringify(newState));
+		this.log.debug(JSON.stringify(newState));
 		
 		
 		if (that.isGroup == true) {
@@ -198,7 +198,7 @@
 	  if (that.isGroup == true) {
 	  
 	  this.api.getGroup(this.lightId, function(err, result) {
-		  debug(JSON.stringify(result));
+		  this.log.debug(JSON.stringify(result));
 	    var state = result["lastAction"]["on"];
 	    var bri = result["lastAction"]["bri"];
 	    var hue = result["lastAction"]["hue"];
