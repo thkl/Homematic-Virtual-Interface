@@ -69,7 +69,7 @@ HueSceneManager.prototype.addHMRemote = function(remoteName) {
 		if (parameter.name == "PRESS_SHORT") {
 			that.mappedScenes.map(function (scene){
 				if (scene["hmchannel"] == channel.adress) {
-					this.log.debug("Scene found " + scene["name"] +  " will run that");
+					that.log.debug("Scene found " + scene["name"] +  " will run that");
 					that.hueApi.activateScene(scene["id"],function(err, result) {});
 				}
 			});
