@@ -186,12 +186,12 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var lighttemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_tmp.html",null);
 	var that = this;
 
-	this.lights.map(function (light){
+	this.lights.forEach(function (light){
 		listLights = listLights +  dispatched_request.fillTemplate(lighttemplate,{"lamp_name":light["name"],"lamp_hmdevice":light["hm_device_name"]});
 	});
 
 
-	this.groups.map(function (group){
+	this.groups.forEach(function (group){
 		listGroups = listGroups +  dispatched_request.fillTemplate(lighttemplate,{"lamp_name":group["name"],"lamp_hmdevice":group["hm_device_name"]});
 	});
 	

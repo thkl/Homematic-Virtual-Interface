@@ -44,7 +44,7 @@ HueSceneManager.prototype.publish = function() {
   
   this.addHMRemote("HUESCENE00"  + cnt);
   
-  this.mappedScenes.map(function(scene){
+  this.mappedScenes.forEach(function(scene){
     scene["hmchannel"] = "HUESCENE00"  + cnt + ":"+i;
     
     i=i+1;
@@ -67,7 +67,7 @@ HueSceneManager.prototype.addHMRemote = function(remoteName) {
 		var newValue = parameter.newValue;
 		var channel = hmDevice.getChannel(parameter.channel);
 		if (parameter.name == "PRESS_SHORT") {
-			that.mappedScenes.map(function (scene){
+			that.mappedScenes.forEach(function (scene){
 				if (scene["hmchannel"] == channel.adress) {
 					that.log.debug("Scene found " + scene["name"] +  " will run that");
 					that.hueApi.activateScene(scene["id"],function(err, result) {});
