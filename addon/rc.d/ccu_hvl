@@ -4,13 +4,16 @@ case "$1" in
 
   
   ""|start)
-  
-  if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]
+  #make it only when user configurated the ip
+  if [ -f /usr/local/etc/config/addons/www/hvl/ip ] 
+  then 
+	  if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]
         then
 		echo "Updating InterfaceList.xml"
 		my_url=$(cat /usr/local/etc/config/addons/www/hvl/ip)
 		sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/${my_url}<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
-  fi
+	  fi
+   fi
    ;;
  
  
