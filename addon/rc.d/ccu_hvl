@@ -1,0 +1,47 @@
+#!/bin/sh
+
+case "$1" in
+
+  
+  ""|start)
+  
+  if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]
+        then
+		echo "Updating InterfaceList.xml"
+		my_url=$(cat /usr/local/etc/config/addons/www/hvl/ip)
+		sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/${my_url}<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
+  fi
+   ;;
+ 
+ 
+   stop)
+   ;;
+   
+   
+   restart)
+   ;;
+   
+   info)
+        echo "Info: <center><b>Homematic Virtual Layer</b></center>"
+        echo "Info: <center><br>Aufruf:<br><a href="/addons/hvl" target="_blank">http://IPAdressederCCU/addons/hvl</a></center>"
+        echo "Name: Homematic Virtual Layer"
+        echo "Version: 0.5"
+        echo "Operations: uninstall"
+    ;;
+   
+   
+   uninstall)
+	logger -t homematic -p user.info "removing homematic virtual layer"
+	rm -r /usr/local/etc/config/addons/www/hvl
+	rm -r /usr/local/etc/config/rc.d/ccu_hvl
+	rm -f /etc/config/InterfacesList.xml
+	rm -f /etc/init.d/S59hvl
+	;;
+
+  *)
+	echo "Usage: $0 {start|stop|restart|info|uninstall}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

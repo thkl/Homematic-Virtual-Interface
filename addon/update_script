@@ -1,0 +1,27 @@
+#!/bin/sh
+
+ADDON_DIR=/usr/local/etc/config/addons/www/hvl
+RCD_DIR=/usr/local/etc/config/rc.d
+CONFIG_DIR=/usr/local/etc/config
+
+if [ "$1" = "" ]
+then
+	exit 1
+fi
+
+mkdir -p $ADDON_DIR
+chmod 755 $ADDON_DIR
+mkdir -p $RCD_DIR
+chmod 755 $RCD_DIR
+
+# copy addon
+cp -af hvl/* $ADDON_DIR
+
+# copy startup script
+cp -af rc.d/* $RCD_DIR
+
+# make it run
+chmod +x $RCD_DIR/ccu_hvl
+# make it run early
+ln -s $RCD_DIR/ccu_hvl /etc/init.d/S59hvl
+
