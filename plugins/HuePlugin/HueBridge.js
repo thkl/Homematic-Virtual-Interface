@@ -13,7 +13,8 @@ var HueApi = require("node-hue-api").HueApi;
 var HueDevice = require(__dirname + "/HueDevice.js").HueDevice;
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 
-var HueBridge = function(plugin,server,log) {
+
+var HueBridge = function(plugin,name,server,log) {
 	this.plugin = plugin;
 	this.mappedDevices = [];
 	this.hue_ipAdress;
@@ -23,6 +24,7 @@ var HueBridge = function(plugin,server,log) {
 	this.log = log;
 	this.lights = [];
 	this.groups = [];
+	this.name = name;
 }
 
 
@@ -31,11 +33,12 @@ HueBridge.prototype.init = function() {
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
 	
+	this.log.info("Init %s",this.name);
+	var ip = this.configuration.getValueForPlugin(this.name,"hue_bridge_ip");
 	
-	if ((this.configuration.getValue("hue_bridge_ip")!=undefined) && (this.configuration.getValue("hue_bridge_ip")!="")) {
-    this.hue_ipAdress = this.configuration.getValue("hue_bridge_ip");
-    
-	this.log.info("Hue Bridge Init at " + this.hue_ipAdress);
+	if ((ip!=undefined) && (ip!="")) {
+	    this.hue_ipAdress = ip;
+		this.log.info("Hue Bridge Init at " + this.hue_ipAdress);
 
 	if (this.checkUsername()==true) {
 	    this.queryBridgeAndMapDevices()
@@ -46,7 +49,7 @@ HueBridge.prototype.init = function() {
 	this.locateBridge( function (err) {
         if (err) throw err;
 		if (that.hue_ipAdress != undefined) {
-	        that.configuration.setValue("hue_bridge_ip",that.hue_ipAdress); 
+	        that.configuration.setValueForPlugin(that.name,"hue_bridge_ip",that.hue_ipAdress); 
 			that.log.info("Saved the Philips Hue bridge ip address "+ that.hue_ipAdress +" to your config to skip discovery.");
 			if (that.checkUsername()==true) {
 	        	that.queryBridgeAndMapDevices()
@@ -81,7 +84,8 @@ HueBridge.prototype.locateBridge = function (callback) {
 
 HueBridge.prototype.checkUsername = function() {
    var that = this;
-   if ((this.configuration.getValue("hue_username")==undefined) || (this.configuration.getValue("hue_username")=="")) {
+   var user = this.configuration.getValueForPlugin(this.name,"hue_username")
+   if ((user==undefined) || (user=="")) {
        this.log.info("trying to create a new user at your bridge");
 	   var api = new HueApi(that.hue_ipAdress);
         api.createUser(that.hue_ipAdress,function(err, user) {
@@ -91,14 +95,14 @@ HueBridge.prototype.checkUsername = function() {
             that.log.warn("Please press the link button on your Philips Hue bridge within 30 seconds.");
             setTimeout(function() {that.checkUsername();}, 10000);
           } else {
-	        that.configuration.setValue("hue_username",user); 
+	        that.configuration.setValueForPlugin(that.name,"hue_username",user); 
             that.log.info("saved your user to config.json");
             that.hue_userName = user;
             return true;
           }
         });
    } else {
-     that.hue_userName = that.configuration.getValue("hue_username");
+     that.hue_userName = user;
 	 return true;   
    }
 }

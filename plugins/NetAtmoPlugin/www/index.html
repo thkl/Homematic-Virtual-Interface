@@ -13,7 +13,7 @@
 
     <title>
       
-        Homematic Virtual Layer Hue Plugin
+        Homematic Virtual Layer NetAtmo Plugin
       
     </title>
 
@@ -57,7 +57,7 @@
                 <a href="/">Home</a>
               </li>
               <li class="active">
-                <a href="index.html">Hue Plugin</a>
+                <a href="index.html">NetAtmo Plugin</a>
               </li>
               
             </ul>
@@ -69,44 +69,33 @@
         <div class="apa">
   <div class="apb">
     <h6 class="apd">Homematic Virtual Layer</h6>
-    <h2 class="apc">Hue Plugin</h2>
+    <h2 class="apc">NetAtmo Plugin</h2>
   </div>
 </div>
 
 <hr class="aky">
 
-<div class="fu">
-  <div class="gr ali">
-    <div class="by">
-      <h4 class="ty">
-        Lampen
-      </h4>
-	  $listLights$      
-    </div>
-  </div>
-  <div class="gr ali">
-    <div class="by">
-      <h4 class="ty">
-        Gruppen
-      </h4>
-      
-        $listGroups$
-    </div>       
-  </div>
-</div>
 
 <div class="by">
   <h4 class="ty">
-    Szenen
+    Ger&auml;te
   </h4>
     
-    $listScenes$
+    $listDevices$
     
 </div>
-
+<form action="index.html" method="post">
+	<input type="hidden" name="action" value="save.settings" >
+<div class="by">
+	  <h4 class="ty">Einstellungen</h4>
+	  <div class="ty">erh&ouml;htes CO2 Level<input class="dy dh" name="settings.co2_added" value="$settings.co2_added$" /></div>
+	  <div class="ty">stark  erh&ouml;tes CO2 Level <input class="dy dh"  name="settings.co2_strong" value="$settings.co2_strong$" /></div>
+	  <div class="ty"><input style="color: black" type="submit" value="Speichern" /></div>
+    </div>       
+</form>
       </div>
     </div>
-  </div>
+
 
 </div>
 

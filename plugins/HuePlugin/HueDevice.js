@@ -92,6 +92,13 @@ var hueconf = require("node-hue-api");
 	     }
 
 
+	    if (parameter.name == "SATURATION") {
+		  that.setSaturation(newValue);
+	     }
+
+
+
+
 	    });
 
 	     this.updateTimer = setTimeout(function() {
@@ -150,6 +157,38 @@ var hueconf = require("node-hue-api");
 	    that.api.setLightState(that.lightId,newState, function(err, result) {
 	      if (co_channel != undefined) {
 	        co_channel.endUpdating("COLOR");
+	      }
+	    });
+		}
+
+	}
+
+
+	HueDevice.prototype.setSaturation = function(newSaturation) {
+		var that = this;
+		var newState = {"sat":newSaturation};
+
+		this.log.debug("Sat Value set to " + JSON.stringify(newState) );
+	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
+
+		if (co_channel != undefined) {
+	        co_channel.startUpdating("SATURATION");
+		}
+
+
+
+		if (that.isGroup == true) {
+
+	    that.api.setGroupLightState(that.lightId,newState, function(err, result) {
+	      if (co_channel != undefined) {
+	        co_channel.endUpdating("SATURATION");
+	      }
+	    });
+			
+		} else {
+	    that.api.setLightState(that.lightId,newState, function(err, result) {
+	      if (co_channel != undefined) {
+	        co_channel.endUpdating("SATURATION");
 	      }
 	    });
 		}

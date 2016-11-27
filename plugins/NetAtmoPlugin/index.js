@@ -1,9 +1,9 @@
-var HueBridge = require(__dirname + '/HueBridge.js').HueBridge;
+var NetAtmoBridge = require(__dirname + '/NetAtmoBridge.js').NetAtmoBridge;
 
 
 module.exports = function(server,name,logger) {
 	
-	this.bridge = new HueBridge(this,name,server,logger);
+	this.bridge = new NetAtmoBridge(this,name,server,logger);
 	this.bridge.init();
 	this.name = name;
 	
