@@ -1,6 +1,7 @@
 #!/bin/sh
-
-ADDON_DIR=/usr/local/etc/config/addons/www/hvl
+ADDONENAME=hvl
+ADDONDIR=/usr/local/etc/config/addons/$ADDONENAME
+WWWDIR=/usr/local/etc/config/addons/www/$ADDONENAME
 RCD_DIR=/usr/local/etc/config/rc.d
 CONFIG_DIR=/usr/local/etc/config
 
@@ -9,19 +10,22 @@ then
 	exit 1
 fi
 
-mkdir -p $ADDON_DIR
-chmod 755 $ADDON_DIR
-mkdir -p $RCD_DIR
-chmod 755 $RCD_DIR
+	mount -t ubifs ubi0:root /mnt
+	mount -t ubifs ubi1:user /usr/local
+	
+	#www
+	mkdir -p $WWWDIR
+	# copy addon
+	cp -af hvl/* $WWWDIR
+	chmod 775 $WWWDIR
 
-# copy addon
-cp -af hvl/* $ADDON_DIR
+	# copy startup script
+	cp -af rc.d/* $RCD_DIR
 
-# copy startup script
-cp -af rc.d/* $RCD_DIR
-
-# make it run
-chmod +x $RCD_DIR/ccu_hvl
-# make it run early
-ln -s $RCD_DIR/ccu_hvl /etc/init.d/S59hvl
+	# make it run
+	chmod +x $RCD_DIR/ccu_hvl
+	
+	# make it run early
+	
+	ln -s $RCD_DIR/ccu_hvl /etc/init.d/S59hvl
 

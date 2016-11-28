@@ -10,6 +10,7 @@
 "use strict";
 
 var HueApi = require("node-hue-api").HueApi;
+var url = require("url");
 var HueDevice = require(__dirname + "/HueDevice.js").HueDevice;
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 
@@ -177,17 +178,77 @@ HueBridge.prototype.queryScenes = function() {
 		//}
 		
 	});
-  	that.sceneManager.publish();
-  	that.log.debug("Sceneinit completed with "+ scnt +" scenes mapped.");
+	
+	var publishedscenes = this.getConfiguredScenes();
+	if (publishedscenes == undefined) {
+	  	that.sceneManager.publish(publishedscenes);
+  	}
+  	
+  	that.log.debug("Sceneinit completed with "+ publishedscenes.length +" scenes mapped.");
 	});
 }
+
+HueBridge.prototype.getConfiguredScenes = function() {
+	var ps = this.configuration.getPersistValueForPluginWithDefault(this.name,"PublishedScenes",undefined);
+	if (ps != undefined) {
+	  return JSON.parse(ps);
+	}
+	return undefined;	
+} 
+
+HueBridge.prototype.saveConfiguredScenes = function(publishedscenes) {
+	var s = JSON.stringify(publishedscenes);
+	this.configuration.setPersistValueForPlugin(this.name,"PublishedScenes",s);
+} 
+
 
 HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var listLights = "";
 	var listGroups = "";
 	var listScenes = "";
+	var requesturl = dispatched_request.request.url;
+	var queryObject = url.parse(requesturl,true).query;
+	
+
+	var publishedscenes = this.getConfiguredScenes();
+	if (publishedscenes == undefined) {
+		publishedscenes = [];
+	}
+	if (queryObject["do"]!=undefined) {
+		
+		switch (queryObject["do"]) {
+			
+			case "scenetoggle":
+			{
+				var sceneid = queryObject["id"];
+				if (sceneid!=undefined) {
+					var idx = publishedscenes.indexOf(sceneid);
+					if (idx>-1) {
+					  publishedscenes.splice(idx, 1);
+					} else {
+   				      publishedscenes.push(sceneid);
+					}
+					
+				}
+			 this.saveConfiguredScenes(publishedscenes);
+			}
+			break;
+			
+			case "publish":
+			{
+				if (this.sceneManager != undefined) {
+					this.log.debug("Publish all configured scenes %s",publishedscenes);
+					this.sceneManager.publish(publishedscenes);
+				}
+			}
+			break;
+		}
+		
+	}
+	
 	
 	var lighttemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_tmp.html",null);
+	var szenetemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_scene_tmp.html",null);
 	var that = this;
 
 	this.lights.forEach(function (light){
@@ -199,9 +260,18 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 		listGroups = listGroups +  dispatched_request.fillTemplate(lighttemplate,{"lamp_name":group["name"],"lamp_hmdevice":group["hm_device_name"]});
 	});
 	
+	
+	
+	
 	if (this.sceneManager != undefined) {
 		this.sceneManager.getMappedScenes().map(function (scene){
-			listScenes = listScenes +  dispatched_request.fillTemplate(lighttemplate,{"lamp_name":scene["name"],"lamp_hmdevice":scene["hmchannel"]});
+			var idx = publishedscenes.indexOf(scene["id"]);
+			var strindicator = (idx>-1) ? "[X]":"[ ]"
+			var hmChannel = (scene["hmchannel"] == undefined) ? "not mapped" : scene["hmchannel"];
+			listScenes = listScenes + dispatched_request.fillTemplate(szenetemplate,{"sceneid":scene["id"],
+				"published":strindicator,
+				"lamp_name":scene["name"],
+				"lamp_hmdevice":hmChannel});
 		});
 	} 
 

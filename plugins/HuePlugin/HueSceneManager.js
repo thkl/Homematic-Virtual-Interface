@@ -28,32 +28,61 @@ var HueSceneManager = function(plugin, hueApi) {
 }
 
 HueSceneManager.prototype.addScene = function(scene) {
-	
 	this.mappedScenes.push(scene);
 }
 
-HueSceneManager.prototype.publish = function() {
+
+HueSceneManager.prototype.getScene = function(sceneId) {
+	var result = undefined;
+	
+	this.mappedScenes.forEach(function(scene){
+		if (scene["id"]==sceneId) {
+			result = scene;
+		}
+	});
+	return result;
+}
+
+
+
+HueSceneManager.prototype.publish = function(publishedscenes) {
   /* what do we do here
   First find out how many RemoteControls we need by dividing / 19
   and then initialize alle the remotes
   */
+  // First remove all HUESCENE* Devices
   
   var i = 1;
   var cnt = 0;
   var that = this;
+
   
-  this.addHMRemote("HUESCENE00"  + cnt);
-  
-  this.mappedScenes.forEach(function(scene){
-    scene["hmchannel"] = "HUESCENE00"  + cnt + ":"+i;
-    
-    i=i+1;
-    if (i>19) {
-	   i=1;
-	   cnt = cnt + 1; 
-	   that.addHMRemote("HUESCENE00"  + cnt);
-    }	  
+  var devices = this.bridge.devicesWithNameLike("HUESCENE00");
+  this.log.debug(devices);
+  devices.forEach(function (device){
+	  that.bridge.deleteDevice(device,true);
   });
+  
+  
+  
+	  var scenes = publishedscenes;
+	  if (scenes.length>0) {
+    
+      that.log.debug("Publish ",scenes);
+	  that.addHMRemote("HUESCENE00"  + cnt);
+	  scenes.forEach(function (sceneid){
+		var scene = that.getScene(sceneid);
+		if (scene != undefined) {
+			scene["hmchannel"] = "HUESCENE00"  + cnt + ":"+i;
+			i=i+1;
+			if (i>19) {
+			   i=1;
+			   cnt = cnt + 1; 
+			   that.addHMRemote("HUESCENE00"  + cnt);
+			}
+ 	  	}
+ 	  });
+	  }
 }
 
 HueSceneManager.prototype.addHMRemote = function(remoteName) {
