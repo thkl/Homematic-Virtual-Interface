@@ -45,7 +45,7 @@ HueSceneManager.prototype.getScene = function(sceneId) {
 
 
 
-HueSceneManager.prototype.publish = function(publishedscenes) {
+HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
   /* what do we do here
   First find out how many RemoteControls we need by dividing / 19
   and then initialize alle the remotes
@@ -60,15 +60,13 @@ HueSceneManager.prototype.publish = function(publishedscenes) {
   var devices = this.bridge.devicesWithNameLike("HUESCENE00");
   this.log.debug(devices);
   devices.forEach(function (device){
-	  that.bridge.deleteDevice(device,true);
+	  that.bridge.deleteDevice(device,ccuNotification);
   });
   
   
   
 	  var scenes = publishedscenes;
 	  if (scenes.length>0) {
-    
-      that.log.debug("Publish ",scenes);
 	  that.addHMRemote("HUESCENE00"  + cnt);
 	  scenes.forEach(function (sceneid){
 		var scene = that.getScene(sceneid);

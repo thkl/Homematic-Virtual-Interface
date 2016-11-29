@@ -19,7 +19,7 @@ var hueconf = require("node-hue-api");
 		this.onTime = 0;
 		this.lastLevel = 0;
 
-		this.log.debug("Setup new HUE Bridged Device for server ");
+		this.log.debug("Setup new HUE Bridged Device %s",serialprefix);
 
 
 		this.hmDevice = new HomematicDevice("HM-LC-RGBW-WM", serialprefix  + this.lightId );
