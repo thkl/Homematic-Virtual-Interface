@@ -12,6 +12,7 @@
 var HueApi = require("node-hue-api").HueApi;
 var url = require("url");
 var HueDevice = require(__dirname + "/HueDevice.js").HueDevice;
+var HueDeviceOsramPlug = require(__dirname + "/HueDeviceOsramPlug.js").HueDeviceOsramPlug;
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
 
@@ -136,9 +137,17 @@ HueBridge.prototype.queryLights = function() {
 	
 	if ((lights != undefined) && (lights["lights"]!=undefined)) {
   		lights["lights"].forEach(function (light) {
-    		that.log.debug("Create new Light " + light["name"]);
-    		var hd = new HueDevice(that,that.hue_api,light,"HUE0000");
-    		light["hm_device_name"] = "HUE0000" + light["id"];
+    		
+    		if (light["type"]=="On/Off plug-in unit") {
+    			that.log.debug("Create new Osram Plug " + light["name"]);
+				var hd = new HueDeviceOsramPlug(that,that.hue_api,light,"OSRPLG0");
+				light["hm_device_name"] = "OSRPLG0" + light["id"];
+    		} else {
+	    		that.log.debug("Create new Light " + light["name"]);
+				var hd = new HueDevice(that,that.hue_api,light,"HUE0000");
+				light["hm_device_name"] = "HUE0000" + light["id"];
+    		}
+    		
     		that.lights.push(light);
     		that.mappedDevices.push(hd);
   		});
