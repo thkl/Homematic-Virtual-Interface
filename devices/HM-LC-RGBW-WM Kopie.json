@@ -1,0 +1,127 @@
+{
+  "channels": [
+    {
+      "adress": "0",
+      "type": "MAINTENANCE",
+      "flags":  3,
+      "direction" : 0,
+      "paramsets": [
+        {
+          "name" : "MASTER",
+          "id" : "maint_ch_master",
+          "parameter" : []
+        },
+        
+        {
+          "name" : "VALUES",
+          "id" : "maint_ch_values",
+          "parameter" : [
+          {"name": "AES_KEY","vdefault": 0,"flags": 0,"max": 127,"min": 0,"operations": 1,"tab_order": 9,"type": "INTEGER"},
+          {"name": "CONFIG_PENDING","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 2,"type": "BOOL"},
+          {"name": "DEVICE_IN_BOOTLOADER","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 7,"type": "BOOL"},
+          {"name": "DUTYCYCLE","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 4,"type": "BOOL"},
+          {"name": "LOWBAT","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 3,"type": "BOOL"},
+          {"name": "RSSI_DEVICE","vdefault": 0,"flags": 1,"max": 2147483647,"min": 2147483648,"operations": 5,"tab_order": 5,"type": "INTEGER"},
+          {"name": "RSSI_PEER","vdefault": 0,"flags": 1,"max": 2147483647,"min": 2147483648,"operations": 5,"tab_order": 6,"type": "INTEGER"},
+          {"name": "STICKY_UNREACH","vdefault": 0,"flags": 25, "max": 1,"min": 0,"operations": 7,"tab_order": 1,"type": "BOOL"},
+          {"name": "UNREACH","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 0,"type": "BOOL"},
+          {"name": "UPDATE_PENDING","vdefault": 0,"flags": 9,"max": 1,"min": 0,"operations": 5,"tab_order": 8,"type": "BOOL"}]
+       }],
+      "version": 41
+   },
+    
+    {
+      "adress": "1",
+      "type": "DIMMER",
+      "flags":  1,
+      "direction" : 2,
+      "paramsets": [
+        {
+          "name" : "MASTER",
+          "id" : "dimmer_ch_master",
+          "parameter" :  [{"name":"AES_ACTIVE","operations":3,"tab_order":0,"max":"","min":"","type":"BOOL","flags":3}]
+          
+           },
+                {
+          "name" : "LINKS",
+          "id" : "rgbw_color_ch_link",
+          "parameter" : 
+          
+          [{"name":"LONG_ACTION_TYPE","operations":3,"tab_order":52,"max":8,"min":0,"valuelist":["INACTIVE","JUMP_TO_TARGET","TOGGLE_TO_COUNTER","TOGGLE_INVERS_TO_COUNTER","UPDIM","DOWNDIM","TOGGLEDIM","TOGGLEDIM_TO_COUNTER","TOGGLEDIM_INVERS_TO_COUNTER"],"vdefault":0,"flags":1},{"name":"LONG_COND_VALUE_HI","operations":3,"tab_order":44,"max":255,"min":0,"vdefault":100,"flags":1},{"name":"LONG_COND_VALUE_LO","operations":3,"tab_order":43,"max":255,"min":0,"vdefault":50,"flags":1},{"name":"LONG_CT_OFF","operations":3,"tab_order":41,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"LONG_CT_OFFDELAY","operations":3,"tab_order":39,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"LONG_CT_ON","operations":3,"tab_order":42,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"LONG_CT_ONDELAY","operations":3,"tab_order":40,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"LONG_CT_RAMPOFF","operations":3,"tab_order":37,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"LONG_CT_RAMPON","operations":3,"tab_order":38,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"LONG_DIM_MAX_LEVEL","operations":3,"tab_order":69,"max":1,"min":0,"vdefault":1,"flags":1},{"name":"LONG_DIM_MIN_LEVEL","operations":3,"tab_order":68,"max":1,"min":0,"vdefault":0,"flags":1},{"name":"LONG_DIM_STEP","operations":3,"tab_order":70,"max":1,"min":0,"vdefault":0,"flags":1},{"name":"LONG_JT_OFF","operations":3,"tab_order":53,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"LONG_JT_OFFDELAY","operations":3,"tab_order":55,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"LONG_JT_ON","operations":3,"tab_order":54,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"LONG_JT_ONDELAY","operations":3,"tab_order":56,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"LONG_JT_RAMPOFF","operations":3,"tab_order":57,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"LONG_JT_RAMPON","operations":3,"tab_order":58,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"LONG_MULTIEXECUTE","operations":3,"tab_order":51,"max":1,"min":0,"valuelist":["OFF","ON"],"vdefault":0,"flags":1},{"name":"LONG_OFFDELAY_BLINK","operations":3,"tab_order":61,"max":1,"min":0,"valuelist":["OFF","ON"],"vdefault":1,"flags":1},{"name":"LONG_OFFDELAY_NEWTIME","operations":3,"tab_order":72,"max":25.6,"min":0.1,"vdefault":0.5,"flags":1},{"name":"LONG_OFFDELAY_OLDTIME","operations":3,"tab_order":73,"max":25.6,"min":0.1,"vdefault":0.5,"flags":1},{"name":"LONG_OFFDELAY_STEP","operations":3,"tab_order":71,"max":1,"min":0,"vdefault":0.05,"flags":1},{"name":"LONG_OFFDELAY_TIME","operations":3,"tab_order":47,"max":111600,"min":0,"vdefault":0,"flags":1},{"name":"LONG_OFF_LEVEL","operations":3,"tab_order":62,"max":1,"min":0,"vdefault":0,"flags":1},{"name":"LONG_OFF_TIME","operations":3,"tab_order":48,"max":108000,"min":0,"vdefault":111600,"flags":1},{"name":"LONG_OFF_TIME_MODE","operations":3,"tab_order":50,"max":1,"min":0,"valuelist":["ABSOLUTE","MINIMAL"],"vdefault":0,"flags":1},{"name":"LONG_ONDELAY_MODE","operations":3,"tab_order":59,"max":1,"min":0,"valuelist":["SET_TO_OFF","NO_CHANGE"],"vdefault":0,"flags":1},{"name":"LONG_ONDELAY_TIME","operations":3,"tab_order":45,"max":111600,"min":0,"vdefault":0,"flags":1},{"name":"LONG_ON_LEVEL","operations":3,"tab_order":64,"max":1,"min":0,"vdefault":1,"flags":1},{"name":"LONG_ON_LEVEL_PRIO","operations":3,"tab_order":60,"max":1,"min":0,"valuelist":["HIGH","LOW"],"vdefault":0,"flags":1},{"name":"LONG_ON_MIN_LEVEL","operations":3,"tab_order":63,"max":1,"min":0,"vdefault":0.1,"flags":1},{"name":"LONG_ON_TIME","operations":3,"tab_order":46,"max":108000,"min":0,"vdefault":111600,"flags":1},{"name":"LONG_ON_TIME_MODE","operations":3,"tab_order":49,"max":1,"min":0,"valuelist":["ABSOLUTE","MINIMAL"],"vdefault":0,"flags":1},{"name":"LONG_RAMPOFF_TIME","operations":3,"tab_order":67,"max":111600,"min":0,"vdefault":0,"flags":1},{"name":"LONG_RAMPON_TIME","operations":3,"tab_order":66,"max":111600,"min":0,"vdefault":0,"flags":1},{"name":"LONG_RAMP_START_STEP","operations":3,"tab_order":65,"max":1,"min":0,"vdefault":0.05,"flags":1},{"name":"SHORT_ACTION_TYPE","operations":3,"tab_order":15,"max":8,"min":0,"valuelist":["INACTIVE","JUMP_TO_TARGET","TOGGLE_TO_COUNTER","TOGGLE_INVERS_TO_COUNTER","UPDIM","DOWNDIM","TOGGLEDIM","TOGGLEDIM_TO_COUNTER","TOGGLEDIM_INVERS_TO_COUNTER"],"vdefault":0,"flags":1},{"name":"SHORT_COND_VALUE_HI","operations":3,"tab_order":8,"max":255,"min":0,"vdefault":100,"flags":1},{"name":"SHORT_COND_VALUE_LO","operations":3,"tab_order":7,"max":255,"min":0,"vdefault":50,"flags":1},{"name":"SHORT_CT_OFF","operations":3,"tab_order":5,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"SHORT_CT_OFFDELAY","operations":3,"tab_order":3,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"SHORT_CT_ON","operations":3,"tab_order":6,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"SHORT_CT_ONDELAY","operations":3,"tab_order":4,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"SHORT_CT_RAMPOFF","operations":3,"tab_order":1,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"SHORT_CT_RAMPON","operations":3,"tab_order":2,"max":5,"min":0,"valuelist":["X GE COND_VALUE_LO","X GE COND_VALUE_HI","X LT COND_VALUE_LO","X LT COND_VALUE_HI","COND_VALUE_LO LE X LT COND_VALUE_HI","X LT COND_VALUE_LO OR X GE COND_VALUE_HI"],"vdefault":0,"flags":1},{"name":"SHORT_DIM_MAX_LEVEL","operations":3,"tab_order":32,"max":1,"min":0,"vdefault":1,"flags":1},{"name":"SHORT_DIM_MIN_LEVEL","operations":3,"tab_order":31,"max":1,"min":0,"vdefault":0,"flags":1},{"name":"SHORT_DIM_STEP","operations":3,"tab_order":33,"max":1,"min":0,"vdefault":0,"flags":1},{"name":"SHORT_JT_OFF","operations":3,"tab_order":16,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"SHORT_JT_OFFDELAY","operations":3,"tab_order":18,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"SHORT_JT_ON","operations":3,"tab_order":17,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"SHORT_JT_ONDELAY","operations":3,"tab_order":19,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"SHORT_JT_RAMPOFF","operations":3,"tab_order":20,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"SHORT_JT_RAMPON","operations":3,"tab_order":21,"max":6,"min":0,"valuelist":["NO_JUMP_IGNORE_COMMAND","ONDELAY","RAMPON","ON","OFFDELAY","RAMPOFF","OFF"],"vdefault":1,"flags":1},{"name":"SHORT_OFFDELAY_BLINK","operations":3,"tab_order":24,"max":1,"min":0,"valuelist":["OFF","ON"],"vdefault":1,"flags":1},{"name":"SHORT_OFFDELAY_NEWTIME","operations":3,"tab_order":35,"max":25.6,"min":0.1,"vdefault":0.5,"flags":1},{"name":"SHORT_OFFDELAY_OLDTIME","operations":3,"tab_order":36,"max":25.6,"min":0.1,"vdefault":0.5,"flags":1},{"name":"SHORT_OFFDELAY_STEP","operations":3,"tab_order":34,"max":1,"min":0,"vdefault":0.05,"flags":1},{"name":"SHORT_OFFDELAY_TIME","operations":3,"tab_order":11,"max":111600,"min":0,"vdefault":0,"flags":1},{"name":"SHORT_OFF_LEVEL","operations":3,"tab_order":25,"max":1,"min":0,"vdefault":0,"flags":1},{"name":"SHORT_OFF_TIME","operations":3,"tab_order":12,"max":108000,"min":0,"vdefault":111600,"flags":1},{"name":"SHORT_OFF_TIME_MODE","operations":3,"tab_order":14,"max":1,"min":0,"valuelist":["ABSOLUTE","MINIMAL"],"vdefault":0,"flags":1},{"name":"SHORT_ONDELAY_MODE","operations":3,"tab_order":22,"max":1,"min":0,"valuelist":["SET_TO_OFF","NO_CHANGE"],"vdefault":0,"flags":1},{"name":"SHORT_ONDELAY_TIME","operations":3,"tab_order":9,"max":111600,"min":0,"vdefault":0,"flags":1},{"name":"SHORT_ON_LEVEL","operations":3,"tab_order":27,"max":1,"min":0,"vdefault":1,"flags":1},{"name":"SHORT_ON_LEVEL_PRIO","operations":3,"tab_order":23,"max":1,"min":0,"valuelist":["HIGH","LOW"],"vdefault":0,"flags":1},{"name":"SHORT_ON_MIN_LEVEL","operations":3,"tab_order":26,"max":1,"min":0,"vdefault":0.1,"flags":1},{"name":"SHORT_ON_TIME","operations":3,"tab_order":10,"max":108000,"min":0,"vdefault":111600,"flags":1},{"name":"SHORT_ON_TIME_MODE","operations":3,"tab_order":13,"max":1,"min":0,"valuelist":["ABSOLUTE","MINIMAL"],"vdefault":0,"flags":1},{"name":"SHORT_RAMPOFF_TIME","operations":3,"tab_order":30,"max":111600,"min":0,"vdefault":0,"flags":1},{"name":"SHORT_RAMPON_TIME","operations":3,"tab_order":29,"max":111600,"min":0,"vdefault":0,"flags":1},{"name":"SHORT_RAMP_START_STEP","operations":3,"tab_order":28,"max":1,"min":0,"vdefault":0.05,"flags":1},{"name":"UI_HINT","operations":3,"tab_order":0,"flags":1}]
+
+                    
+        },
+
+        {
+          "name" : "VALUES",
+          "id" : "dimmer_ch_values",
+          "parameter" :  [{"name":"DIRECTION","operations":5,"tab_order":6,"max":3,"min":0,"valuelist":["NONE","UP","DOWN","UNDEFINED"],"type":"ENUM","vdefault":0,"flags":3},{"name":"INHIBIT","operations":7,"tab_order":5,"max":"","control":"NONE","min":"","type":"BOOL","flags":1,"vdefault":""},{"name":"INSTALL_TEST","operations":2,"tab_order":7,"max":"","min":"","type":"ACTION","vdefault":"","flags":3},{"name":"LEVEL","operations":7,"tab_order":0,"unit":"100%","max":1,"control":"DIMMER.LEVEL","min":0,"type":"FLOAT","flags":1,"vdefault":0},{"name":"OLD_LEVEL","operations":2,"tab_order":1,"max":"","control":"DIMMER.OLD_LEVEL","min":"","type":"ACTION","flags":1,"vdefault":""},{"name":"ON_TIME","operations":2,"tab_order":3,"unit":"s","max":85825945.59999999,"control":"NONE","min":0,"type":"FLOAT","flags":1,"vdefault":0},{"name":"RAMP_STOP","operations":2,"tab_order":4,"max":"","control":"NONE","min":"","type":"ACTION","flags":1,"vdefault":""},{"name":"RAMP_TIME","operations":2,"tab_order":2,"unit":"s","max":85825945.59999999,"control":"NONE","min":0,"type":"FLOAT","flags":1,"vdefault":0.5},{"name":"WORKING","operations":5,"tab_order":8,"max":"","min":"","type":"BOOL","vdefault":"","flags":3}]
+          
+       }],
+      "version": 41
+   },
+   
+   {
+      "adress": "2",
+      "type": "RGBW_COLOR",
+      "flags":  1,
+      "direction" : 2,
+      "paramsets": [
+        {
+          "name" : "MASTER",
+          "id" : "rgbw_color_ch_master",
+          "parameter" : [
+          	{"name": "AES_KEY","vdefault": 0,"flags": 0,"max": 127,"min": 0,"operations": 1,"tab_order": 0,"type": "INTEGER"},
+          	{"name": "WHITE_ADJUSTMENT_VALUE_BLUE","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 2,"type": "INTEGER","UNIT":"%"},
+          	{"name": "WHITE_ADJUSTMENT_VALUE_GREEN","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 1,"type": "INTEGER","UNIT":"%"},
+          	{"name": "WHITE_ADJUSTMENT_VALUE_RED","vdefault": 100,"flags": 1,"max": 100,"min": 0,"operations": 3,"tab_order": 3,"type": "INTEGER","UNIT":"%"},
+          	{"name": "DEFAULT_SATURATION","vdefault": 128,"flags": 1,"max": 255,"min": 0,"operations": 3,"tab_order": 4,"type": "INTEGER"},
+          	{"name": "WHITE_HUE_VALUE","vdefault": 39609,"flags": 1,"max": 65585,"min": 0,"operations": 3,"tab_order": 5,"type": "INTEGER"}
+          ]
+        },
+        
+        {
+          "name" : "VALUES",
+          "id" : "rgbw_color_ch_values",
+          "parameter" :  [{"name":"ACT_BRIGHTNESS","operations":2,"tab_order":4,"max":255,"control":"NONE","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_BRIGHTNESS_STORE","operations":2,"tab_order":5,"max":255,"control":"NONE","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_HSV_COLOR_VALUE","operations":2,"tab_order":6,"max":255,"control":"NONE","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_HSV_COLOR_VALUE_STORE","operations":2,"tab_order":7,"max":255,"control":"NONE","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"COLOR","operations":7,"tab_order":0,"max":255,"control":"RGBW_COLOR.COLOR","min":0,"type":"INTEGER","flags":1,"vdefault":0},{"name":"INHIBIT","operations":7,"tab_order":3,"max":"","control":"NONE","min":"","type":"BOOL","flags":1},{"name":"ON_TIME","operations":2,"tab_order":1,"unit":"s","max":85825945.59999999,"control":"NONE","min":0,"type":"FLOAT","flags":1,"vdefault":0},{"name":"ON_TIME_STORE","operations":2,"tab_order":8,"unit":"s","max":85825945.59999999,"control":"NONE","min":0,"type":"FLOAT","flags":3,"vdefault":0},{"name":"RAMP_TIME","operations":2,"tab_order":2,"unit":"s","max":85825945.59999999,"control":"NONE","min":0,"type":"FLOAT","flags":1,"vdefault":0.5},{"name":"RAMP_TIME_STORE","operations":2,"tab_order":9,"unit":"s","max":85825945.59999999,"control":"NONE","min":0,"type":"FLOAT","flags":3,"vdefault":0.5},{"name":"USER_COLOR","operations":2,"tab_order":0,"max":"","control":"NONE","min":"","type":"STRING","flags":1}]
+          
+        }],
+      "version": 41
+   },
+   
+   {
+      "adress": "3",
+      "type": "RGBW_AUTOMATIC",
+      "flags":  1,
+      "direction" : 2,
+      "paramsets": [
+        {
+          "name" : "MASTER",
+          "id" : "rgbw_automatic_ch_master",
+          "parameter" : [
+          	{"name": "AES_KEY","vdefault": 0,"flags": 0,"max": 127,"min": 0,"operations": 1,"tab_order": 0,"type": "INTEGER"},
+          	{"name": "COLOR_CHANGE_SPEED","vdefault": 10,"flags": 1,"max": 255,"min": 0,"operations": 3,"tab_order": 0,"type": "INTEGER","UNIT":"s/U"}
+          ]
+        },
+        {
+          "name" : "VALUES",
+          "id" : "rgbw_automatic_ch_values",
+          "parameter" : [{"name":"ACT_BRIGHTNESS","operations":3,"tab_order":4,"max":255,"control":"RGBW_AUTOMATIC.BRIGHTNESS","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_BRIGHTNESS_STORE","operations":2,"tab_order":5,"max":255,"control":"NONE","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_COLOR_PROGRAM_STORE","operations":2,"tab_order":6,"max":255,"control":"NONE","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_MAX_BOARDER","operations":3,"tab_order":7,"max":255,"control":"RGBW_AUTOMATIC.MAX_BOARDER","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_MAX_BORDER_STORE","operations":2,"tab_order":8,"max":255,"control":"NONE","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_MIN_BOARDER","operations":3,"tab_order":9,"max":255,"control":"RGBW_AUTOMATIC.MIN_BOARDER","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"ACT_MIN_BORDER_STORE","operations":2,"tab_order":10,"max":255,"control":"NONE","min":0,"type":"INTEGER","flags":3,"vdefault":0},{"name":"INHIBIT","operations":7,"tab_order":3,"max":"","control":"NONE","min":"","type":"BOOL","flags":1},{"name":"ON_TIME","operations":3,"tab_order":1,"unit":"s","max":85825945.59999999,"control":"RGBW_AUTOMATIC.ON_TIME","min":0,"type":"FLOAT","flags":1,"vdefault":0},{"name":"ON_TIME_STORE","operations":2,"tab_order":11,"unit":"s","max":85825945.59999999,"control":"NONE","min":0,"type":"FLOAT","flags":3,"vdefault":0},{"name":"PROGRAM","operations":7,"tab_order":0,"max":255,"control":"RGBW_AUTOMATIC.PROGRAM","min":0,"type":"INTEGER","flags":1,"vdefault":0},{"name":"RAMP_TIME","operations":3,"tab_order":2,"unit":"s","max":85825945.59999999,"control":"RGBW_AUTOMATIC.RAMP_TIME","min":0,"type":"FLOAT","flags":1,"vdefault":0.5},{"name":"RAMP_TIME_STORE","operations":2,"tab_order":12,"unit":"s","max":85825945.59999999,"control":"NONE","min":0,"type":"FLOAT","flags":3,"vdefault":0.5},{"name":"USER_PROGRAM","operations":2,"tab_order":0,"max":"","control":"NONE","min":"","type":"STRING","flags":1}]
+          
+       }],
+      "version": 41
+   }
+
+   
+   ],
+   
+  "type": "HM-LC-RGBW-WM",
+  "version": 41,
+  "paramsets": [
+  {
+  	"name" : "MASTER",
+  	"id" : "switch_dev_master",
+    "parameter" : 
+ [{"name":"INTERNAL_KEYS_VISIBLE","operations":3,"tab_order":1,"max":"","min":"","type":"BOOL","flags":3},{"name":"LOCAL_RESET_DISABLE","operations":3,"tab_order":0,"max":"","min":"","type":"BOOL","flags":1}]
+      }]
+  }
