@@ -47,7 +47,7 @@ LightifyBridge.prototype.init = function() {
 			that.log.debug("LFLight %s",light);
 			if (light["type"]=="10") {
     			that.log.debug("Create new Osram Light " + light["name"]);
-    			var name = light["name"].replace(" ", "_");
+    			var name = "VIR-LG-" + light["name"].replace(" ", "_");
 				var hd = new LightifyDevice(that,lightify,light,name);
 				light["hm_device_name"] = light["name"];
     		}

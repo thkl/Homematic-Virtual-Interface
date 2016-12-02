@@ -19,7 +19,7 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 		this.log.debug("Setup new LightifyDevice %s",serialprefix);
 		this.transitiontime = 4;
 
-		this.hmDevice = new HomematicDevice("HM-LC-RGBW-WM", serialprefix);
+		this.hmDevice = new HomematicDevice("VIR-LG-RGBW-DIM", serialprefix);
 		this.hmDevice.firmware = light["firmware_version"];
 		this.bridge.addDevice(this.hmDevice);
 
@@ -70,14 +70,14 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 		}
 
 
-	    if (parameter.name == "COLOR") {
+	    if (parameter.name == "RGBW") {
 		  that.setColor(newValue);
 		  that.transitiontime = 4;
 	     }
 
 
-	    if (parameter.name == "SATURATION") {
-		  that.setSaturation(newValue);
+	    if (parameter.name == "WHITE") {
+		  that.setWhite(newValue);
 	     }
 
 
@@ -94,32 +94,36 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 	
 
 	LightifyDevice.prototype.setColor = function(newColor) {
-		var that = this;
-		
-	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
-
+	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex("VIR-LG_RGBW-DIM-CH","1");
 		if (co_channel != undefined) {
-	        co_channel.startUpdating("COLOR");
+			var regex = /(\s*[0-9]{1,3}),(\s*[0-9]{1,3}),(\s*[0-9]{1,3})/
+			var result = newColor.match(regex);
+			var r = result[1];
+			var g = result[2];
+			var b = result[3];
+			this.api.node_color(this.mac,r,g,b,255,this.transitiontime);
+			co_channel.updateValue("RGBW",newColor);
 		}
-
-		if (newColor==200) {
-			this.api.node_color(this.mac,255,255,255,1,this.transitiontime);
-		} else {
-			var rgb=this.HSVtoRGB(newColor/199,1,1);
-			this.api.node_color(this.mac,rgb.r,rgb.g,rgb.b,1,this.transitiontime);
-		}
-	    co_channel.endUpdating("COLOR");
 	}
 
 
+	LightifyDevice.prototype.setWhite = function(newTemp) {
+	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex("VIR-LG_RGBW-DIM-CH","1");
+		if (co_channel != undefined) {
+			this.api.node_temperature(this.mac,newTemp,this.transitiontime);
+			co_channel.updateValue("WHITE",newTemp);
+		}
+	}
+
 
 	LightifyDevice.prototype.setLevel = function(newLevel) {
-	    var that = this;
-	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-		di_channel.startUpdating("LEVEL");
-		di_channel.updateValue("LEVEL",newLevel);
-		this.api.node_brightness(this.mac,newLevel*100, this.transitiontime);
-		di_channel.endUpdating("LEVEL");
+	    var di_channel = this.hmDevice.getChannelWithTypeAndIndex("VIR-LG_RGBW-DIM-CH","1");
+		if (di_channel != undefined) {
+			di_channel.startUpdating("LEVEL");
+			di_channel.updateValue("LEVEL",newLevel);
+			this.api.node_brightness(this.mac,newLevel*100, this.transitiontime);
+			di_channel.endUpdating("LEVEL");
+		}
 	}
 
 	LightifyDevice.prototype.refreshDevice = function(device) {
@@ -128,7 +132,7 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 	  this.api.get_status(this.mac).then(function(data) {
 		  that.log.debug(data);
 		  if ((data != undefined) && (data.result != undefined)) {
-		  	  var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
+		  	  var di_channel = that.hmDevice.getChannelWithTypeAndIndex("VIR-LG_RGBW-DIM-CH","1");
 		  	  that.log.debug("Query Reslut %s",JSON.stringify(data["result"][0]["brightness"]));
 			  var bri = data["result"][0]["brightness"] / 100;
 			  that.log.debug("Set Osram Level to %s",bri);
@@ -137,19 +141,13 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 			  var r = data["result"][0]["red"];
 			  var g = data["result"][0]["green"];
 			  var b = data["result"][0]["blue"];
-
-		  	  var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
-				
-			  if ((r == 255) && (g == 255 ) && ( b == 255 )) {
-				  that.log.debug("Spezial 200");
-				  co_channel.updateValue("COLOR",200,true);
-			  } else {
-				  var hsv = that.RGBtoHSV(r,g,b);
-				  var hue = (hsv.h * 199)
-				  co_channel.updateValue("COLOR",hue,true);
-			  }			  
-		  }
-
+			  var rgb = "rgb("+r+","+g+","+b+")";
+			  that.log.debug("Set RGBW %s",rgb);
+			  di_channel.updateValue("RGBW",rgb,true);
+			  var temperature = data["result"][0]["temperature"];
+			  di_channel.updateValue("WHITE",temperature,true);
+			  
+			  }			 
 	  });
 	
 
@@ -159,54 +157,6 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 	}
 
 
-LightifyDevice.prototype.RGBtoHSV=function(r, g, b) {
-    if (arguments.length === 1) {
-        g = r.g, b = r.b, r = r.r;
-    }
-    var max = Math.max(r, g, b), min = Math.min(r, g, b),
-        d = max - min,
-        h,
-        s = (max === 0 ? 0 : d / max),
-        v = max / 255;
-
-    switch (max) {
-        case min: h = 0; break;
-        case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
-        case g: h = (b - r) + d * 2; h /= 6 * d; break;
-        case b: h = (r - g) + d * 4; h /= 6 * d; break;
-    }
-
-    return {
-        h: h,
-        s: s,
-        v: v
-    };
-}
-
-	LightifyDevice.prototype.HSVtoRGB = function(h, s, v) {
-    var r, g, b, i, f, p, q, t;
-    if (arguments.length === 1) {
-        s = h.s, v = h.v, h = h.h;
-    }
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = v * (1 - s);
-    q = v * (1 - f * s);
-    t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255)
-    };
-	}
 
 	module.exports = {
 	  LightifyDevice : LightifyDevice
