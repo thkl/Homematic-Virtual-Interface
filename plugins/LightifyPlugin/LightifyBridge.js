@@ -52,8 +52,6 @@ LightifyBridge.prototype.init = function() {
 				light["hm_device_name"] = light["name"];
     		}
 			
-			if (light["type"]=="11") {
-			}
 				
 			that.lights.push(light);
     		that.mappedDevices.push(hd);
