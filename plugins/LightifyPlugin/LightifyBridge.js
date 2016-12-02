@@ -51,8 +51,11 @@ LightifyBridge.prototype.init = function() {
 				var hd = new LightifyDevice(that,lightify,light,name);
 				light["hm_device_name"] = light["name"];
     		}
-    		
-    		that.lights.push(light);
+			
+			if (light["type"]=="11") {
+			}
+				
+			that.lights.push(light);
     		that.mappedDevices.push(hd);
 		});	
 	  	
