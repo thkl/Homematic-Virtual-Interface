@@ -1,6 +1,5 @@
 var LightifyBridge = require(__dirname + '/LightifyBridge.js').LightifyBridge;
 
-
 module.exports = function(server,name,logger) {
 	
 	this.bridge = new LightifyBridge(this,name,server,logger);
