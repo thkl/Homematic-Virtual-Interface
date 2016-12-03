@@ -49,6 +49,9 @@ var hueconf = require("node-hue-api");
 					case 3:
 						that.effect("colorloop");
 					break;
+					case 4:
+						that.alert();
+					break;
     			}
 				channel.endUpdating("PROGRAM");
 	      	}
