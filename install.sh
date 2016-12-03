@@ -1,4 +1,6 @@
 #!/bin/bash
+
+USER_HOME=$(eval echo ~${SUDO_USER})
 path="$PWD"
 plugins=()
 for f in plugins/*; do
@@ -18,3 +20,10 @@ do
     cd ${path}
 done
 
+if [ ! -d "${USER_HOME}/.hm_virtual_interface" ]; then
+  echo "build new configuration directory and config"
+  mkdir ${USER_HOME}/.hm_virtual_interface
+  touch ${USER_HOME}/.hm_virtual_interface/config.json
+else
+  echo "Config is here skipping this step"
+fi
