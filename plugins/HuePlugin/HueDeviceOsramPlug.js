@@ -61,7 +61,9 @@ var hueconf = require("node-hue-api");
 
 	}
 
-
+	HueDeviceOsramPlug.prototype.reload = function() {
+	
+	}
 
 	HueDeviceOsramPlug.prototype.setState = function(newState) {
 	    var that = this;

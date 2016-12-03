@@ -10,6 +10,7 @@ var hueconf = require("node-hue-api");
 		this.api =  hueApi;
 		this.log = plugin.log;
 		this.bridge = plugin.server.getBridge();
+		this.plugin = plugin;
 		
 		HomematicDevice = plugin.server.homematicDevice;
 		
@@ -21,7 +22,8 @@ var hueconf = require("node-hue-api");
 
 		this.log.debug("Setup new HUE Bridged Device %s",serialprefix);
 
-
+		this.reload();
+		
 		this.hmDevice = new HomematicDevice("HM-LC-RGBW-WM", serialprefix  + this.lightId );
 		this.hmDevice.firmware = light["swversion"];
 		this.bridge.addDevice(this.hmDevice);
@@ -110,6 +112,10 @@ var hueconf = require("node-hue-api");
 
 	}
 	
+	HueDevice.prototype.reload = function() {
+		
+		this.refresh = (this.plugin.configuration.getValueForPluginWithDefault(this.plugin.name,"refresh",60))*1000;
+	}
 	
 	HueDevice.prototype.alert = function() {
 		if (this.isGroup == true) {
@@ -240,7 +246,7 @@ var hueconf = require("node-hue-api");
 	  if (that.isGroup == true) {
 	  
 	  this.api.getGroup(this.lightId, function(err, result) {
-		  this.log.debug(JSON.stringify(result));
+		this.log.debug(JSON.stringify(result));
 	    var state = result["lastAction"]["on"];
 	    var bri = result["lastAction"]["bri"];
 	    var hue = result["lastAction"]["hue"];
@@ -269,6 +275,13 @@ var hueconf = require("node-hue-api");
 	    var bri = result["state"]["bri"];
 	    var hue = result["state"]["hue"];
 		var sat = result["state"]["sat"];
+		var reachable = result["state"]["reachable"];
+		
+		var ch_maintenance = that.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);
+		ch_maintenance.updateValue("UNREACH", !reachable,true);
+		if (reachable == false) {
+			ch_maintenance.updateValue("STICKY_UNREACH", true ,true);
+		}
 		
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
@@ -293,7 +306,7 @@ var hueconf = require("node-hue-api");
 
 	 this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();
-		 }, 60000);
+		 }, that.refresh);
 	}
 
 	module.exports = {

@@ -243,10 +243,23 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 		publishedgroups = [];
 	}
 	
+	var refresh = this.configuration.getValueForPluginWithDefault(this.name,"refresh",60); 
+	
 	if (queryObject["do"]!=undefined) {
 		
 		switch (queryObject["do"]) {
 			
+			
+			case "settings.save":
+			{
+				var refresh = queryObject["refresh"];
+				this.configuration.setValueForPlugin(this.name,"refresh",refresh); 
+				this.mappedDevices.forEach(function (light){
+					light.reload()
+				});
+			}
+			break;		
+				
 			case "scenetoggle":
 			{
 				var sceneid = queryObject["id"];
@@ -338,7 +351,7 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 		});
 	} 
 
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listLights":listLights,"listGroups":listGroups,"listScenes":listScenes});
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"refresh":refresh,"listLights":listLights,"listGroups":listGroups,"listScenes":listScenes});
 }
 
 module.exports = {
