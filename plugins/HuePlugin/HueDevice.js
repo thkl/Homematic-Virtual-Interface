@@ -150,6 +150,7 @@ var hueconf = require("node-hue-api");
 		if (this.config!=undefined) {
 			this.log.debug("Reload Lamp Configuration ...");
 			this.refresh = (this.config.getValueForPluginWithDefault(this.plugin.name,"refresh",60))*1000;
+			this.log.debug("Refresh Rate is %s ms",this.refresh);
 		}
 	}
 	
@@ -281,7 +282,7 @@ var hueconf = require("node-hue-api");
 
 	HueDevice.prototype.refreshDevice = function(device) {
 	  var that = this;
-	  
+	  that.log.debug("Refreshing Devices");
 	  
 	  if (that.isGroup == true) {
 	  
@@ -316,7 +317,7 @@ var hueconf = require("node-hue-api");
 
 	}
 	  else {
-		  
+	
 
 	  this.api.lightStatus(this.lightId, function(err, result) {
 	    var state = result["state"]["on"];
@@ -324,7 +325,7 @@ var hueconf = require("node-hue-api");
 	    var hue = result["state"]["hue"];
 		var sat = result["state"]["sat"];
 		
-		if (reportFaults == true) {
+		if (that.reportFaults == true) {
 			var reachable = result["state"]["reachable"];
 			var ch_maintenance = that.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);
 			var postToCCU = (ch_maintenance.getValue("UNREACH")==reachable);
@@ -337,7 +338,6 @@ var hueconf = require("node-hue-api");
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
 		var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
-
 	    if ((di_channel!=undefined) && (co_channel!=undefined)) {
 
 	    if (state==true) {
