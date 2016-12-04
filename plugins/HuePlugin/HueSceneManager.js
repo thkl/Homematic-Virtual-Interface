@@ -84,7 +84,9 @@ HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
 }
 
 HueSceneManager.prototype.addHMRemote = function(remoteName) {
-	var hmDevice = new HomematicDevice("HM-RC-19", remoteName);
+	var hmDevice = new HomematicDevice();
+    hmDevice.initWithType("HM-RC-19", remoteName);
+   
     this.hmDevices.push(hmDevice);
     this.bridge.addDevice(hmDevice);
     var that = this;

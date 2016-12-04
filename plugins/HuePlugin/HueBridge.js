@@ -144,6 +144,7 @@ HueBridge.prototype.queryLights = function() {
 				light["hm_device_name"] = "OSRPLG0" + light["id"];
     		} else {
 	    		that.log.debug("Create new Light " + light["name"]);
+	    		// Try to load device
 				var hd = new HueDevice(that,that.hue_api,light,"HUE0000");
 				light["hm_device_name"] = "HUE0000" + light["id"];
     		}

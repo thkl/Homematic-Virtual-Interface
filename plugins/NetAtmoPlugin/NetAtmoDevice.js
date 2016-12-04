@@ -19,12 +19,16 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 	
 		this.log.debug("Initialize NetAtmo Device with id %s",this.naId);
 
-		this.hmInside = new HomematicDevice("HM-WDS40-TH-I-2", serialprefix + "1");
+		this.hmInside = new HomematicDevice();
+		this.hmInside.initWithType("HM-WDS40-TH-I-2", serialprefix + "1");
 		this.hmInside.firmware = naDevice["firmware"];
+		this.hmInside.serialNumber = this.naId;
 		this.bridge.addDevice(this.hmInside);
 		
-		this.hmCarbonDioxide = new HomematicDevice("HM-CC-SCD", serialprefix + "2");
+		this.hmCarbonDioxide = new HomematicDevice();
+		this.hmCarbonDioxide.initWithType("HM-CC-SCD", serialprefix + "2");
 		this.hmCarbonDioxide.firmware = naDevice["firmware"];
+		this.hmCarbonDioxide.serialNumber = this.naId + "_C";
 		this.bridge.addDevice(this.hmCarbonDioxide);
 
 		var mi = 3;
@@ -36,8 +40,10 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 			
 			var mid = module["_id"];
 			if (module["type"] == "NAModule1") {
-				hmModule = new HomematicDevice("HM-WDS10-TH-O", serialprefix + mi);
+				hmModule = new HomematicDevice();
+				hmModule.initWithType("HM-WDS10-TH-O", serialprefix + mi);
 				hmModule.firmware = naDevice["firmware"];
+				hmModule.serialNumber = mid;
 				that.bridge.addDevice(hmModule);
 			}
 			
@@ -60,7 +66,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 	  var options = {device_id: this.naId , date_end :'last', scale: 'max',type: ['Temperature','Humidity','CO2']};
 
 		this.api.getMeasure(options, function(err, measure) {
-			
+			if ((measure != undefined) && (measure[0]!=undefined)) {
 			var lastMeasure = measure[0]["value"]
 			if ((lastMeasure !=undefined ) && (lastMeasure[0]!=undefined)) { 
 
@@ -86,6 +92,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 					co2State = 2;
 				}
 				coChannel.updateValue("STATE",co2State,true);
+			}
 			}
 			}
 		});

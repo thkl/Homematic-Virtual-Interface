@@ -19,7 +19,9 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 		this.log.debug("Setup new LightifyDevice %s",serialprefix);
 		this.transitiontime = 4;
 
-		this.hmDevice = new HomematicDevice("VIR-LG-RGBW-DIM", serialprefix);
+		this.hmDevice = new HomematicDevice();
+		// TODO Stored Devices
+		this.hmDevice.initWithType("VIR-LG-RGBW-DIM", serialprefix);
 		this.hmDevice.firmware = light["firmware_version"];
 		this.bridge.addDevice(this.hmDevice);
 
