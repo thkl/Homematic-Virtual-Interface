@@ -181,7 +181,8 @@ var hueconf = require("node-hue-api");
 	    if (newColor == 200) {
 	      // SpeZiale
 	        var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
-   	        newState = {"hue":white,"sat":0};
+	        var sat = co_channel.getParamsetValueWithDefault("MASTER","DEFAULT_SATURATION",128);
+   	        newState = {"hue":white,"sat":sat};
 	    } else {
 	        newState = {"hue":(newColor/199)*65535,"sat":255};
 	    }
@@ -296,6 +297,8 @@ var hueconf = require("node-hue-api");
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
 		var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
+		var wsat = co_channel.getParamsetValueWithDefault("MASTER","DEFAULT_SATURATION",128);
+
 
 	    if ((di_channel!=undefined) && (co_channel!=undefined)) {
 
@@ -303,7 +306,7 @@ var hueconf = require("node-hue-api");
 	        di_channel.updateValue("LEVEL",(bri/254),true);
 	        
 	        
-	        if (hue == white) {
+	        if ((hue == white) && (sat==wsat)) {
 		        co_channel.updateValue("COLOR",200,true);
 	        } else {
 		        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
