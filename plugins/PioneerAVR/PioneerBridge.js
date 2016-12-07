@@ -54,34 +54,35 @@ PioneerBridge.prototype.init = function() {
 		} else {
 			
 		var channel = that.hmDevice.getChannel(parameter.channel);
+		that.log.debug("Channel Index is %s",channel.index);
 		switch (channel.index) {
 			
-			case 1:
+			case "1":
 				that.sendCommand("PO\r");
 				break;
-			case 2:
+			case "2":
 				that.sendCommand("PF\r");
 				break;
-			case 3:
+			case "3":
 				that.sendCommand("VU\r");
 				break;
-			case 4:
+			case "4":
 				that.sendCommand("VD\r");
 				break;
-			case 5:
-			case 6:
-			case 7:
-			case 8:
-			case 9:
-			case 10:
-			case 11:
-			case 12:
-			case 13:
-			case 14:
-			case 15:
-			case 16:
-			case 17:
-			case 18:
+			case "5":
+			case "6":
+			case "7":
+			case "8":
+			case "9":
+			case "10":
+			case "11":
+			case "12":
+			case "13":
+			case "14":
+			case "15":
+			case "16":
+			case "17":
+			case "18":
 				var func = that.functionForChannel(parameter.name, channel);
 				if (func != undefined) {
 					that.sendCommand(func);
@@ -97,28 +98,34 @@ PioneerBridge.prototype.init = function() {
 
 PioneerBridge.prototype.sendCommand = function(command) {
  var that = this;
- var options = this.configuration.getValueForPlugin(this.name,"options");
- if (auth != undefined) {
-	var options = {port: auth["port"],host: auth["host"],log: false};
+ try {
+ var hop = this.configuration.getValueForPlugin(this.name,"options");
+ if (hop != undefined) {
+	var options = {port: hop["port"],host: hop["host"],log: false};
 	var receiver = new avr.VSX(options);
 
 	receiver.on("connect", function() {
+		that.log.debug("Sending Command %s",command);
 		receiver.sendCommand(command);
 	});
- }
+  }
+  } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
 PioneerBridge.prototype.setVolume = function(newVolume) {
  var that = this;
- var options = this.configuration.getValueForPlugin(this.name,"options");
- if (auth != undefined) {
-	var options = {port: auth["port"],host: auth["host"],log: false};
+ try {
+ var hop = this.configuration.getValueForPlugin(this.name,"options");
+ if (hop != undefined) {
+	var options = {port: hop["port"],host: hop["host"],log: false};
 	var receiver = new avr.VSX(options);
 
 	receiver.on("connect", function() {
+		that.log.debug("Sending NewVolume %s",newVolume);
 		receiver.volume(newVolume);
 	});
- }
+  }
+ } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
 
