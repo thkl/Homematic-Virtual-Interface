@@ -11,6 +11,8 @@ done
 
 echo "Root path is ${path}"
 echo "Installing root dependencies in " ${path}
+cd ${path}
+npm install
 
 for ppath in "${plugins[@]}"
 do
