@@ -55,7 +55,7 @@
           "name" : "VALUES",
           "id" : "",
           "parameter" : [
-          	{"name": "TARGET_VOLUME","vdefault": "","flags": 1,"max": "","min": "","operations": 7,"control":"NONE","unit":"","tab_order": 0,"type": "STRING"},
+          	{"name": "TARGET_VOLUME","vdefault": 5,"flags": 1,"max": 20,"min": 0,"operations": 7,"control":"NONE","unit":"","tab_order": 0,"type": "INTEGER"},
           	{"name": "PLAYLIST","vdefault": "","flags": 1,"max": "","min": "","operations": 7,"control":"NONE","unit":"","tab_order": 1,"type": "STRING"}
           	
           ]
