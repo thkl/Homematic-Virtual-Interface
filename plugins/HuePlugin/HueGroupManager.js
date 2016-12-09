@@ -7,7 +7,7 @@
 //  Created by Thomas Kluge on 29.11.16.
 //  Copyright © 2016 kSquare.de. All rights reserved.
 //
-var HueDevice = require(__dirname + "/HueDevice.js").HueDevice;
+var HueColorDevice = require(__dirname + "/HueColorDevice.js").HueColorDevice;
 
 var HomematicDevice;
 	
@@ -73,7 +73,7 @@ HueGroupManager.prototype.publish = function(publishedGroups,ccuNotification) {
 	  if (group != undefined) {
 	  	that.log.debug("Adding new Group " + group["name"]);
     	group["hm_device_name"] = "HUEGROUP00" + group["id"];
-		that.hmDevices.push(new HueDevice(that,that.hueApi,group,"HUEGROUP00"));
+		that.hmDevices.push(new HueColorDevice(that,that.hueApi,group,"HUEGROUP00"));
 	  }
   });
   }
