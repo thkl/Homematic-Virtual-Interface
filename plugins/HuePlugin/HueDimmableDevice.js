@@ -1,9 +1,9 @@
-	"use strict";
+"use strict";
 var hueconf = require("node-hue-api");
 
-	var HomematicDevice;
+var HomematicDevice;
 
-	var HueDevice = function(plugin, hueApi ,light,serialprefix) {
+var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 
 
 		var that = this;
@@ -48,7 +48,7 @@ var hueconf = require("node-hue-api");
 		if (this.hmDevice.initialized == false) {
 	// not found create a new one
 			this.log.debug("no Stored Object");
-			this.hmDevice.initWithType("HM-LC-RGBW-WM", serialprefix  + this.lightId);
+			this.hmDevice.initWithType("HM-LC-Dim1T-Pl", serialprefix  + this.lightId);
 			this.hmDevice.firmware = light["swversion"];
 			var uniqueid = light["uniqueid"];
 	
@@ -83,7 +83,6 @@ var hueconf = require("node-hue-api");
 					case 1:
 					case 2:
 					case 3:
-						that.effect("colorloop");
 					break;
 					case 4:
 						that.alert();
@@ -125,19 +124,6 @@ var hueconf = require("node-hue-api");
 		  that.onTime = newValue;
 		}
 
-
-	    if (parameter.name == "COLOR") {
-		  that.setColor(newValue);
-	     }
-
-
-	    if (parameter.name == "SATURATION") {
-		  that.setSaturation(newValue);
-	     }
-
-
-
-
 	    });
 
 	     this.updateTimer = setTimeout(function() {
@@ -146,7 +132,7 @@ var hueconf = require("node-hue-api");
 
 	}
 	
-	HueDevice.prototype.reload = function() {
+	HueDimmableDevice.prototype.reload = function() {
 		if (this.config!=undefined) {
 			this.log.debug("Reload Lamp Configuration ...");
 			this.refresh = (this.config.getValueForPluginWithDefault(this.plugin.name,"refresh",60))*1000;
@@ -154,7 +140,7 @@ var hueconf = require("node-hue-api");
 		}
 	}
 	
-	HueDevice.prototype.alert = function() {
+	HueDimmableDevice.prototype.alert = function() {
 		if (this.isGroup == true) {
 		     this.api.setGroupLightState(this.lightId,{"alert":"lselect"}, function(err, result) {});
 		} else {
@@ -163,7 +149,7 @@ var hueconf = require("node-hue-api");
 	}
 
 
-	HueDevice.prototype.effect = function(effectname) {
+	HueDimmableDevice.prototype.effect = function(effectname) {
 		if (this.isGroup == true) {
 		     this.api.setGroupLightState(this.lightId,{"effect":effectname}, function(err, result) {});
 		} else {
@@ -172,81 +158,7 @@ var hueconf = require("node-hue-api");
 	}
 
 
-	HueDevice.prototype.setColor = function(newColor) {
-		var that = this;
-		var newState = {};
-
-	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
-
-	    if (newColor == 200) {
-	      // SpeZiale
-	        var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
-	        var sat = co_channel.getParamsetValueWithDefault("MASTER","DEFAULT_SATURATION",128);
-   	        newState = {"hue":white,"sat":sat};
-	    } else {
-	        newState = {"hue":(newColor/199)*65535,"sat":255};
-	    }
-
-		this.log.debug("Hue Value set to " + JSON.stringify(newState) );
-
-		if (co_channel != undefined) {
-	        co_channel.startUpdating("COLOR");
-		}
-
-
-
-		if (that.isGroup == true) {
-
-	    that.api.setGroupLightState(that.lightId,newState, function(err, result) {
-	      if (co_channel != undefined) {
-	        co_channel.endUpdating("COLOR");
-	      }
-	    });
-			
-		} else {
-	    that.api.setLightState(that.lightId,newState, function(err, result) {
-	      if (co_channel != undefined) {
-	        co_channel.endUpdating("COLOR");
-	      }
-	    });
-		}
-
-	}
-
-
-	HueDevice.prototype.setSaturation = function(newSaturation) {
-		var that = this;
-		var newState = {"sat":newSaturation};
-
-		this.log.debug("Sat Value set to " + JSON.stringify(newState) );
-	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
-
-		if (co_channel != undefined) {
-	        co_channel.startUpdating("SATURATION");
-		}
-
-
-
-		if (that.isGroup == true) {
-
-	    that.api.setGroupLightState(that.lightId,newState, function(err, result) {
-	      if (co_channel != undefined) {
-	        co_channel.endUpdating("SATURATION");
-	      }
-	    });
-			
-		} else {
-	    that.api.setLightState(that.lightId,newState, function(err, result) {
-	      if (co_channel != undefined) {
-	        co_channel.endUpdating("SATURATION");
-	      }
-	    });
-		}
-
-	}
-
-
-	HueDevice.prototype.setLevel = function(newLevel) {
+	HueDimmableDevice.prototype.setLevel = function(newLevel) {
 	    var that = this;
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 		di_channel.startUpdating("LEVEL");
@@ -281,7 +193,7 @@ var hueconf = require("node-hue-api");
 	    }
 	}
 
-	HueDevice.prototype.refreshDevice = function(device) {
+	HueDimmableDevice.prototype.refreshDevice = function(device) {
 	  var that = this;
 	  that.log.debug("Refreshing Devices");
 	  
@@ -291,31 +203,14 @@ var hueconf = require("node-hue-api");
 		this.log.debug(JSON.stringify(result));
 	    var state = result["lastAction"]["on"];
 	    var bri = result["lastAction"]["bri"];
-	    var hue = result["lastAction"]["hue"];
-	    var sat = result["lastAction"]["sat"];
 
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
-		var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
-		var wsat = co_channel.getParamsetValueWithDefault("MASTER","DEFAULT_SATURATION",128);
 
-
-	    if ((di_channel!=undefined) && (co_channel!=undefined)) {
-
-	    if (state==true) {
-	        di_channel.updateValue("LEVEL",(bri/254),true);
-	        
-	        
-	        if ((hue == white) && (sat==wsat)) {
-		        co_channel.updateValue("COLOR",200,true);
-	        } else {
-		        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
-	        }
-	    	} else {
-	        di_channel.updateValue("LEVEL",0,true);
+	    if (di_channel!=undefined) {
+		    if (state==true) {
+		        di_channel.updateValue("LEVEL",(bri/254),true);
 	    	}
 	    }
-
 	  });
 
 	}
@@ -325,9 +220,7 @@ var hueconf = require("node-hue-api");
 	  this.api.lightStatus(this.lightId, function(err, result) {
 	    var state = result["state"]["on"];
 	    var bri = result["state"]["bri"];
-	    var hue = result["state"]["hue"];
-		var sat = result["state"]["sat"];
-		
+	  	
 		if (that.reportFaults == true) {
 			var reachable = result["state"]["reachable"];
 			var ch_maintenance = that.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);
@@ -339,22 +232,11 @@ var hueconf = require("node-hue-api");
 		}
 	    
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
-		var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
-	    if ((di_channel!=undefined) && (co_channel!=undefined)) {
-
-	    if (state==true) {
-	        di_channel.updateValue("LEVEL",(bri/254),true);
-	        
-	        if (hue==white) {
-		        co_channel.updateValue("COLOR",200,true);
-	        } else {
-		        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
-	        }
-	        
-	    	} else {
-	        di_channel.updateValue("LEVEL",0,true);
-	    	}
+	  
+	    if (di_channel!=undefined) {
+		    if (state==true) {
+	        	di_channel.updateValue("LEVEL",(bri/254),true);
+			}
 	    }
 
 	  });
@@ -367,5 +249,5 @@ var hueconf = require("node-hue-api");
 
 
 	module.exports = {
-	  HueDevice : HueDevice
+	  HueDimmableDevice : HueDimmableDevice
 	}

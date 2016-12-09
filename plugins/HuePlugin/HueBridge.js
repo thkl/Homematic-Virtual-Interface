@@ -11,7 +11,9 @@
 
 var HueApi = require("node-hue-api").HueApi;
 var url = require("url");
-var HueDevice = require(__dirname + "/HueDevice.js").HueDevice;
+var HueColorDevice = require(__dirname + "/HueColorDevice.js").HueColorDevice;
+var HueDimmableDevice = require(__dirname + "/HueDimmableDevice.js").HueDimmableDevice;
+
 var HueDeviceOsramPlug = require(__dirname + "/HueDeviceOsramPlug.js").HueDeviceOsramPlug;
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
@@ -138,16 +140,38 @@ HueBridge.prototype.queryLights = function() {
 	if ((lights != undefined) && (lights["lights"]!=undefined)) {
   		lights["lights"].forEach(function (light) {
     		
-    		if (light["type"]=="On/Off plug-in unit") {
+    		switch (light["type"]) {
+	    		
+    		 case "On/Off plug-in unit": {
     			that.log.debug("Create new Osram Plug " + light["name"]);
 				var hd = new HueDeviceOsramPlug(that,that.hue_api,light,"OSRPLG0");
 				light["hm_device_name"] = "OSRPLG0" + light["id"];
-    		} else {
-	    		that.log.debug("Create new Light " + light["name"]);
+    		  } 
+     		  break;
+     		  
+     		  case "Extended color light":
+    		  case "Color light": {
+	    		that.log.debug("Create new Color Light " + light["name"]);
 	    		// Try to load device
-				var hd = new HueDevice(that,that.hue_api,light,"HUE0000");
+				var hd = new HueColorDevice(that,that.hue_api,light,"HUE0000");
 				light["hm_device_name"] = "HUE0000" + light["id"];
-    		}
+    		  }
+    		  break;
+    		  
+    		  case "Dimmable light": {
+	    		that.log.debug("Create new Color Light " + light["name"]);
+	    		// Try to load device
+				var hd = new HueDimmableDevice(that,that.hue_api,light,"HUE0000");
+				light["hm_device_name"] = "HUE0000" + light["id"];
+    		  }
+    		  break;
+    		  
+    		  default:
+			  	that.log.error("Sorry there is currently no mapping for %s please create an issue at github for that. Thank you.",light["type"]);
+			  	break;
+    		 } 
+    		
+    		
     		
     		that.lights.push(light);
     		that.mappedDevices.push(hd);
