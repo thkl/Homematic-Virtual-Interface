@@ -126,10 +126,11 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 
 	    });
 
+	    /* 
 	     this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();
 		 }, 1000);
-
+		*/
 	}
 	
 	HueDimmableDevice.prototype.reload = function() {
@@ -245,6 +246,31 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 	 this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();
 		 }, that.refresh);
+	}
+
+
+	HueDimmableDevice.prototype.refreshWithData = function (data) {
+		var state = data["state"]["on"];
+	    var bri = data["state"]["bri"];
+	  	
+		if (this.reportFaults == true) {
+			var reachable = data["state"]["reachable"];
+			var ch_maintenance = this.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);
+			var postToCCU = (ch_maintenance.getValue("UNREACH")==reachable);
+			ch_maintenance.updateValue("UNREACH", !reachable,true);
+			if (reachable == false) {
+				ch_maintenance.updateValue("STICKY_UNREACH", true ,true);
+			}
+		}
+	    
+	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
+	  
+	    if (di_channel!=undefined) {
+		    if (state==true) {
+	        	di_channel.updateValue("LEVEL",(bri/254),true);
+			}
+	    }
+
 	}
 
 

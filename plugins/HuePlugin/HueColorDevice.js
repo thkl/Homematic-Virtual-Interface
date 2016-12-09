@@ -47,7 +47,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		
 		if (this.hmDevice.initialized == false) {
 	// not found create a new one
-			this.log.debug("no Stored Object");
+			this.log.debug("no stored Object");
 			this.hmDevice.initWithType("HM-LC-RGBW-WM", serialprefix  + this.lightId);
 			this.hmDevice.firmware = light["swversion"];
 			var uniqueid = light["uniqueid"];
@@ -139,11 +139,11 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 
 
 	    });
-
+		/*
 	     this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();
 		 }, 1000);
-
+*/
 	}
 	
 	HueColorDevice.prototype.reload = function() {
@@ -363,6 +363,44 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	 this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();
 		 }, that.refresh);
+	}
+
+	HueColorDevice.prototype.refreshWithData = function (data) {
+		
+		var state = data["state"]["on"];
+	    var bri = data["state"]["bri"];
+	    var hue = data["state"]["hue"];
+		var sat = data["state"]["sat"];
+		
+		if (this.reportFaults == true) {
+			var reachable = data["state"]["reachable"];
+			var ch_maintenance = this.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);
+			var postToCCU = (ch_maintenance.getValue("UNREACH")==reachable);
+			ch_maintenance.updateValue("UNREACH", !reachable,true);
+			if (reachable == false) {
+				ch_maintenance.updateValue("STICKY_UNREACH", true ,true);
+			}
+		}
+	    
+	    var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
+	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
+		var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
+	    if ((di_channel!=undefined) && (co_channel!=undefined)) {
+
+	    if (state==true) {
+	        di_channel.updateValue("LEVEL",(bri/254),true);
+	        
+	        if (hue==white) {
+		        co_channel.updateValue("COLOR",200,true);
+	        } else {
+		        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
+	        }
+	        
+	    	} else {
+	        di_channel.updateValue("LEVEL",0,true);
+	    	}
+	    }
+
 	}
 
 

@@ -130,6 +130,7 @@ this.queryGroups();
 // Fetch all Scenes
 this.queryScenes();
 this.log.info("initialization completed");
+this.refreshAll();
 }
 
 
@@ -149,7 +150,7 @@ HueBridge.prototype.queryLights = function() {
     		  } 
      		  break;
      		  
-     		  case "Extended color light":
+     		  case "Extended color light": 
     		  case "Color light": {
 	    		that.log.debug("Create new Color Light " + light["name"]);
 	    		// Try to load device
@@ -157,7 +158,7 @@ HueBridge.prototype.queryLights = function() {
 				light["hm_device_name"] = "HUE0000" + light["id"];
     		  }
     		  break;
-    		  
+    		   
     		  case "Dimmable light": {
 	    		that.log.debug("Create new Color Light " + light["name"]);
 	    		// Try to load device
@@ -229,12 +230,43 @@ HueBridge.prototype.getConfiguredGroups = function() {
 	return undefined;	
 } 
 
+
+HueBridge.prototype.lightWithId = function(lightId) {
+	var result = undefined;
+	this.lights.forEach(function (light){
+		
+		if (light.lightId == lightId) {
+			result = light;
+		}
+		
+	});	
+	return result;
+} 
+
 HueBridge.prototype.saveConfiguredGroups = function(publishedgroups) {
 	var s = JSON.stringify(publishedgroups);
 	this.configuration.setPersistValueForPlugin(this.name,"PublishedGroups",s);
 } 
 
+HueBridge.prototype.refreshAll = function() {
+	var that = this;
+	var refreshrate = this.configuration.getValueForPluginWithDefault(this.plugin.name,"refresh",60)*1000;
+	
+	this.hue_api.lights(function(err, lights) {
+	 	lights["lights"].forEach(function (light) {
+		  var light = that.lightWithId(light["id"]);
+		  if (light) {
+			  light.refreshWithData(light);
+		  }
+		});
+	});
+	
+	setTimeout(function() {
+		 	that.refreshAll();
+	}, refreshrate);
+	this.log.debug("Refreshed Lights Next in %s ms.",refreshrate);
 
+} 
 
 HueBridge.prototype.getConfiguredScenes = function() {
 	var ps = this.configuration.getPersistValueForPluginWithDefault(this.name,"PublishedScenes",undefined);
