@@ -301,7 +301,6 @@ function handleError(self, err) {
         console.log("connection error: " + err.message);
     }
 
-    self.emit("error", err);
 }
 
 if (typeof String.prototype.startsWith != 'function') {
