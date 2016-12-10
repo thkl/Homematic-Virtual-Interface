@@ -300,7 +300,7 @@ function handleError(self, err) {
     if (TRACE) {
         console.log("connection error: " + err.message);
     }
-
+	self.emit("error");
 }
 
 if (typeof String.prototype.startsWith != 'function') {

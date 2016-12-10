@@ -21,6 +21,7 @@ var PioneerBridge = function(plugin,name,server,log) {
 	this.name = name;
 	this.bridge = server.getBridge();
 	HomematicDevice = server.homematicDevice;
+	this.receiver;
 }
 
 
@@ -94,37 +95,47 @@ PioneerBridge.prototype.init = function() {
 		}
 	});
 
+	setTimeout(function() {that.reconnect()},1000);
+}
+
+
+PioneerBridge.prototype.reconnect = function(command) {
+	var that = this;
+	var hop = this.configuration.getValueForPlugin(this.name,"options");
+	if (hop != undefined) {
+		var options = {port: hop["port"],host: hop["host"],log: false};
+		this.receiver = new avr.VSX(options);
+		
+		this.receiver.on("connect", function() {
+			that.log.info("Connection to the AVR");
+		});
+		
+		this.receiver.on("end", function () {
+        	that.log.debug("End ... Reconnecting in 1 second");
+			setTimeout(function() {that.reconnect()},1000);
+        });
+        
+        this.receiver.on("error", function () {
+        	that.log.debug("Error Reconnecting in 60 seconds");
+			setTimeout(function() {that.reconnect()},60000);
+        });
+
+    }
 }
 
 PioneerBridge.prototype.sendCommand = function(command) {
  var that = this;
  try {
- var hop = this.configuration.getValueForPlugin(this.name,"options");
- if (hop != undefined) {
-	var options = {port: hop["port"],host: hop["host"],log: false};
-	var receiver = new avr.VSX(options);
-
-	receiver.on("connect", function() {
-		that.log.debug("Sending Command %s",command);
-		receiver.sendCommand(command);
-	});
-  }
+	this.log.debug("Sending Command %s",command);
+	receiver.sendCommand(command);
   } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
 PioneerBridge.prototype.setVolume = function(newVolume) {
  var that = this;
  try {
- var hop = this.configuration.getValueForPlugin(this.name,"options");
- if (hop != undefined) {
-	var options = {port: hop["port"],host: hop["host"],log: false};
-	var receiver = new avr.VSX(options);
-
-	receiver.on("connect", function() {
-		that.log.debug("Sending NewVolume %s",newVolume);
-		receiver.volume(newVolume);
-	});
-  }
+	this.log.debug("Sending NewVolume %s",newVolume);
+	receiver.volume(newVolume);
  } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
