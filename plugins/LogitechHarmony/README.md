@@ -13,3 +13,5 @@
     "hub_ip":"192.168.foobar"
 }
  ```
+ 
+ If you got a real HUE Bridge, setup the hue_plugin_name to the name of the hue plugin of this layer. So all your lights will also mapped. This is because the Harmony Hub can only handle on HUE Bridge.
