@@ -49,6 +49,10 @@ HarmonyBridge.prototype.updateFakeLight = function(newflo) {
   flobjects.forEach(function (flo) {
 	 if (flo["index"] == newflo["index"]) {
 		 that.log.debug("Found and Change");
+		 // If there is a new Type -> we have to do a ccu change
+		 if (flo["type"] != newflo["type"]) {
+			that.harmonyServer.changeFakeLightDevice(flo["index"],newflo);			 
+		 }
 		 nobjects.push(newflo); 
 	 } else {
 		 nobjects.push(flo);
@@ -58,13 +62,37 @@ HarmonyBridge.prototype.updateFakeLight = function(newflo) {
   this.config.setPersistValueForPlugin(this.name,"fakelights",JSON.stringify(nobjects));
 }
 
+
+
 HarmonyBridge.prototype.addFakeLight = function(flo) {
   var flobjects = this.getFakeLights();
   this.log.debug("Add New Light to existing %s",flobjects.length)
   flobjects.push(flo);
   this.log.debug("We have now %s",flobjects.length)
   this.config.setPersistValueForPlugin(this.name,"fakelights",JSON.stringify(flobjects));
+  this.harmonyServer.addFakeLightDevice(flo);
 }
+
+HarmonyBridge.prototype.removeFakeLight = function(lightId) {
+    var flobjects = this.getFakeLights();
+	var flo = undefined;
+	flobjects.forEach(function (tmp) {
+	 if (tmp["index"] == lightId) {
+		 flo = tmp; 
+	 }
+	});
+	if (flo!=undefined) {
+    var index = flobjects.indexOf(flo);
+    if (index > -1) {
+	    flobjects.splice(index, 1);
+		this.config.setPersistValueForPlugin(this.name,"fakelights",JSON.stringify(flobjects));
+		this.harmonyServer.changeFakeLightDevice(lightId,undefined);
+   	} else {
+    	this.log.debug("Not Found");
+    }
+    }
+}
+
 
 HarmonyBridge.prototype.getFakeLights = function() {
 	var flo = []; // Fake Light Objects
@@ -168,6 +196,20 @@ HarmonyBridge.prototype.handleConfigurationRequest = function(dispatched_request
 		}
 		break;
 			
+			
+		case "fake.delete":
+		{
+			
+			var lightId = queryObject["id"];
+			if (lightId!=undefined) {
+				this.log.debug("Remove Device %s",lightId);
+				this.removeFakeLight(lightId);
+				fakeLights = this.buildFakeLightList(dispatched_request,lightId); 
+			}
+		}
+		break;
+					
+	
 		case "fake.edit":
 		{
 			var lightId = queryObject["id"];
@@ -187,6 +229,8 @@ HarmonyBridge.prototype.handleConfigurationRequest = function(dispatched_request
 
 		}
 		break;
+		
+		
 		
 		case "fake.save":
 		{

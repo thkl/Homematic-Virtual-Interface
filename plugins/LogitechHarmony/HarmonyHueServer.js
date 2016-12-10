@@ -142,8 +142,37 @@ HarmonyHueServer.prototype.initFakeLights = function() {
   var lights = this.plugin.getFakeLights();
   that.log.debug("Ok we have here %s",JSON.stringify(lights));
   lights.forEach(function (light){
-	  var fhue = new FakeHueDevice(that,light["name"],light["type"],light["index"]);
+  	that.addFakeLightDevice(light);
   });
+}
+
+HarmonyHueServer.prototype.addFakeLightDevice = function(newLight) {
+	var fhue = new FakeHueDevice(this,newLight["name"],newLight["type"],newLight["index"]);
+}
+
+HarmonyHueServer.prototype.changeFakeLightDevice = function(lightId,newLight) {
+	var device = this.getLightDevice(lightId);
+	if ((device) && (device.isReal == false ) && (device.hmDevice != undefined)) {
+		// Remove the Tmp Data
+		this.log.debug("Remove HM Data");
+		this.bridge.removeStoredDeviceData(device.hmDevice);
+		this.log.debug("Get Light Object");
+		this.log.debug("Remove Light Object %s",device.index);
+		this.removeLightDevice(device);
+		if (newLight != undefined) {
+			var fhue = new FakeHueDevice(this,newLight["name"],newLight["type"],newLight["index"]);
+		}
+	}
+}
+
+HarmonyHueServer.prototype.removeLightDevice = function(device) {
+   var index = this.lights.indexOf(device);
+   if (index > -1) {
+    this.log.debug("And its gone");
+    this.lights.splice(index, 1);
+   } else {
+    this.log.debug("Not Found");
+   }
 }
 
 HarmonyHueServer.prototype.addLightDevice = function(light) {
