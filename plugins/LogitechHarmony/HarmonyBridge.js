@@ -12,6 +12,7 @@
 var path = require('path');
 var url = require("url");
 var HarmonyHueServer = require(__dirname + '/HarmonyHueServer.js').HarmonyHueServer;
+var HarmonyClient = require(__dirname + '/HarmonyClient.js').HarmonyClient;
 
 
 var HarmonyBridge = function(plugin,name,server,log) {
@@ -28,6 +29,7 @@ HarmonyBridge.prototype.init = function() {
 	var that = this;
     this.hm_layer = this.server.getBridge();
 	this.harmonyServer = new HarmonyHueServer(this);
+	this.harmonyClient = new HarmonyClient(this);
 }
 
 HarmonyBridge.prototype.getFakeLightWithId = function(lightId) {
@@ -261,7 +263,13 @@ HarmonyBridge.prototype.handleConfigurationRequest = function(dispatched_request
 		break;
 	}
 	
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listRealLights":realLights,"listFakeLights":fakeLights});
+	var activityList = "";
+	this.harmonyClient.getActivities().forEach(function (activity){
+		activityList = activityList +  dispatched_request.fillTemplate(lighttemplatereal,{"lamp_name":activity.label,"lamp_index":activity.adress});
+	});
+	
+	
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listRealLights":realLights,"listFakeLights":fakeLights,"activityList":activityList});
 }
 
 

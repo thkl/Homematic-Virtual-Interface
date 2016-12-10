@@ -20,6 +20,7 @@
   
   "dependencies": {
 	  "@achingbrain/ssdp":"latest",
-	  "node-hue-api": "latest"
+	  "node-hue-api": "latest",
+	  "harmonyhubjs-client":"latest"
   }
 }
