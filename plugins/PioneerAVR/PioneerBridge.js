@@ -127,7 +127,7 @@ PioneerBridge.prototype.sendCommand = function(command) {
  var that = this;
  try {
 	this.log.debug("Sending Command %s",command);
-	receiver.sendCommand(command);
+	this.receiver.sendCommand(command);
   } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
@@ -135,7 +135,7 @@ PioneerBridge.prototype.setVolume = function(newVolume) {
  var that = this;
  try {
 	this.log.debug("Sending NewVolume %s",newVolume);
-	receiver.volume(newVolume);
+	this.receiver.volume(newVolume);
  } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
