@@ -96,6 +96,29 @@ FakeHueDevice.prototype.init = function() {
 
 
   });
+  
+  
+  hmDevice.on('device_channel_value_change', function(parameter){
+			
+		var newValue = parameter.newValue;
+		var channel = hmDevice.getChannel(parameter.channel);
+		
+		
+		switch (that.hmType["channel"]) {
+			  
+			  case "SWITCH": {
+			  	this.light.isOn = newValue;
+			  }
+			  break;
+			  
+			  case "DIMMER": {
+			  	this.light.isOn = (newValue == 0)
+			  	this.light.bri = newValue*255;
+			  }
+		  }
+		  
+	});
+	
   this.hueserver.addLightDevice(this);
 }
 
