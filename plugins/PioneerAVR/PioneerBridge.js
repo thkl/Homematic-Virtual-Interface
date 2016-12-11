@@ -71,7 +71,11 @@ PioneerBridge.prototype.init = function() {
 				that.sendCommand("VD\r");
 				break;
 			case "5":
+				that.sendCommand("MO\r");
+				break;
 			case "6":
+				that.sendCommand("MF\r");
+				break;
 			case "7":
 			case "8":
 			case "9":
