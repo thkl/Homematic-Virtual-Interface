@@ -5,6 +5,8 @@ WWWDIR=/usr/local/etc/config/addons/www/$ADDONENAME
 RCD_DIR=/usr/local/etc/config/rc.d
 CONFIG_DIR=/usr/local/etc/config
 
+mkdir -p /mnt
+
 if [ "$1" = "" ]
 then
 	exit 1
@@ -16,11 +18,11 @@ fi
 	#www
 	mkdir -p $WWWDIR
 	# copy addon
-	cp -af hvl/* $WWWDIR
+	cp -R hvl/* $WWWDIR
 	chmod 775 $WWWDIR
 
 	# copy startup script
-	cp -af rc.d/* $RCD_DIR
+	cp -R rc.d/* $RCD_DIR
 
 	# make it run
 	chmod +x $RCD_DIR/ccu_hvl
@@ -29,3 +31,6 @@ fi
 	
 	ln -s $RCD_DIR/ccu_hvl /etc/init.d/S59hvl
 
+
+	umount /usr/local
+	umount /mnt
