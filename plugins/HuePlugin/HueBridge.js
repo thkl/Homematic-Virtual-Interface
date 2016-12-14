@@ -232,18 +232,7 @@ HueBridge.prototype.getConfiguredGroups = function() {
 
 
 HueBridge.prototype.lightWithId = function(lightId) {
-	var result = undefined;
-	var result = this.mappedDevices.filter(function (light) { return light.lightId == lightId}).pop();
-
-	/*this.lights.forEach(function (light){
-		
-		if (light.lightId == lightId) {
-			result = light;
-		}
-		
-	});*/
-		
-	return result;
+	return this.mappedDevices.filter(function (light) { return light.lightId == lightId}).pop();
 } 
 
 HueBridge.prototype.saveConfiguredGroups = function(publishedgroups) {
