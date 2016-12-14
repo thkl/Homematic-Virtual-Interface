@@ -233,13 +233,16 @@ HueBridge.prototype.getConfiguredGroups = function() {
 
 HueBridge.prototype.lightWithId = function(lightId) {
 	var result = undefined;
-	this.lights.forEach(function (light){
+	var result = this.mappedDevices.filter(function (light) { return light.lightId == lightId}).pop();
+
+	/*this.lights.forEach(function (light){
 		
 		if (light.lightId == lightId) {
 			result = light;
 		}
 		
-	});	
+	});*/
+		
 	return result;
 } 
 
@@ -254,9 +257,9 @@ HueBridge.prototype.refreshAll = function() {
 	
 	this.hue_api.lights(function(err, lights) {
 	 	lights["lights"].forEach(function (light) {
-		  var light = that.lightWithId(light["id"]);
-		  if (light) {
-			  light.refreshWithData(light);
+		  var hue_light = that.lightWithId(light["id"]);
+		  if (hue_light) {
+			  hue_light.refreshWithData(light);
 		  }
 		});
 	});
