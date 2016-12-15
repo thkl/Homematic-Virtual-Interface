@@ -90,7 +90,7 @@ PioneerBridge.prototype.init = function() {
 			case "18":
 				var func = that.functionForChannel(parameter.name, channel);
 				if (func != undefined) {
-					that.sendCommand(func);
+					that.sendCommand(func + "\r");
 				}
 			break;
 			
@@ -147,6 +147,7 @@ PioneerBridge.prototype.setVolume = function(newVolume) {
 
 PioneerBridge.prototype.functionForChannel=function(type,channel) {
 	var result = channel.getParamsetValueWithDefault("MASTER","CMD_" + type,"");
+	this.log.debug("Getting %s Result is %s","CMD_" + type,result);
 	return result;
 }
 
