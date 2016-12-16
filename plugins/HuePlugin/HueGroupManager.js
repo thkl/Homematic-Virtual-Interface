@@ -11,7 +11,7 @@ var HueColorDevice = require(__dirname + "/HueColorDevice.js").HueColorDevice;
 
 var HomematicDevice;
 	
-var HueGroupManager = function(plugin, hueApi) {
+var HueGroupManager = function(plugin, hueApi,instance) {
 
     this.mappedGroups = [];
     this.hmDevices = [];
@@ -19,7 +19,7 @@ var HueGroupManager = function(plugin, hueApi) {
     this.log = plugin.log;
     this.server = plugin.server;
     this.bridge = plugin.server.getBridge();
-
+	this.instance = instance;
     if (this.bridge == undefined) {
 	   throw("HM Layer was not set correctly");
     }
@@ -57,7 +57,7 @@ HueGroupManager.prototype.publish = function(publishedGroups,ccuNotification) {
   var that = this;
 
   
-  var devices = this.bridge.devicesWithNameLike("HUEGROUP");
+  var devices = this.bridge.devicesWithNameLike("HUEGROUP"+this.instance);
   
   this.log.debug(devices);
   devices.forEach(function (device){
@@ -72,8 +72,8 @@ HueGroupManager.prototype.publish = function(publishedGroups,ccuNotification) {
 	  var group = that.getGroup(groupid);
 	  if (group != undefined) {
 	  	that.log.debug("Adding new Group " + group["name"]);
-    	group["hm_device_name"] = "HUEGROUP00" + group["id"];
-		that.hmDevices.push(new HueColorDevice(that,that.hueApi,group,"HUEGROUP00"));
+    	group["hm_device_name"] = "HUEGROUP"+ that.instance +"0"+ group["id"];
+		that.hmDevices.push(new HueColorDevice(that,that.hueApi,group,"HUEGROUP"+that.instance+"0"));
 	  }
   });
   }

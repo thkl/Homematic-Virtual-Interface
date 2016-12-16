@@ -60,7 +60,7 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 
 
 NetAtmoDevice.prototype.refreshDevice = function() {
-	  var that = this;
+	  var that = this;	
       this.log.debug("Refresh NetAtmo Device with id %s",this.naId);
       
 	  var options = {device_id: this.naId , date_end :'last', scale: 'max',type: ['Temperature','Humidity','CO2']};
@@ -105,6 +105,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			  var options = {device_id: that.naId ,module_id:module, date_end :'last', scale: 'max',type: ['Temperature','Humidity']};
 			  
 			  that.api.getMeasure(options, function(err, measure) {
+				  if ((measure != undefined) && (measure[0]!=undefined)) {
 					var lastMeasure = measure[0]["value"]
 					if ((lastMeasure !=undefined ) && (lastMeasure[0]!=undefined)) { 
 			  			var hmDevice = that.modules[module];
@@ -113,6 +114,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			  				channel.updateValue("TEMPERATURE",lastMeasure[0][0],true);
 			  				channel.updateValue("HUMIDITY",lastMeasure[0][1],true);
 						}
+					}
 					}
 				});
 		});

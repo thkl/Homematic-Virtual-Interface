@@ -10,7 +10,7 @@
 
 var HomematicDevice;
 	
-var HueSceneManager = function(plugin, hueApi) {
+var HueSceneManager = function(plugin, hueApi,instance) {
 
     this.mappedScenes = [];
     this.hmDevices = [];
@@ -18,7 +18,7 @@ var HueSceneManager = function(plugin, hueApi) {
     this.log = plugin.log;
     this.server = plugin.server;
     this.bridge = plugin.server.getBridge();
-
+	this.instance = instance;
     if (this.bridge == undefined) {
 	   throw("HM Layer was not set correctly");
     }
@@ -57,7 +57,7 @@ HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
   var that = this;
 
   
-  var devices = this.bridge.devicesWithNameLike("HUESCENE00");
+  var devices = this.bridge.devicesWithNameLike("HUESCENE"+this.instance);
   this.log.debug(devices);
   devices.forEach(function (device){
 	  that.bridge.deleteDevice(device,ccuNotification);
@@ -67,16 +67,16 @@ HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
   
 	  var scenes = publishedscenes;
 	  if (scenes.length>0) {
-	  that.addHMRemote("HUESCENE00"  + cnt);
+	  that.addHMRemote("HUESCENE" + this.instance + "0" + cnt);
 	  scenes.forEach(function (sceneid){
 		var scene = that.getScene(sceneid);
 		if (scene != undefined) {
-			scene["hmchannel"] = "HUESCENE00"  + cnt + ":"+i;
+			scene["hmchannel"] = "HUESCENE" + that.instance + "0"  + cnt + ":"+i;
 			i=i+1;
 			if (i>19) {
 			   i=1;
 			   cnt = cnt + 1; 
-			   that.addHMRemote("HUESCENE00"  + cnt);
+			   that.addHMRemote("HUESCENE" + that.instance +  "0" + cnt);
 			}
  	  	}
  	  });

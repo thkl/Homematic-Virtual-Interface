@@ -40,10 +40,11 @@ HueBridge.prototype.init = function() {
 	
 	this.log.info("Init %s",this.name);
 	var ip = this.configuration.getValueForPlugin(this.name,"hue_bridge_ip");
+	this.instance = this.configuration.getValueForPluginWithDefault(this.name,"instance","0");
 	
 	if ((ip!=undefined) && (ip!="")) {
 	    this.hue_ipAdress = ip;
-		this.log.info("Hue Bridge Init at " + this.hue_ipAdress);
+		this.log.info("Hue Bridge Init at %s with instance %s",this.hue_ipAdress , this.instance);
 
 	if (this.checkUsername()==true) {
 	    this.queryBridgeAndMapDevices()
@@ -120,8 +121,8 @@ HueBridge.prototype.queryBridgeAndMapDevices = function() {
 
 this.hue_api = new HueApi(this.hue_ipAdress,this.hue_userName);
 
-this.sceneManager = new HueSceneManager(this,this.hue_api);
-this.groupManager = new HueGroupManager(this,this.hue_api);
+this.sceneManager = new HueSceneManager(this,this.hue_api,this.instance);
+this.groupManager = new HueGroupManager(this,this.hue_api,this.instance);
 // --------------------------
 // Fetch Lights
 this.queryLights();
@@ -145,8 +146,9 @@ HueBridge.prototype.queryLights = function() {
 	    		
     		 case "On/Off plug-in unit": {
     			that.log.debug("Create new Osram Plug " + light["name"]);
-				var hd = new HueDeviceOsramPlug(that,that.hue_api,light,"OSRPLG0");
-				light["hm_device_name"] = "OSRPLG0" + light["id"];
+    			var devName = "OSRPLG" +  that.instance;
+				var hd = new HueDeviceOsramPlug(that,that.hue_api,light,devName);
+				light["hm_device_name"] = devName + light["id"];
     		  } 
      		  break;
      		  
@@ -154,16 +156,18 @@ HueBridge.prototype.queryLights = function() {
     		  case "Color light": {
 	    		that.log.debug("Create new Color Light " + light["name"]);
 	    		// Try to load device
-				var hd = new HueColorDevice(that,that.hue_api,light,"HUE0000");
-				light["hm_device_name"] = "HUE0000" + light["id"];
+	    		var devName = "HUE000" +  that.instance;
+				var hd = new HueColorDevice(that,that.hue_api,light,devName);
+				light["hm_device_name"] = devName + light["id"];
     		  }
     		  break;
     		   
     		  case "Dimmable light": {
 	    		that.log.debug("Create new Color Light " + light["name"]);
 	    		// Try to load device
-				var hd = new HueDimmableDevice(that,that.hue_api,light,"HUE0000");
-				light["hm_device_name"] = "HUE0000" + light["id"];
+	    		var devName = "HUE000" +  that.instance;
+				var hd = new HueDimmableDevice(that,that.hue_api,light,devName);
+				light["hm_device_name"] = devName + light["id"];
     		  }
     		  break;
     		  
