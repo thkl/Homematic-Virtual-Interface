@@ -1,31 +1,79 @@
-#!/bin/bash
+#!/usr/bin/env
 
-USER_HOME=$(eval echo ~${SUDO_USER})
-path="$PWD"
-plugins=()
-for f in plugins/*; do
-    if [ -d $f ]; then
-	plugins+=($f)
-    fi
-done
+# Check if we can use colours in our output
+use_colour=0
+[ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null && use_colour=1
 
-echo "Root path is ${path}"
-echo "Installing root dependencies in " ${path}
-cd ${path}
-npm install
+# Some useful functions
+progress() {
+	[ $use_colour -eq 1 ] && echo -ne "\033[01;32m"
+	echo "$@" >&2
+	[ $use_colour -eq 1 ] && echo -ne "\033[00m"
+}
 
-for ppath in "${plugins[@]}"
-do
-    echo "Installing dependencies for plugin in " ${ppath}
-    cd ${path}/${ppath}
-    npm install
-    cd ${path}
-done
+info() {
+	[ $use_colour -eq 1 ] && echo -ne "\033[01;34m"
+	echo "$@" >&2
+	[ $use_colour -eq 1 ] && echo -ne "\033[00m"
+}
 
-if [ ! -d "${USER_HOME}/.hm_virtual_interface" ]; then
-  echo "build new configuration directory and config"
-  mkdir ${USER_HOME}/.hm_virtual_interface
-  touch ${USER_HOME}/.hm_virtual_interface/config.json
+die () {
+	[ $use_colour -eq 1 ] && echo -ne "\033[01;31m"
+	echo "$@" >&2
+	[ $use_colour -eq 1 ] && echo -ne "\033[00m"
+	exit 1
+}
+
+install_package() {
+	package=$1
+	info "install ${package}"
+	sudo apt-get -y --force-yes install $package 2>&1 > /dev/null
+	return $?
+}
+
+# check architecture
+sudo test "`dpkg --print-architecture`" == "armhf" || die "This Repos is only for armhf."
+
+
+info "Installing Git"
+
+install_package "git"
+
+info "Installing node"
+
+if $(uname -m | grep -Eq ^armv6); then
+ wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
+ tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
+ cd node-v4.0.0-linux-armv7l
+ sudo cp -R * /usr/local/
+ cd /home/pi
+ info "Cleaning ..."
+ rm node-v4.0.0-linux-armv7l.tar.gz
+ rm node-v4.0.0-linux-armv7l -R
 else
-  echo "Config is here skipping this step"
+ curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+ sudo apt-get install -y nodejs >/dev/null
 fi
+
+info "Installing Virtual Layer Software"
+
+cd /home/pi
+git clone https://github.com/thkl/Homematic-Virtual-Interface.git
+cd /home/pi/Homematic-Virtual-Interface
+chmod +x setup.sh
+./setup.sh
+
+
+
+whiptail --yesno "Would you like to start the virtual layer at boot by default?" $DEFAULT 20 60 2
+RET=$?
+if [ $RET -eq 0 ]; then
+
+    sudo cp /home/pi/Homematic-Virtual-Interface/lib/hmvi /etc/init.d/
+  	
+  	sudo chmod 755 /etc/init.d/hmvi
+	sudo update-rc.d hmvi defaults
+fi
+
+info "Done. If there are no error messages you are done."
+info "Start the by typing bin/hmvi"
