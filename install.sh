@@ -31,6 +31,8 @@ install_package() {
 	return $?
 }
 
+
+
 # check architecture
 sudo test "`dpkg --print-architecture`" == "armhf" || die "This Repos is only for armhf."
 
@@ -40,6 +42,9 @@ info "Installing Git"
 install_package "git"
 
 info "Installing node"
+
+if which node > /dev/null
+    then
 
 if $(uname -m | grep -Eq ^armv6); then
  wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
@@ -54,6 +59,11 @@ else
  curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
  sudo apt-get install -y nodejs >/dev/null
 fi
+
+    else
+        echo "node is installed, skipping..."
+    fi
+
 
 info "Installing Virtual Layer Software"
 
