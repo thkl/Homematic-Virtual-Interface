@@ -41,28 +41,24 @@ info "Installing Git"
 
 install_package "git"
 
-info "Installing node"
 
-if which node > /dev/null
-    then
-
-if $(uname -m | grep -Eq ^armv6); then
- wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
- tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
- cd node-v4.0.0-linux-armv7l
- sudo cp -R * /usr/local/
- cd /home/pi
- info "Cleaning ..."
- rm node-v4.0.0-linux-armv7l.tar.gz
- rm node-v4.0.0-linux-armv7l -R
+if [ $(type -P node | grep node|wc -l) -eq 0 ]; 
+then
+  if $(uname -m | grep -Eq ^armv6); then
+    wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
+    tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
+    cd node-v4.0.0-linux-armv7l
+    sudo cp -R * /usr/local/
+    cd /home/pi
+    rm node-v4.0.0-linux-armv7l.tar.gz
+    rm node-v4.0.0-linux-armv7l -R
+  else
+    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    sudo apt-get install -y nodejs >/dev/null
+  fi
 else
- curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
- sudo apt-get install -y nodejs >/dev/null
+   info "node is installed, skipping..."
 fi
-
-    else
-        echo "node is installed, skipping..."
-    fi
 
 
 info "Installing Virtual Layer Software"
