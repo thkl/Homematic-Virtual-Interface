@@ -5,8 +5,17 @@ You may add serval plugins to connect other devices to your CCU
 
 This is work in progress.
 
+Quick Install:
+
+ ```
+wget -nv -O- https://raw.githubusercontent.com/thkl/Homematic-Virtual-Interface/master/install.sh | bash -
+ ```
+
 
 Configuration:
+
+
+
 
 fill the config.json ....
 
