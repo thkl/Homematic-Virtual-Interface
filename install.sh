@@ -83,3 +83,4 @@ fi
 
 info "Done. If there are no error messages you are done."
 info "Start the by typing bin/hmvi"
+info "There is an addon file named hvl_addon.tar.gz here. Install this at your ccu as additional software, to setup the ccu to use the virtual layer."
