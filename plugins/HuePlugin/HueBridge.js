@@ -19,7 +19,7 @@ var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
 
 
-var HueBridge = function(plugin,name,server,log) {
+var HueBridge = function(plugin,name,server,log,instance) {
 	this.plugin = plugin;
 	this.mappedDevices = [];
 	this.hue_ipAdress;
@@ -30,6 +30,7 @@ var HueBridge = function(plugin,name,server,log) {
 	this.lights = [];
 	this.groups = [];
 	this.name = name;
+	this.instance = instance;
 }
 
 
@@ -40,7 +41,6 @@ HueBridge.prototype.init = function() {
 	
 	this.log.info("Init %s",this.name);
 	var ip = this.configuration.getValueForPlugin(this.name,"hue_bridge_ip");
-	this.instance = this.configuration.getValueForPluginWithDefault(this.name,"instance","0");
 	
 	if ((ip!=undefined) && (ip!="")) {
 	    this.hue_ipAdress = ip;
