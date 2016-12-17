@@ -213,8 +213,10 @@ HueBridge.prototype.queryScenes = function() {
 	var scnt = 0;
 	this.hue_api.getScenes(function(err, scenes) {
 		scenes.forEach(function (scene) {
-			scnt = scnt + 1;
-			that.sceneManager.addScene(scene);
+			if (scene["owner"] != "none") {
+				scnt = scnt + 1;
+				that.sceneManager.addScene(scene);
+			}
 		});
 
 		var publishedscenes = that.getConfiguredScenes();	
