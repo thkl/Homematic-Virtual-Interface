@@ -234,7 +234,7 @@ LogicalBridge.prototype.sendValueRPC = function(adress,datapoint,value) {
 
 LogicalBridge.prototype.getValueRPC = function(adress,datapoint,callback) {
 	this.client.methodCall("getValue", [adress,datapoint], function(error, value) {
-		
+		callback(value);
 	});
 }
 
@@ -245,14 +245,15 @@ LogicalBridge.prototype.ccuEvent = function(adress,datapoint,value) {
 
 LogicalBridge.prototype.processSubscriptions = function(adress,datapoint,value) {
   var that = this;
-
+  
+  var eventSource = adress+"."+datapoint;
+  
   this.subscriptions.forEach(function (subs) {
 	  
 	  
 	  var options = subs.options || {};
       var delay;
       var match;
-	  var eventSource = adress+"."+datapoint;
 
 	  
 	  if (typeof subs.source === 'string') {
