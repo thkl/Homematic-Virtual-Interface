@@ -686,7 +686,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
             stack.push(lines[i]);
         }
 
-        that.log.error.apply(log, [name + ' ' + stack.join('\n')]);
+        that.log.error.apply(that.log, [name + ' ' + stack.join('\n')]);
     });
 
     scriptDomain.run(function () {
