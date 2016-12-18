@@ -81,7 +81,7 @@ FakeHueDevice.prototype.init = function() {
 			  
 			  case "SWITCH": {
 			  	var sw_channel = that.hmDevice.getChannelWithTypeAndIndex("SWITCH","1");
-			  	sw_channel.updateValue("STATE",state);
+			  	sw_channel.updateValue("STATE",state,true);
 			  }
 			  break;
 			  
