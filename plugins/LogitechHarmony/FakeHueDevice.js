@@ -88,7 +88,7 @@ FakeHueDevice.prototype.init = function() {
 			  case "DIMMER": {
 			  	if (state == false) {
 			  		var sw_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-			  		sw_channel.updateValue("LEVEL",false,true);
+			  		sw_channel.updateValue("LEVEL",0,true);
 			  	}
 			  }
 		  }
