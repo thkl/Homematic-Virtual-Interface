@@ -505,7 +505,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
         },
         
         setValue:   function Sandbox_setValue(target, val) {
-
+			that.log.debug("Set Value %s of type %s",val,typeof val);
             if (typeof target === 'object' && target.length) {
                 target = Array.prototype.slice.call(target);
                 target.forEach(function (tp) {
