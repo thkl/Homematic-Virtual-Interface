@@ -222,7 +222,7 @@ LogicalBridge.prototype.createScript = function(source, name) {
             return vm.createScript(source, name);
         }
     } catch (e) {
-        log.error(name, e.name + ':', e.message);
+        this.log.error(name, e.name + ':', e.message);
         return false;
     }
 }
