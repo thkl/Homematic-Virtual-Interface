@@ -18,7 +18,6 @@ var HueDeviceOsramPlug = require(__dirname + "/HueDeviceOsramPlug.js").HueDevice
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
 
-
 var HueBridge = function(plugin,name,server,log,instance) {
 	this.plugin = plugin;
 	this.mappedDevices = [];
@@ -118,7 +117,7 @@ HueBridge.prototype.checkUsername = function() {
 
 	
 HueBridge.prototype.queryBridgeAndMapDevices = function() {
-
+var that = this;
 this.hue_api = new HueApi(this.hue_ipAdress,this.hue_userName);
 
 this.sceneManager = new HueSceneManager(this,this.hue_api,this.instance);
@@ -130,8 +129,19 @@ this.queryLights();
 this.queryGroups();
 // Fetch all Scenes
 this.queryScenes();
-this.log.info("initialization completed");
-this.refreshAll();
+
+setTimeout(function() {that.checkReady();}, 1);
+}
+
+HueBridge.prototype.checkReady = function() {
+  var that = this;
+  if ((this.lightsInitialized) && (this.groupsInitialized) && (this.scenesInitialized)) {
+  	 this.plugin.initialized = true;
+	 this.log.info("initialization completed");
+	 this.refreshAll();
+  } else {
+	 setTimeout(function() {that.checkReady();}, 1000);
+  }	
 }
 
 
@@ -182,6 +192,7 @@ HueBridge.prototype.queryLights = function() {
     		that.mappedDevices.push(hd);
   		});
   	that.log.debug("Lightinit completed with " + that.lights.length + " devices mapped.");
+  	that.lightsInitialized = true;
   	}
 	});
 }
@@ -205,6 +216,8 @@ HueBridge.prototype.queryGroups = function() {
 
 
   	that.log.debug("Groupinit completed with " + publishedgroups.length + " devices mapped.");
+	that.groupsInitialized = true;
+  	
 	});
 }
 
@@ -225,6 +238,7 @@ HueBridge.prototype.queryScenes = function() {
   		}
   	
   	that.log.debug("Sceneinit completed with "+ publishedscenes.length +" scenes mapped.");
+	that.scenesInitialized = true;
 	});
 }
 

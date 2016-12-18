@@ -7,6 +7,7 @@ module.exports = function(server,name,logger,instance) {
 	this.bridge = new HueBridge(this,name,server,logger,instance);
 	this.bridge.init();
 	this.instance = instance;
+	this.initialized = false;
 	
 	
 	this.handleConfigurationRequest = function(dispatched_request) {
