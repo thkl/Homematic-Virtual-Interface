@@ -229,7 +229,8 @@ LogicalBridge.prototype.createScript = function(source, name) {
 
 
 LogicalBridge.prototype.sendValueRPC = function(adress,datapoint,value) {
-	this.client.methodCall("setValue", {"params":[adress,datapoint,value]}, function(error, value) {});
+	var params = [{"params":[adress,datapoint,value]}];
+	this.client.methodCall("setValue",params, function(error, value) {});
 }
 
 LogicalBridge.prototype.getValueRPC = function(adress,datapoint,callback) {
