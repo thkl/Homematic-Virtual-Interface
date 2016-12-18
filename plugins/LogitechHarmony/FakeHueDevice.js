@@ -63,13 +63,13 @@ FakeHueDevice.prototype.init = function() {
 			  
 			  case "SWITCH": {
 			  	var sw_channel = that.hmDevice.getChannelWithTypeAndIndex("SWITCH","1");
-			  	sw_channel.updateValue("STATE",true,true);
+			  	sw_channel.updateValue("STATE",true,true,true);
 			  }
 			  break;
 			  
 			  case "DIMMER": {
 			  	var sw_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-			  	sw_channel.updateValue("LEVEL",(state/255),true);
+			  	sw_channel.updateValue("LEVEL",(state/255),true,true);
 			  }
 		  }
 
@@ -81,14 +81,14 @@ FakeHueDevice.prototype.init = function() {
 			  
 			  case "SWITCH": {
 			  	var sw_channel = that.hmDevice.getChannelWithTypeAndIndex("SWITCH","1");
-			  	sw_channel.updateValue("STATE",state,true);
+			  	sw_channel.updateValue("STATE",state,true,true);
 			  }
 			  break;
 			  
 			  case "DIMMER": {
 			  	if (state == false) {
 			  		var sw_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-			  		sw_channel.updateValue("LEVEL",0,true);
+			  		sw_channel.updateValue("LEVEL",0,true,true);
 			  	}
 			  }
 		  }
