@@ -18,7 +18,8 @@ var modules = {
     'domain': require('domain'),
     'node-schedule': require('node-schedule'),
     'suncalc': require('suncalc'),
-    'url': require('url')
+    'url': require('url'),
+    'promise':require('promise')
 };
 
 var domain = modules.domain;
@@ -28,8 +29,7 @@ var path = modules.path;
 var scheduler = modules['node-schedule'];
 var suncalc = modules.suncalc;
 var url = modules.url;
-
-
+var Promise = modules.promise;
 var _global = {};
 
 var LogicalMapping = function(source_adress,source_datapoint,destination_adress,destination_datapoint,destination_value) {
@@ -45,12 +45,13 @@ var LogicalBridge = function(plugin,name,server,log) {
 	this.server = server;
 	this.log = log;
 	this.name = name;
-	this.interface = "BidCos-RF.";
+	this.interface = "BidCos-RF";
 	this.scripts = {};
     this.subscriptions = [];
     
 	this.sunEvents = [];
 	this.sunTimes = [/* yesterday */ {}, /* today */ {}, /* tomorrow */ {}];
+	this.cache = {};
 }
 
 
@@ -62,11 +63,12 @@ LogicalBridge.prototype.init = function() {
 	var port = this.configuration.getValueForPluginWithDefault(this.name,"bridge_port",7002);
 	var localIP = this.hm_layer.getIPAddress();
 	
+	
 	this.server = xmlrpc.createServer({
       host: localIP,
       port: port
     });
-    
+
     
     this.methods = {
    	'system.listMethods': function listMethods(err, params, callback) {
@@ -101,10 +103,11 @@ LogicalBridge.prototype.init = function() {
           events.map(function(event) {
             if ((event["methodName"] == "event") && (event["params"] !== undefined)) {
               var params = event["params"];
-              var channel = that.interface + params[1];
+              var channel = that.interface + "." + params[1];
               var datapoint = params[2];
               var value = params[3];
           	  that.log.debug("RPC event for %s %s with value %s",channel,datapoint,value);
+          	  that.doCache(channel,datapoint,value);
           	  that.ccuEvent(channel,datapoint,value);
           	  
             }
@@ -130,7 +133,7 @@ LogicalBridge.prototype.init = function() {
       path: "/"
     });
     
-    this.log.debug("CCU RPC Init Call for interface BidCos-RF");
+    this.log.debug("CCU RPC Init Call for interface %s",this.interface);
     this.client.methodCall("init", ["http://" + localIP + ":" + port , "hvl_BidCos" ], function(error, value) {
       that.log.debug("CCU Response ...Value (%s) Error : (%s)",JSON.stringify(value) , error);
     });
@@ -148,6 +151,19 @@ LogicalBridge.prototype.init = function() {
     this.log.info('re-scheduled', this.sunEvents.length, 'sun events');
 });
 
+}
+
+LogicalBridge.prototype.doCache = function(adress,datapoint,value) {
+  var adr = adress + "." + datapoint;
+  var el = this.cache[adr];
+  if (!el) {
+	  el = {"v":value,"t":Date.now()};
+  } else {
+	  el["l"] = el['v'];
+	  el["v"] = value;
+	  el["t"] = Date.now();
+  }
+  this.cache[adr]=el;
 }
 
 LogicalBridge.prototype.reInitScripts = function() {
@@ -229,17 +245,36 @@ LogicalBridge.prototype.createScript = function(source, name) {
 
 
 LogicalBridge.prototype.sendValueRPC = function(adress,datapoint,value) {
-	this.client.methodCall("setValue",[adress,datapoint,value], function(error, value) {});
+	var that = this;
+	this.client.methodCall("setValue",[adress,datapoint,value], function(error, value) {
+		that.doCache(adress,datapoint,value);
+	});
 }
 
-LogicalBridge.prototype.getValueRPC = function(adress,datapoint,callback) {
+LogicalBridge.prototype.internal_getState = function(adress,datapoint,callback) {
+	var that = this;
 	this.client.methodCall("getValue", [adress,datapoint], function(error, value) {
+		that.doCache(adress,datapoint,value);
 		callback(value);
 	});
 }
 
+LogicalBridge.prototype.get_State = function(adress,datapoint,callback) {
+  this.internal_getState(adress,datapoint,callback);
+}
+
+LogicalBridge.prototype.get_Value = function(adress,datapoint,callback) {
+	var adr = adress + "." + datapoint;
+	var dp = this.cache[adr];
+	if (dp) {
+		callback(dp['v']);
+	} else {
+		this.internal_getState(adress,datapoint,callback);
+	}
+}
+
 LogicalBridge.prototype.ccuEvent = function(adress,datapoint,value) {
-  this.processSubscriptions(adress,datapoint,value);
+   this.processSubscriptions(adress,datapoint,value );
 }
 
 
@@ -247,15 +282,12 @@ LogicalBridge.prototype.processSubscriptions = function(adress,datapoint,value) 
   var that = this;
   
   var eventSource = adress+"."+datapoint;
-  
   this.subscriptions.forEach(function (subs) {
-	  
-	  
+
 	  var options = subs.options || {};
       var delay;
       var match;
 
-	  
 	  if (typeof subs.source === 'string') {
             match = (subs.source == eventSource);
         } else if (subs.source instanceof RegExp) {
@@ -263,10 +295,8 @@ LogicalBridge.prototype.processSubscriptions = function(adress,datapoint,value) 
         }
 
       if (typeof subs.callback === 'function' && match) {
-      
-            if (options.change && (state.val === oldState.val)) return;
-
-            delay = 0;
+      		
+      		delay = 0;
             if (options.shift) delay += ((parseFloat(options.shift) || 0) * 1000);
             if (options.random) delay += ((parseFloat(options.random) || 0)  * Math.random() * 1000);
 
@@ -498,7 +528,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
 
                 source = Array.prototype.slice.call(source);
                 source.forEach(function (tp) {
-                    Sandbox.subscribe(tp, options, callback);
+	                Sandbox.subscribe(tp, options, callback);
                 });
 
             }
@@ -506,7 +536,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
         },
         
         setValue:   function Sandbox_setValue(target, val) {
-			that.log.debug("Set Value %s of type %s",val,typeof val);
+
             if (typeof target === 'object' && target.length) {
                 target = Array.prototype.slice.call(target);
                 target.forEach(function (tp) {
@@ -521,7 +551,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
 			// third the Datapoint
 			if (tmp.length>2) {
 				
-				if (tmp[0].toLowerCase()=="bidcos-rf") {
+				if (tmp[0].toLowerCase()==that.interface.toLowerCase()) {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
 					that.sendValueRPC (adress,datapointName,val);  
@@ -544,23 +574,22 @@ LogicalBridge.prototype.runScript = function(script, name) {
 			
 		},
 		
-		getValue:   function Sandbox_getValue(target,callback) {
-
+		getValue: function Sandbox_getValue(target) {
+			
+			return new Promise(function (resolve,reject) {
+				
    			var tmp = target.split('.');
-   			if (typeof callback === 'function') {
+   			//if (typeof callback === 'function') {
 			// First Part should be the interface
 			// Second the Adress
 			// third the Datapoint
 			if (tmp.length>2) {
-				
-				if (tmp[0].toLowerCase()=="bidcos-rf") {
+				if (tmp[0].toLowerCase()==that.interface.toLowerCase()) {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
-					that.getValueRPC (adress,datapointName,function(newValue) {
-						
-						callback(newValue);
-						
-					});  
+				    that.get_Value(adress,datapointName,function(value){
+					    resolve(value);
+				    });
 				}
 
 				if (tmp[0].toLowerCase()=="hmvirtual") {
@@ -568,17 +597,53 @@ LogicalBridge.prototype.runScript = function(script, name) {
 					var datapointName = tmp[2];
 					var channel = that.hm_layer.channelWithAdress(adress);
 					if (channel) {
-						callback(channel.getValue(datapointName));
+						resolve(channel.getValue(datapointName));
 					}
 				}
 				
 				
 			} else {
 				that.log.error("Target %s seems not to be value",target);
-				callback(undefined);
+				reject(undefined);
 			}
-			
-		  }
+				
+			});
+		  //}
+		},
+
+		getState: function Sandbox_getState(target,callback) {
+		
+			return new Promise(function (resolve,reject) {
+   			var tmp = target.split('.');
+			// First Part should be the interface
+			// Second the Adress
+			// third the Datapoint
+			if (tmp.length>2) {
+				
+				if (tmp[0].toLowerCase()==that.interface.toLowerCase()) {
+					var adress = tmp[1];
+					var datapointName = tmp[2];
+				    that.get_State(adress,datapointName,function(value){
+					    resolve(value);
+				    });
+				}
+
+				if (tmp[0].toLowerCase()=="hmvirtual") {
+					var adress = tmp[1];
+					var datapointName = tmp[2];
+					var channel = that.hm_layer.channelWithAdress(adress);
+					if (channel) {
+						resolve(channel.getValue(datapointName));
+					}
+				}
+				
+				
+			} else {
+				that.log.error("Target %s seems not to be value",target);
+				reject(undefined);
+			}
+
+			});
 		},
 		
 		

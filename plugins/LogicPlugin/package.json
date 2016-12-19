@@ -20,6 +20,7 @@
   
   "dependencies": {
     "node-schedule":"latest",
-    "suncalc":"latest"
+    "suncalc":"latest",
+    "promise":"latest"
   }
 }
