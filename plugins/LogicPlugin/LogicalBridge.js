@@ -143,11 +143,12 @@ LogicalBridge.prototype.init = function() {
     
     scheduler.scheduleJob('0 0 * * *', function () {
     // re-calculate every day
-    this.calculateSunTimes();
+    	that.calculateSunTimes();
     // schedule events for this day
-    this.sunEvents.forEach(function (event) {
-        that.sunScheduleEvent(event);
-    });
+    	that.sunEvents.forEach(function (event) {
+        	that.sunScheduleEvent(event);
+    	});
+    	
     this.log.info('re-scheduled', this.sunEvents.length, 'sun events');
 });
 
