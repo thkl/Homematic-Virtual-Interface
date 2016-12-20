@@ -367,6 +367,8 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 
 	HueColorDevice.prototype.refreshWithData = function (data) {
 		
+		this.log.debug("Start Lamp update");
+
 		var state = data["state"]["on"];
 	    var bri = data["state"]["bri"];
 	    var hue = data["state"]["hue"];
@@ -388,19 +390,22 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	    if ((di_channel!=undefined) && (co_channel!=undefined)) {
 
 	    if (state==true) {
+		    this.log.debug("State is ON Level %s",(bri/254));
 	        di_channel.updateValue("LEVEL",(bri/254),true);
 	        
 	        if (hue==white) {
 		        co_channel.updateValue("COLOR",200,true);
 	        } else {
+		        this.log.debug("Update hue %s",Math.round((hue/65535)*199));
 		        co_channel.updateValue("COLOR",Math.round((hue/65535)*199),true);
 	        }
 	        
 	    	} else {
-	        di_channel.updateValue("LEVEL",0,true);
+		        this.log.debug("State is off set Level to zero");
+				di_channel.updateValue("LEVEL",0,true);
 	    	}
 	    }
-
+       this.log.debug("Lamp update end");
 	}
 
 

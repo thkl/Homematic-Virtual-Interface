@@ -262,15 +262,23 @@ HueBridge.prototype.saveConfiguredGroups = function(publishedgroups) {
 
 HueBridge.prototype.refreshAll = function() {
 	var that = this;
+	this.log.debug("Refreshing Lamp status ...");
 	var refreshrate = this.configuration.getValueForPluginWithDefault(this.plugin.name,"refresh",60)*1000;
 	
 	this.hue_api.lights(function(err, lights) {
+		that.log.debug("Number of Lamps in update %s error %s -> %s",lights,err);
+		if (err) {
+			that.log.debug(err.stack);
+		}
+		if (lights) {
 	 	lights["lights"].forEach(function (light) {
 		  var hue_light = that.lightWithId(light["id"]);
 		  if (hue_light) {
+			  that.log.debug("Processing response for Lamp %s",light["id"]);
 			  hue_light.refreshWithData(light);
 		  }
 		});
+		}
 	});
 	
 	setTimeout(function() {
