@@ -263,7 +263,7 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 			}
 		}
 	    
-	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
+	    var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 	  
 	    if (di_channel!=undefined) {
 		    if (state==true) {
