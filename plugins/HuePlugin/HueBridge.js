@@ -214,8 +214,11 @@ HueBridge.prototype.queryGroups = function() {
 	  	that.groupManager.publish(publishedgroups,false);
   	}
 
-
-  	that.log.debug("Groupinit completed with " + publishedgroups.length + " devices mapped.");
+  	if (publishedgroups) {
+	  	that.log.debug("Groupinit completed with " + publishedgroups.length + " devices mapped.");
+  	} else {
+	  	that.log.debut("No groups ...set init to completed.");
+  	}
 	that.groupsInitialized = true;
   	
 	});
@@ -237,7 +240,11 @@ HueBridge.prototype.queryScenes = function() {
 	  		that.sceneManager.publish(publishedscenes,false);
   		}
   	
-  	that.log.debug("Sceneinit completed with "+ publishedscenes.length +" scenes mapped.");
+  	if (publishedscenes) {
+  		that.log.debug("Sceneinit completed with "+ publishedscenes.length +" scenes mapped.");
+  	}else {
+	  	that.log.debut("No scenes ...set init to completed.");
+  	}
 	that.scenesInitialized = true;
 	});
 }
