@@ -173,7 +173,7 @@ HueBridge.prototype.queryLights = function() {
     		  break;
     		   
     		  case "Dimmable light": {
-	    		that.log.debug("Create new Color Light " + light["name"]);
+	    		that.log.debug("Create new White Light " + light["name"]);
 	    		// Try to load device
 	    		var devName = "HUE000" +  that.instance;
 				var hd = new HueDimmableDevice(that,that.hue_api,light,devName);
@@ -208,10 +208,12 @@ HueBridge.prototype.queryGroups = function() {
      	});
   	}  
   	
-  	
+  	that.log.debug("Group loading completed. Will publish groups now .. (if there are some)");
   	var publishedgroups = that.getConfiguredGroups();
 	if (publishedgroups != undefined) {
+		that.log.debug("Found some groups to publish ...");
 	  	that.groupManager.publish(publishedgroups,false);
+	  	that.log.debug("Aaaand i am done");
   	}
 
   	if (publishedgroups) {

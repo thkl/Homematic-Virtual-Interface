@@ -56,13 +56,13 @@ HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
   var cnt = 0;
   var that = this;
 
-  
+  this.log.debug("Scenemanager publish. First remove all old devices ...");
   var devices = this.bridge.devicesWithNameLike("HUESCENE"+this.instance);
-  this.log.debug(devices);
+  this.log.debug("Old Devices: %s",devices);
   devices.forEach(function (device){
 	  that.bridge.deleteDevice(device,ccuNotification);
   });
-  
+  this.log.debug("Publish new Scenes");
   
   
 	  var scenes = publishedscenes;
@@ -81,6 +81,8 @@ HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
  	  	}
  	  });
 	  }
+	  
+  this.log.debug("And i am done ");
 }
 
 HueSceneManager.prototype.addHMRemote = function(remoteName) {

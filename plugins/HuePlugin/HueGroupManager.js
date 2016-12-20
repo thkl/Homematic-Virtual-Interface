@@ -59,11 +59,13 @@ HueGroupManager.prototype.publish = function(publishedGroups,ccuNotification) {
   
   var devices = this.bridge.devicesWithNameLike("HUEGROUP"+this.instance);
   
-  this.log.debug(devices);
+  this.log.debug("Will remove old group devices %s",devices);
+  
   devices.forEach(function (device){
 	  that.bridge.deleteDevice(device,ccuNotification);
   });
   
+  this.log.debug("Publishing groups ...");
   
   
   var groups = publishedGroups;
@@ -76,7 +78,10 @@ HueGroupManager.prototype.publish = function(publishedGroups,ccuNotification) {
 		that.hmDevices.push(new HueColorDevice(that,that.hueApi,group,"HUEGROUP"+that.instance+"0"));
 	  }
   });
+  } else {
+	  this.log.debug("There are no groups.");
   }
+  this.log.debug("Leaving group manager");
 }
 
 
