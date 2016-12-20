@@ -210,6 +210,7 @@ HueBridge.prototype.queryGroups = function() {
   	
   	that.log.debug("Group loading completed. Will publish groups now .. (if there are some)");
   	var publishedgroups = that.getConfiguredGroups();
+	
 	if (publishedgroups != undefined) {
 		that.log.debug("Found some groups to publish ...");
 	  	that.groupManager.publish(publishedgroups,false);
@@ -221,6 +222,7 @@ HueBridge.prototype.queryGroups = function() {
   	} else {
 	  	that.log.debut("No groups ...set init to completed.");
   	}
+	
 	that.groupsInitialized = true;
   	
 	});
@@ -254,9 +256,15 @@ HueBridge.prototype.queryScenes = function() {
 HueBridge.prototype.getConfiguredGroups = function() {
 	var ps = this.configuration.getPersistValueForPluginWithDefault(this.name,"PublishedGroups",undefined);
 	if (ps != undefined) {
-	  return JSON.parse(ps);
+		try{
+			return JSON.parse(ps);
+		} catch (err) {
+			this.log.warn("persistent group definition is broken. ignore that one.");
+			this.configuration.setPersistValueForPlugin(this.name,"PublishedGroups","[]");
+			return [];
+		}
 	}
-	return undefined;	
+	return [];	
 } 
 
 
@@ -300,9 +308,15 @@ HueBridge.prototype.refreshAll = function() {
 HueBridge.prototype.getConfiguredScenes = function() {
 	var ps = this.configuration.getPersistValueForPluginWithDefault(this.name,"PublishedScenes",undefined);
 	if (ps != undefined) {
-	  return JSON.parse(ps);
+		try {
+			return JSON.parse(ps);
+		}catch (err) {
+			this.log.warn("persistent scene definition is broken. ignore that one.");
+			this.configuration.setPersistValueForPlugin(this.name,"PublishedScenes","[]");
+			return [];
+		}
 	}
-	return undefined;	
+	return [];	
 } 
 
 HueBridge.prototype.saveConfiguredScenes = function(publishedscenes) {
