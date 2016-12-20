@@ -149,7 +149,7 @@ LogicalBridge.prototype.init = function() {
         	that.sunScheduleEvent(event);
     	});
     	
-    this.log.info('re-scheduled', this.sunEvents.length, 'sun events');
+    that.log.info('re-scheduled', that.sunEvents.length, 'sun events');
 });
 
 }
