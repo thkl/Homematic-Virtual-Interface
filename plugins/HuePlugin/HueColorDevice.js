@@ -24,7 +24,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		this.reportFaults = false;
 
 		if (this.config!=undefined) {
-			this.log.debug("Config is valid");
+			this.log.debug("Config is valid");	
 			this.reportFaults = this.config.getValueForPluginWithDefault(this.plugin.name,"reportFaults",false);
 		}
 
@@ -288,7 +288,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	  if (that.isGroup == true) {
 	  
 	  this.api.getGroup(this.lightId, function(err, result) {
-		this.log.debug(JSON.stringify(result));
+		that.log.debug(JSON.stringify(result));
 	    var state = result["lastAction"]["on"];
 	    var bri = result["lastAction"]["bri"];
 	    var hue = result["lastAction"]["hue"];
@@ -366,6 +366,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	}
 
 	HueColorDevice.prototype.refreshWithData = function (data) {
+		var that = this;
 		
 		this.log.debug("Start Lamp update");
 

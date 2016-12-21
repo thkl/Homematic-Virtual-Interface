@@ -19,7 +19,9 @@ var modules = {
     'node-schedule': require('node-schedule'),
     'suncalc': require('suncalc'),
     'url': require('url'),
-    'promise':require('promise')
+    'promise':require('promise'),
+    'http' : require("http")
+
 };
 
 var domain = modules.domain;
@@ -29,16 +31,9 @@ var path = modules.path;
 var scheduler = modules['node-schedule'];
 var suncalc = modules.suncalc;
 var url = modules.url;
+var http = modules.http;
 var Promise = modules.promise;
 var _global = {};
-
-var LogicalMapping = function(source_adress,source_datapoint,destination_adress,destination_datapoint,destination_value) {
-  this.source_adress = source_adress;
-  this.source_datapoint = source_datapoint;
-  this.destination_adress = destination_adress;
-  this.destination_datapoint = destination_datapoint;
-  this.destination_value = destination_value;
-}
 
 var LogicalBridge = function(plugin,name,server,log) {
 	this.plugin = plugin;
@@ -48,7 +43,6 @@ var LogicalBridge = function(plugin,name,server,log) {
 	this.interface = "BidCos-RF";
 	this.scripts = {};
     this.subscriptions = [];
-    
 	this.sunEvents = [];
 	this.sunTimes = [/* yesterday */ {}, /* today */ {}, /* tomorrow */ {}];
 	this.cache = {};
@@ -154,6 +148,58 @@ LogicalBridge.prototype.init = function() {
 
 }
 
+
+LogicalBridge.prototype.regaCommand = function(script,callback) {
+	  var ccuIP =  this.hm_layer.ccuIP;
+	  var that = this;
+	  var post_options = {
+      host: ccuIP,
+      port: "8181",
+      path: "/tclrega.exe",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": script.length
+      },
+    };
+
+    var post_req = http.request(post_options, function(res) {
+      var data = "";
+      
+      res.setEncoding("binary");
+      
+      res.on("data", function(chunk) {
+        data += chunk.toString();
+      });
+      
+      res.on("end", function() {
+        var pos = data.lastIndexOf("<xml><exec>");
+        var response = (data.substring(0, pos));
+        that.log.debug("Rega Response %s",response);
+        callback(response);
+      });
+
+      
+    });
+
+
+    post_req.on("error", function(e) {
+	    that.log.warn("Error " + e + "while executing rega script " + ls);
+        callback(undefined);
+    });
+
+    post_req.on("timeout", function(e) {
+	    that.log.warn("timeout while executing rega script");
+        callback(undefined);
+    });
+    
+	post_req.setTimeout(1000);
+	this.log.debug("RegaScript %s",script);
+    post_req.write(script);
+    post_req.end();
+}
+
+
 LogicalBridge.prototype.doCache = function(adress,datapoint,value) {
   var adr = adress + "." + datapoint;
   var el = this.cache[adr];
@@ -245,10 +291,11 @@ LogicalBridge.prototype.createScript = function(source, name) {
 }
 
 
-LogicalBridge.prototype.sendValueRPC = function(adress,datapoint,value) {
+LogicalBridge.prototype.sendValueRPC = function(adress,datapoint,value,callback) {
 	var that = this;
 	this.client.methodCall("setValue",[adress,datapoint,value], function(error, value) {
 		that.doCache(adress,datapoint,value);
+		callback();
 	});
 }
 
@@ -272,6 +319,16 @@ LogicalBridge.prototype.get_Value = function(adress,datapoint,callback) {
 	} else {
 		this.internal_getState(adress,datapoint,callback);
 	}
+}
+
+LogicalBridge.prototype.set_Variable = function(name,value,callback) {
+   var script = "var x = dom.GetObject('"+name+"');if (x){x.Variable("+value+");}";
+   this.regaCommand(script,callback);
+}
+
+LogicalBridge.prototype.get_Variable = function(name,callback) {
+   var script = "var x = dom.GetObject('"+name+"');if (x){WriteLine(x.Variable());}";
+   this.regaCommand(script,callback);
 }
 
 LogicalBridge.prototype.ccuEvent = function(adress,datapoint,value) {
@@ -536,12 +593,34 @@ LogicalBridge.prototype.runScript = function(script, name) {
 
         },
         
+        
+        setVariable:   function Sandbox_setVariable(varname, val) {
+        	return new Promise(function (resolve,reject) {
+				that.set_Variable(varname,val,function(){
+					resolve(val);
+				});
+	        });
+        },
+
+        getVariable:   function Sandbox_getVariable(varname) {
+        	return new Promise(function (resolve,reject) {
+				that.get_Variable(varname,function(value){
+					resolve(value);
+				});
+	        }	);
+        },
+
+
+
         setValue:   function Sandbox_setValue(target, val) {
+
+			return new Promise(function (resolve,reject) {
 
             if (typeof target === 'object' && target.length) {
                 target = Array.prototype.slice.call(target);
                 target.forEach(function (tp) {
                     Sandbox.setValue(tp, val);
+                    resolve(value);
                 });
                 return;
             }
@@ -555,7 +634,9 @@ LogicalBridge.prototype.runScript = function(script, name) {
 				if (tmp[0].toLowerCase()==that.interface.toLowerCase()) {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
-					that.sendValueRPC (adress,datapointName,val);  
+					that.sendValueRPC (adress,datapointName,val,function(){
+						resolve();
+					});  
 				}
 
 				if (tmp[0].toLowerCase()=="hmvirtual") {
@@ -565,14 +646,17 @@ LogicalBridge.prototype.runScript = function(script, name) {
 					if (channel) {
 						channel.setValue(datapointName,val);
 						channel.updateValue(datapointName,val,true);
+						resolve();
 					}
 				}
 				
 				
 			} else {
 				that.log.error("Target %s seems not to be value",target);
+				reject(undefined);
 			}
 			
+		  });
 		},
 		
 		getValue: function Sandbox_getValue(target) {
