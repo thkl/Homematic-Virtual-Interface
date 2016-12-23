@@ -9,10 +9,10 @@
 
 "use strict";
 
-var HomematicDevice;
 var avr = require(__dirname + '/pioneer-avr.js');
+var PioneerRemote = require(__dirname + '/PioneerRemote.js').Pioneer_Remote;
 var path = require('path');
-
+var url = require("url");
 
 var PioneerBridge = function(plugin,name,server,log) {
 	this.plugin = plugin;
@@ -20,88 +20,34 @@ var PioneerBridge = function(plugin,name,server,log) {
 	this.log = log;
 	this.name = name;
 	this.bridge = server.getBridge();
-	HomematicDevice = server.homematicDevice;
 	this.receiver;
+	this.mappedDevices= [];
 }
 
 
 PioneerBridge.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
+    var numOfRemotes = this.configuration.getPersistValueForPluginWithDefault(this.name,"numOfRemotes",1);	
+    this.log.debug("Init Pioneer Remotes. Number of remotes to use %s",numOfRemotes);
     this.hm_layer = this.server.getBridge();
-	this.hmDevice = new HomematicDevice();
-	var avrName = "PioneerAVR";
-	
-	var data = this.bridge.deviceDataWithSerial(avrName);
-	if (data!=undefined) {
-		this.hmDevice.initWithStoredData(data);
-	} 
-	
-	if (this.hmDevice.initialized == false) {
-		this.hmDevice.initWithType("HM-RC-19_Pioneer",avrName);
-		this.bridge.addDevice(this.hmDevice,true);
-	} else {
-		this.bridge.addDevice(this.hmDevice,false);
-	}
     
-    this.hmDevice.on('device_channel_value_change', function(parameter){
-		var newValue = parameter.newValue;
-		
-		if (parameter.name == "TARGET_VOLUME") {
-			    
-			var newVolume = parameter.newValue;
-			that.setVolume(newVolume);							    
-
-		} else {
-			
-		var channel = that.hmDevice.getChannel(parameter.channel);
-		that.log.debug("Channel Index is %s",channel.index);
-		switch (channel.index) {
-			
-			case "1":
-				that.sendCommand("PO\r");
-				break;
-			case "2":
-				that.sendCommand("PF\r");
-				break;
-			case "3":
-				that.sendCommand("VU\r");
-				break;
-			case "4":
-				that.sendCommand("VD\r");
-				break;
-			case "5":
-				that.sendCommand("MO\r");
-				break;
-			case "6":
-				that.sendCommand("MF\r");
-				break;
-			case "7":
-			case "8":
-			case "9":
-			case "10":
-			case "11":
-			case "12":
-			case "13":
-			case "14":
-			case "15":
-			case "16":
-			case "17":
-			case "18":
-				var func = that.functionForChannel(parameter.name, channel);
-				if (func != undefined) {
-					that.sendCommand(func + "\r");
-				}
-			break;
-			
-		}
-
-		}
-	});
+    for(var i = 0; i < numOfRemotes ; i++) { 
+    	var avrName = "PioneerAVR" + i;
+    	var remote = new PioneerRemote(this);
+    	remote.init(avrName,i,this.server.homematicDevice);
+    	this.mappedDevices.push(remote);
+	}
 
 	setTimeout(function() {that.reconnect()},1000);
 }
 
+PioneerBridge.prototype.clean = function() {
+	this.mappedDevices.forEach(function (remote){
+		remote.removeFromHMLayer();
+	});
+	this.mappedDevices= [];
+}
 
 PioneerBridge.prototype.reconnect = function(command) {
 	var that = this;
@@ -145,15 +91,31 @@ PioneerBridge.prototype.setVolume = function(newVolume) {
 
 
 
-PioneerBridge.prototype.functionForChannel=function(type,channel) {
-	var result = channel.getParamsetValueWithDefault("MASTER","CMD_" + type,"");
-	this.log.debug("Getting %s Result is %s","CMD_" + type,result);
-	return result;
-}
-
 
 PioneerBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",undefined);
+	var requesturl = dispatched_request.request.url;
+	var queryObject = url.parse(requesturl,true).query;
+	
+	
+	if (queryObject["do"]!=undefined) {
+	
+		this.log.debug("Config Command is %s",queryObject["do"]);	
+		switch (queryObject["do"]) {
+		
+			case "settings.save":
+			{
+				var numofremotes = queryObject["settings.numberOfRemotes"];
+				this.log.debug("Set new Number of Remotes %s",numofremotes);
+				this.configuration.setPersistValueForPlugin(this.name,"numOfRemotes",numofremotes); 
+				this.clean();
+				this.init();
+			}
+			break;
+	    }
+	}
+	
+	var numOfRemotes = this.configuration.getPersistValueForPluginWithDefault(this.name,"numOfRemotes",1); 
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"settings.numberOfRemotes":numOfRemotes});
 }
 
 
