@@ -13,6 +13,34 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	this.modules = {};
 	this.sonos = new Sonos(sonosIP,	sonosPort);
 
+    // Add Event Handler
+    
+    var x = this.sonos.getEventListener();
+	x.listen(function (err) {
+
+		x.addService('/MediaRenderer/AVTransport/Event', function (error, sid) {
+			that.log.debug('Successfully subscribed, with subscription id', sid)
+  		});
+
+  		x.addService('/MediaRenderer/RenderingControl/Event', function (error, sid) {
+			that.log.debug('Successfully subscribed, with subscription id', sid)
+  		});
+
+  		x.on('serviceEvent', function (endpoint, sid, event) {
+	  		
+	  		if (event.name == "RenderingControlEvent") {
+				if (event.volume.Master) {
+					that.log.debug("Set new Volume %s",event.volume.Master);
+					var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
+					if (channel) {
+						channel.updateValue("TARGET_VOLUME",event.volume.Master,true);
+					}
+				}		  		
+	  		}
+	  		
+  		})
+	});
+
 	HomematicDevice = plugin.server.homematicDevice;
 
 
@@ -73,12 +101,8 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	    } else {
 		    
 		    if (parameter.name == "TARGET_VOLUME") {
-			    
 			    var newVolume = parameter.newValue;
-				that.log.debug("Ramp to %s",newVolume);
-				that.sonos.rampToVolume("ALARM_RAMP_TYPE",newVolume, function (err, playing) {})
-			    
-
+				that.sonos.setVolume(newVolume, function (err, playing) {})
 		    }
 		    
 		    if (parameter.name == "PLAYLIST") {

@@ -74,6 +74,8 @@ SonosBridge.prototype.search = function() {
 	   		 i = i + 1;
 	   	 }
   	})
+  	that.plugin.initialized = true;
+	that.log.info("initialization completed");
 	}, 5000)
 }
 

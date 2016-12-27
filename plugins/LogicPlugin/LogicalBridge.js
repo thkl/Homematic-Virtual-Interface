@@ -20,7 +20,8 @@ var modules = {
     'suncalc': require('suncalc'),
     'url': require('url'),
     'promise':require('promise'),
-    'http' : require("http")
+    'http' : require("http"),
+    'moment':require("moment")
 
 };
 
@@ -33,6 +34,8 @@ var suncalc = modules.suncalc;
 var url = modules.url;
 var http = modules.http;
 var Promise = modules.promise;
+var moment = modules.moment;
+
 var _global = {};
 
 var LogicalBridge = function(plugin,name,server,log) {
@@ -134,18 +137,6 @@ LogicalBridge.prototype.init = function() {
 
 	this.calculateSunTimes();
 	this.reInitScripts();
-    
-    scheduler.scheduleJob('0 0 * * *', function () {
-    // re-calculate every day
-    	that.calculateSunTimes();
-    // schedule events for this day
-    	that.sunEvents.forEach(function (event) {
-        	that.sunScheduleEvent(event);
-    	});
-    	
-    that.log.info('re-scheduled', that.sunEvents.length, 'sun events');
-});
-
 }
 
 
@@ -214,11 +205,30 @@ LogicalBridge.prototype.doCache = function(adress,datapoint,value) {
 }
 
 LogicalBridge.prototype.reInitScripts = function() {
+	var that = this;
 	// Kill all and Init 
 	this.scripts = {};
     this.subscriptions = [];
-    var path = this.configuration.storagePath();
-    this.loadScriptDir(path + "/scripts/");
+    // Kill All Scheduled Jobs
+
+    Object.keys(scheduler.scheduledJobs).forEach(function(job){
+	   scheduler.cancelJob(job); 
+    });
+    
+    var l_path = this.configuration.storagePath();
+    this.loadScriptDir(l_path + "/scripts/");
+    
+    scheduler.scheduleJob("[Intern] Astro Calculation",'0 0 * * *', function () {
+    // re-calculate every day
+    	that.calculateSunTimes();
+    // schedule events for this day
+    	that.sunEvents.forEach(function (event) {
+        	that.sunScheduleEvent(event);
+    	});
+    	
+        that.log.info('re-scheduled', that.sunEvents.length, 'sun events');
+    });
+
 }
 
 LogicalBridge.prototype.loadScriptDir = function(pathName) {
@@ -322,14 +332,56 @@ LogicalBridge.prototype.get_Value = function(adress,datapoint,callback) {
 }
 
 LogicalBridge.prototype.set_Variable = function(name,value,callback) {
-   var script = "var x = dom.GetObject('"+name+"');if (x){x.Variable("+value+");}";
+   var script = "var x = dom.GetObject('"+name+"');if (x){x.State("+value+");}";
    this.regaCommand(script,callback);
 }
 
 LogicalBridge.prototype.get_Variable = function(name,callback) {
-   var script = "var x = dom.GetObject('"+name+"');if (x){WriteLine(x.Variable());}";
+   var script = "var x = dom.GetObject('"+name+"');if (x){WriteLine(x.Variable())	;}";
    this.regaCommand(script,callback);
 }
+
+LogicalBridge.prototype.get_Variables = function(variables,callback) {
+   var that = this;
+   var script = "object x;";
+   variables.forEach(function (variable){
+   	script = script + "x=dom.GetObject('" + variable + "');if (x){WriteLine(x#'\t\t'#x.Variable()#'\t\t'#x.Timestamp());}"
+   });
+   
+   var vr_result = {};
+   this.regaCommand(script,function (result){
+	   var arr = result.split("\r\n");
+	   
+	   arr.forEach(function(var_line){
+		   var vr = var_line.split("\t\t");
+		   var nv = {};
+		   if ((vr.length>1) && (vr[0]) && (vr[0]!='')) {
+			   nv.value = vr[1];
+			   if (vr.length>2) {
+				   nv.timestamp = moment.utc(vr[2]).valueOf();
+			   }
+			   vr_result[vr[0]]=nv;
+		   }
+	   });
+	   callback(vr_result);
+   });
+}
+
+
+LogicalBridge.prototype.set_Variables = function(variables,callback) {
+   var that = this;
+   var script = "object x;";
+   Object.keys(variables).forEach(function(key) {
+   	var vv = variables[key];
+   	if (vv) {
+       script = script + "x=dom.GetObject('" + key + "');if (x){x.State("+vv+");}"
+   	}
+   });
+   this.regaCommand(script,function (result){
+	   callback();
+   });
+}
+
 
 LogicalBridge.prototype.ccuEvent = function(adress,datapoint,value) {
    this.processSubscriptions(adress,datapoint,value );
@@ -437,6 +489,52 @@ LogicalBridge.prototype.sunScheduleEvent = function(obj, shift) {
 
 
 
+LogicalBridge.prototype.triggerScript = function(script) {
+  var that = this;
+  var found = false;
+    
+  
+  // First check if we have to run out from subscriptions
+  
+  this.subscriptions.forEach(function (subs) {
+    var match = (subs.file == script);
+
+  		if (typeof subs.callback === 'function' && match) {
+	  		that.log.debug("Found %s with a subscription - run the then part",script);
+	  		subs.callback(null,null);
+		    found = true;
+		}
+  });
+  
+  if (!found) {
+	  // Not found as a Subscripttion .. get the script and run manually
+  var l_path = this.configuration.storagePath();
+  var sfile = l_path + "/scripts/" + script;
+  var oscript = this.scripts[sfile];
+  if (oscript) {
+	  // Check Callback and Run it
+	  	
+	  	this.log.debug("Not found in subscriptions - load and run %s",sfile);
+		fs.readFile(sfile, function (err, src) {
+     
+        if (err && err.code === 'ENOENT') {
+            that.log.error('%s not found',sfile);
+        } else if (err) {
+            that.log.error(file, err);
+        } else {
+	        
+	        if (sfile.match(/\.js$/)) {
+                // Javascript
+                var triggeredScript = that.createScript(src, sfile);
+                that.runScript(triggeredScript, sfile);
+            }
+	    }
+	});    
+  }
+	  
+  }
+  this.log.debug("Subscriptions : ",JSON.stringify(this.subscriptions));
+}
 
 LogicalBridge.prototype.runScript = function(script, name) {
 
@@ -540,7 +638,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
         link: function Sandbox_link(source, target, /* optional */ value) {
             Sandbox.subscribe(source, function (source, val) {
                 val = (typeof value === 'undefined') ? val : value;
-                that.log.debug('link', source, target, val);
+                that.log.debug('logic-link', source, target, val);
                 Sandbox.setValue(target, val);
             });
         },
@@ -580,7 +678,8 @@ LogicalBridge.prototype.runScript = function(script, name) {
 				   that.processLogicalBinding(channel);
 				}
                 
-                that.subscriptions.push({source: source, options: options, callback: (typeof callback === 'function') && scriptDomain.bind(callback)});
+                var fn = path.basename(name)
+                that.subscriptions.push({file:fn, source: source, options: options, callback: (typeof callback === 'function') && scriptDomain.bind(callback)});
 
             } else if (typeof source === 'object' && source.length) {
 
@@ -601,6 +700,20 @@ LogicalBridge.prototype.runScript = function(script, name) {
 				});
 	        });
         },
+        
+        setVariables:   function Sandbox_setVariables(variables) {
+        	
+        	return new Promise(function (resolve,reject) {
+			try {
+				that.set_Variables(variables,function(){
+					resolve(variables);
+				});
+			} catch (err) {
+				that.log.debug(err);
+				reject(err);
+			}
+	        });
+        },
 
         getVariable:   function Sandbox_getVariable(varname) {
         	return new Promise(function (resolve,reject) {
@@ -610,7 +723,14 @@ LogicalBridge.prototype.runScript = function(script, name) {
 	        }	);
         },
 
-
+        getVariables:   function Sandbox_get_Variables(varnames) {
+        	return new Promise(function (resolve,reject) {
+				that.get_Variables(varnames,function(values){
+					resolve(values);
+				});
+	        }	);
+        },
+        
 
         setValue:   function Sandbox_setValue(target, val) {
 
@@ -644,9 +764,12 @@ LogicalBridge.prototype.runScript = function(script, name) {
 					var datapointName = tmp[2];
 					var channel = that.hm_layer.channelWithAdress(adress);
 					if (channel) {
+						that.log.debug("Channel found set Value");
 						channel.setValue(datapointName,val);
 						channel.updateValue(datapointName,val,true);
 						resolve();
+					} else {
+						that.log.error("Channel %s not found",adress);
 					}
 				}
 				
@@ -755,13 +878,15 @@ LogicalBridge.prototype.runScript = function(script, name) {
             }
 
             that.log.debug('schedule()', pattern, options, typeof callback);
-
+			if (options.name==undefined) {
+				options.name = "JOB:314";
+			}
             if (options.random) {
-                scheduler.scheduleJob(pattern, function () {
+                scheduler.scheduleJob(options.name, pattern, function () {
                     setTimeout(scriptDomain.bind(callback), (parseFloat(options.random) || 0) * 1000 * Math.random());
                 });
             } else {
-                scheduler.scheduleJob(pattern, scriptDomain.bind(callback));
+	            var job = scheduler.scheduleJob(options.name,pattern, scriptDomain.bind(callback));
             }
 
 
@@ -893,10 +1018,31 @@ LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request
 		  case "reload": {
 			  this.reInitScripts();
 		  }
+
+		  case "trigger": {
+			  this.triggerScript(queryObject["script"]);
+		  }
+		  
 		  break;
 		}
 	}
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",undefined);
+	
+	var strScripts = "";
+	var strSchedulers = "";
+	var that = this;
+	
+	var itemtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_item_tmp.html",null);
+
+	
+	Object.keys(scheduler.scheduledJobs).forEach(function(job){
+	  strSchedulers = strSchedulers + dispatched_request.fillTemplate(itemtemplate,{"item":job});
+	});	
+	
+	Object.keys(this.scripts).forEach(function(script){
+	  strScripts = strScripts + dispatched_request.fillTemplate(itemtemplate,{"item":path.basename(script)});
+	});
+	
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"scripts":strScripts,"schedules":strSchedulers});
 }
 
 
