@@ -11,6 +11,7 @@
 
 var HomematicDevice;
 var Sonos = require('sonos');
+var ZonePLayer = require('sonos').Sonos;
 var _ = require('underscore')
 var path = require('path');
 var SonosDevice = require(__dirname + "/SonosDevice.js").SonosDevice;
@@ -32,8 +33,30 @@ SonosBridge.prototype.init = function() {
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
 
-	this.log.info('Searching for Sonos devices...')
-	this.search();
+	var players = this.configuration.getValueForPlugin(this.name,"player");
+	if (players) {
+		this.log.info('Adding defined devices ...')
+		players.forEach(function (host){
+			that.addZonePlayer(host);
+		});
+		this.plugin.initialized = true;
+		this.log.info("initialization completed");
+	} else {
+		this.log.info('Searching for Sonos devices...')
+		this.search();
+	}
+	
+}
+
+SonosBridge.prototype.addZonePlayer = function(host) {
+  var that = this;
+ 
+  var zp = new ZonePLayer(host);
+  zp.deviceDescription( function (error,data) {
+	  var name = data.roomName;
+      var sdevice = new SonosDevice(that ,host,1400,"SONOS_" + name);
+	  that.devices.push(sdevice);
+  });
 }
 
 SonosBridge.prototype.search = function() {
