@@ -39,18 +39,16 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	  		}
 	  		
 	  		if (event.name == "TransportControlEvent") {
-				if (event.currentTrack) {
-					that.log.debug("Set current Track %s",event.currentTrack);
-					var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
+		  		var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
 					if (channel) {
-						channel.updateValue("CURRENT_TRACK",event.currentTrack.artist + ": " +event.currentTrack.title,true);
-					}
-				} else {
-					that.log.debug("No Current Track Info");
-				}		  		
+						if (event.currentTrack) {channel.updateValue("CURRENT_TRACK",event.currentTrack.artist + ": " +event.currentTrack.title,true);}
+						if (event.nextTrack) {channel.updateValue("NEXT_TRACK",event.nextTrack.artist + ": " +event.nextTrack.title,true);}
+						if (event.transportState) {channel.updateValue("TRANSPORT_STATE",event.transportState,true);}
+						if (event.currentPlayMode) {channel.updateValue("PLAY_MODE",event.currentPlayMode,true);}
+					} 	  		
 	  		}
 	  		
-  		})
+  		});
 	});
 
 	HomematicDevice = plugin.server.homematicDevice;

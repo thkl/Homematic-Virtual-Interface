@@ -17,6 +17,7 @@ var HueDimmableDevice = require(__dirname + "/HueDimmableDevice.js").HueDimmable
 var HueDeviceOsramPlug = require(__dirname + "/HueDeviceOsramPlug.js").HueDeviceOsramPlug;
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
+var HueEffectServer = require(__dirname + "/HueEffectServer.js").HueEffectServer;
 
 var HueBridge = function(plugin,name,server,log,instance) {
 	this.plugin = plugin;
@@ -37,6 +38,7 @@ HueBridge.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
+	this.effectServer = new HueEffectServer();
 	
 	this.log.info("Init %s",this.name);
 	var ip = this.configuration.getValueForPlugin(this.name,"hue_bridge_ip");
@@ -169,6 +171,10 @@ HueBridge.prototype.queryLights = function() {
 	    		var devName = "HUE000" +  that.instance;
 				var hd = new HueColorDevice(that,that.hue_api,light,devName);
 				light["hm_device_name"] = devName + light["id"];
+				
+				
+				that.effectServer.addLight(hd);
+				
     		  }
     		  break;
     		   
@@ -404,6 +410,20 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 					this.groupManager.publish(publishedgroups,true);
 				}
 
+			}
+			break;
+			
+			
+			case "play":
+			{
+				var scene = queryObject["scene"];
+				this.effectServer.runScene(scene);
+			}
+			break;
+			
+			case "stop":
+			{
+				this.effectServer.stopScene();
 			}
 			break;
 		}

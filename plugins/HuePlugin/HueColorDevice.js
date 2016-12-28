@@ -280,6 +280,15 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	    });
 	    }
 	}
+	
+	
+	HueColorDevice.prototype.setLightData = function(lightData) {
+		var that = this;
+
+		that.api.setLightState(that.lightId,lightData, function(err, result) {
+			// HM SEND
+	    });
+	}
 
 	HueColorDevice.prototype.refreshDevice = function(device) {
 	  var that = this;
