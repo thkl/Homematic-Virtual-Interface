@@ -1,15 +1,64 @@
 {
   "channels": [
     {
-      "adress": "0",
-      "type": "MAINTENANCE",
-      "flags":  3,
-      "direction" : 0,
-      "paramsets": []
-    }
-   ,
-
-
+		"flags": 3,
+		"paramsets": [{
+			"name": "MASTER",
+			"id": "maint_ch_master",
+			"parameter": []
+		}, {
+			"name": "VALUES",
+			"id": "maint_ch_values",
+			"parameter": [{
+				"flags": 9,
+				"operations": 5,
+				"name": "UNREACH",
+				"type": "BOOL",
+				"tab_order": 0
+			}, {
+				"flags": 24,
+				"operations": 7,
+				"name": "STICKY_UNREACH",
+				"type": "BOOL",
+				"tab_order": 1
+			}, {
+				"flags": 9,
+				"operations": 5,
+				"name": "CONFIG_PENDING",
+				"type": "BOOL",
+				"tab_order": 2
+			}, {
+				"flags": 9,
+				"operations": 5,
+				"name": "LOWBAT",
+				"type": "BOOL",
+				"tab_order": 3
+			}, {
+				"type": "INTEGER",
+				"max": 127,
+				"min": 0,
+				"flags": 0,
+				"tab_order": 4,
+				"name": "AES_KEY",
+				"operations": 1
+			}, {
+				"flags": 1,
+				"operations": 5,
+				"name": "RSSI_DEVICE",
+				"type": "INTEGER",
+				"tab_order": 5
+			}, {
+				"flags": 1,
+				"operations": 5,
+				"name": "RSSI_PEER",
+				"type": "INTEGER",
+				"tab_order": 6
+			}]
+		}],
+		"type": "MAINTENANCE",
+		"adress": "0",
+		"direction": 2
+	},
     {
       "adress": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19"],
       "type": "KEY",
