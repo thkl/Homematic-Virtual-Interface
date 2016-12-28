@@ -50,14 +50,14 @@ HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
   First find out how many RemoteControls we need by dividing / 19
   and then initialize alle the remotes
   */
-  // First remove all HUESCENE* Devices
+  // First remove all HUES* Devices
   
   var i = 1;
   var cnt = 0;
   var that = this;
 
   this.log.debug("Scenemanager publish. First remove all old devices ...");
-  var devices = this.bridge.devicesWithNameLike("HUESCENE"+this.instance);
+  var devices = this.bridge.devicesWithNameLike("HUES"+this.instance);
   this.log.debug("Old Devices: %s",devices);
   devices.forEach(function (device){
 	  that.bridge.deleteDevice(device,ccuNotification);
@@ -67,16 +67,16 @@ HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
   
 	  var scenes = publishedscenes;
 	  if (scenes.length>0) {
-	  that.addHMRemote("HUESCENE" + this.instance + "0" + cnt);
+	  that.addHMRemote("HUES_" + this.instance + "0" + cnt);
 	  scenes.forEach(function (sceneid){
 		var scene = that.getScene(sceneid);
 		if (scene != undefined) {
-			scene["hmchannel"] = "HUESCENE" + that.instance + "0"  + cnt + ":"+i;
+			scene["hmchannel"] = "HUES" + that.instance + "0"  + cnt + ":"+i;
 			i=i+1;
 			if (i>19) {
 			   i=1;
 			   cnt = cnt + 1; 
-			   that.addHMRemote("HUESCENE" + that.instance +  "0" + cnt);
+			   that.addHMRemote("HUES" + that.instance +  "0" + cnt);
 			}
  	  	}
  	  });
