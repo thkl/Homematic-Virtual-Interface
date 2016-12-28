@@ -38,6 +38,18 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 				}		  		
 	  		}
 	  		
+	  		if (event.name == "TransportControlEvent") {
+				if (event.currentTrack) {
+					that.log.debug("Set current Track %s",event.currentTrack);
+					var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
+					if (channel) {
+						channel.updateValue("CURRENT_TRACK",event.currentTrack.artist + ": " +event.currentTrack.title,true);
+					}
+				} else {
+					that.log.debug("No Current Track Info");
+				}		  		
+	  		}
+	  		
   		})
 	});
 
