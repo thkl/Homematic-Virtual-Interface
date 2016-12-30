@@ -112,14 +112,32 @@ HueEffectServer.prototype.runFXScene = function(loop,frames,curFrame) {
 			
 		   return;
 		} else {
-	    	var hue = this.hs360(frame.hue,65535,360);
-			var bri = this.hs360(frame.brightness,254,100);
-			var sat = this.hs360(frame.saturation,254,100);
-			var transition = this.getArgument(frame.transition) || 5;
-			var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":true};
-			this.lights.forEach(function (light) {
-	    		light.setLightData(lightstate);
-    		});
+			
+			if ((frame.bulbs==undefined) || (frame.bulbs==0)) {
+				
+		    	var hue = this.hs360(frame.hue,65535,360);
+				var bri = this.hs360(frame.brightness,254,100);
+				var sat = this.hs360(frame.saturation,254,100);
+				var transition = this.getArgument(frame.transition) || 5;
+				var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":true};
+				this.lights.forEach(function (light) {
+	    			light.setLightData(lightstate);
+    			});
+    			
+			} else {
+				
+				this.lights.forEach(function (light) {
+					var hue = that.hs360(frame.hue,65535,360);
+					var bri = that.hs360(frame.brightness,254,100);
+					var sat = that.hs360(frame.saturation,254,100);
+					var transition = that.getArgument(frame.transition) || 5;
+					var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":true};
+	    			light.setLightData(lightstate);
+    			});
+
+			}
+			
+			
 			this.timer = setTimeout(function() {
 			   that.runFXScene(loop,frames,curFrame+1);
 			}

@@ -111,6 +111,7 @@
           	{"name": "PLAYLIST","vdefault": "","flags": 1,"max": "","min": "","operations": 7,"control":"NONE","unit":"","tab_order": 3,"type": "STRING"},
           	{"name": "TRANSPORT_STATE","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 4,"type": "STRING"},
           	{"name": "PLAY_MODE","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 5,"type": "STRING"}
+          	
           ]
 		 }
       ]

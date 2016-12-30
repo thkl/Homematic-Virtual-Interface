@@ -60,7 +60,7 @@
                 <a href="index.html">Hue Plugin</a>
               </li>
               <li>
-              <a href="?do=publish">Homematic Geräte erzeugen</a>
+              <a href="javascript:publish()">Homematic Geräte erzeugen</a>
               </li>
             </ul>
             <hr class="rw aky">
@@ -121,7 +121,15 @@
 
 </div>
 
-
+    <script type="text/javascript">
+	    
+	    function publish() {
+		    var answer = confirm("Generate new Devices ?")
+			if (answer){
+				window.location.href = "?do=publish"
+			}
+	    }
+    </script>
     <script src="../assets/js/jquery.min.js"></script>
   </body>
 </html>

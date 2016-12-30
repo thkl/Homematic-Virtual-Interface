@@ -1,0 +1,11 @@
+{
+	 "mode":"fx",
+	 "loop":true,
+	 "frames": [
+		 
+		 {"bulbs":0, "transition":[15,75], "brightness": 100, "saturation":63, "hue":43},
+		 {"bulbs":0, "pause":[100,250]},
+         {"bulbs":0, "transition":[15,75], "brightness": 65, "saturation": 72, "hue": 43},
+         {"bulbs":0, "pause":[100,250]}
+	 ]
+ }
