@@ -76,24 +76,25 @@
 </div>
 
 <hr class="aky">
-
+<form action="index.html" id = "editor.form" method="post">
+	<input type="hidden" id="do" name="do" value="script.save" />
+	<input type="hidden" id = "editor.content" name="editor.content" />
+	<input type="hidden" id = "editor.new" name="editor.new"  value="$editor.new$" />
 <div class="by">
   <h4 class="ty">
-    Scripts
+    Editor
   </h4>
-    $scripts$
-    
-  <a class="ph" href="#">
-	<span class="dy dh"><input type="button" value="New" onclick="window.location.href='?do=new'"/></span>Create a new Script
-  </a>
+  <div class="ty">Filename <input class="dy dh" name="script.filename" value="$editor.file$" /></div>
 </div>
 
-<div class="by">
-  <h4 class="ty">
-    Schedules
-  </h4>
-    $schedules$
+<div class="by" style="min-height: 300px;">
+<div id="editor" style="min-height: 300px;">$editor.content$</div>
+<div id="editor.error" style="min-height: 50px;">$editor.error$</div>
+<input type="button" id="save" value="Save"/>
+<input type="button" id="validate" value="Validate"/>
 </div>
+</form>
+
 
 
   </div>
@@ -102,19 +103,32 @@
 
 </div>
 
-	<script type="text/javascript">
-		
-		function deleteScript(script) {
-			var answer = confirm("Sure ?")
-			if (answer){
-				window.location.href = "?do=delete&file=" + script;
-			}
-
-		}
-	</script>
-    
+    <script src="https://cdn.jsdelivr.net/ace/1.2.6/min/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="../assets/js/jquery.min.js"></script>
+
+<script>
+    var js_editor = ace.edit("editor");
+    require("ace/edit_session").EditSession.prototype.$useWorker=false	
+    js_editor.setTheme("ace/theme/monokai");
+    js_editor.getSession().setMode("ace/mode/javascript");
+    
+    
+    $("#validate").click(function(){
+	    var cnt = js_editor.getValue();
+	    document.getElementById("do").value = "script.validate";
+	    document.getElementById("editor.content").value = cnt;
+	    document.getElementById("editor.form").submit();
+	});
+    
+    
+    $("#save").click(function(){
+	    var cnt = js_editor.getValue();
+	    document.getElementById("do").value = "script.save";
+	    document.getElementById("editor.content").value = cnt;
+	    document.getElementById("editor.form").submit();
+    });
+    
+</script>
+
   </body>
 </html>
-
-

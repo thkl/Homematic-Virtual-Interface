@@ -1008,9 +1008,78 @@ LogicalBridge.prototype.shutdown = function() {
 	
 }
 
+LogicalBridge.prototype.deleteScript = function(scriptName) {
+try {
+	var l_path = this.configuration.storagePath()+"/scripts/";
+	scriptName = scriptName.replace('..','');
+	var file = fs.unlink(l_path + scriptName);
+	return file;
+} catch (err) {
+	this.log.debug(err);
+	return "File not found " + scriptName;
+}
+}
+
+LogicalBridge.prototype.getScript = function(scriptName) {
+try {
+	var l_path = this.configuration.storagePath()+"/scripts/";
+	scriptName = scriptName.replace('..','');
+	var file = fs.readFileSync(l_path + scriptName , "binary");
+	return file;
+} catch (err) {
+	this.log.debug(err);
+	return "File not found " + scriptName;
+}
+}
+
+LogicalBridge.prototype.saveScript=function(data,filename) {
+  try {
+ 	 fs.writeFileSync(filename, data)
+ 	 this.reInitScripts();
+  } catch (e){}
+}
+
+LogicalBridge.prototype.existsScript=function(filename) {
+  try {
+ 	 fs.readFileSync(filename);
+ 	 return true;
+  } catch (e){
+	  return false;
+  }
+}
+
+LogicalBridge.prototype.validateScript=function(data) {
+	// Save as tmp 
+	var that = this;
+	try {
+		var name = "/tmp/hm_tmp_script.js"
+		fs.writeFileSync(name, data);
+	  
+		try {
+			if (!process.versions.node.match(/^0\.10\./)) {
+            	// Node.js >= 0.12, io.js
+            	new vm.Script(data, {filename: name});
+				return true;
+        	} else {
+            	// Node.js 0.10.x
+				vm.createScript(data, name);
+				return true;
+        	}
+		} catch (e) {
+	      return  e;
+      	}
+	}	      
+	catch (err) {
+		return "Filesystem error";
+    }
+}
+
 LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
+	var htmlfile = "index.html";
+	var editorData = {"error":""};
+	
 	if (queryObject["do"]!=undefined) {
 		
 		switch (queryObject["do"]) {
@@ -1018,20 +1087,104 @@ LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request
 		  case "reload": {
 			  this.reInitScripts();
 		  }
-
+		  break;
+		  
 		  case "trigger": {
 			  this.triggerScript(queryObject["script"]);
 		  }
+		  break;
 		  
+		  case "edit": {
+			  htmlfile = "editor.html";
+			  var scriptname = queryObject["file"];
+			  var script = this.getScript(scriptname);
+			  editorData["file"] = scriptname;
+			  editorData["content"] = script; 
+			  editorData["new"] = "false"; 
+		  }
+		  break;
+		  
+		  case "new": {
+			  htmlfile = "editor.html";
+			  var scriptname = queryObject["file"];
+			  editorData["file"] = "newscript.js";
+			  editorData["content"] = ""; 
+			  editorData["new"] = "true"; 
+		  }
+		  break;
+		  
+		  case "delete": {
+			  var scriptname = queryObject["file"];
+			  this.deleteScript(scriptname);
+			  this.reInitScripts();
+			  htmlfile = "reinit.html";
+		  }
 		  break;
 		}
+		
 	}
+
+    if (dispatched_request.post != undefined) {
+
+	    var content = dispatched_request.post["editor.content"];
+	    var fileName = dispatched_request.post["script.filename"];
+	    var isNew = dispatched_request.post["editor.new"];
+	    switch (dispatched_request.post["do"]) {
+		    
+		    
+		    case "script.save": {
+			    var result = this.validateScript(content);
+			    if (result == true) {
+				   var l_path = this.configuration.storagePath()+"/scripts/";
+				   fileName = fileName.replace('..','');
+				   if ((isNew == "true") && (this.existsScript(l_path + fileName))) {
+					   htmlfile = "editor.html";
+					   editorData["error"] = "File " + fileName + " exists.";
+					   editorData["content"] = content;
+					   editorData["file"] = fileName;
+					   editorData["new"] = isNew;
+				   } else {
+					   this.saveScript(content,l_path + fileName);						    
+					   htmlfile = "reinit.html";
+				   }
+			    } else {
+				   htmlfile = "editor.html";
+				   editorData["error"] = result;
+				   editorData["content"] = content;
+				   editorData["file"] = fileName;
+				   editorData["new"] = isNew;
+ 			    }
+		    }
+		    
+		    break;
+		    
+		    case "script.validate": {
+			    var result = this.validateScript(content);
+			    if (result == true) {
+					editorData["error"] = "Validation : ok";
+			    } else {
+ 			    	editorData["error"] = "Validation : " + result;
+				}
+ 				
+ 				htmlfile = "editor.html";
+			    editorData["content"] = content;
+				editorData["file"] = fileName;
+				editorData["new"] = isNew;
+
+		    }
+		    
+		    break;
+
+	    }
+	    
+    }
 	
 	var strScripts = "";
 	var strSchedulers = "";
 	var that = this;
 	
 	var itemtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_item_tmp.html",null);
+	var scripttemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_script_tmp.html",null);
 
 	
 	Object.keys(scheduler.scheduledJobs).forEach(function(job){
@@ -1039,10 +1192,10 @@ LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request
 	});	
 	
 	Object.keys(this.scripts).forEach(function(script){
-	  strScripts = strScripts + dispatched_request.fillTemplate(itemtemplate,{"item":path.basename(script)});
+	  strScripts = strScripts + dispatched_request.fillTemplate(scripttemplate,{"item":path.basename(script)});
 	});
 	
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"scripts":strScripts,"schedules":strSchedulers});
+	dispatched_request.dispatchFile(this.plugin.pluginPath , htmlfile ,{"scripts":strScripts,"schedules":strSchedulers,"editor":editorData});
 }
 
 
