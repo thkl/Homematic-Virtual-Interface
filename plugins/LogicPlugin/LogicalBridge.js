@@ -59,7 +59,9 @@ LogicalBridge.prototype.init = function() {
 	this.log.info("Init %s",this.name);
 	var port = this.configuration.getValueForPluginWithDefault(this.name,"bridge_port",7002);
 	var localIP = this.hm_layer.getIPAddress();
+	this.myLogFile = this.configuration.storagePath() + "/hmvi_script.log";
 	
+	fs.writeFileSync(this.myLogFile, "[INFO] Logical Bridge is starting\r\n");
 	
 	this.server = xmlrpc.createServer({
       host: localIP,
@@ -543,7 +545,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
 	
     this.log.debug('creating domain %s',name);
     var scriptDomain = domain.create();
-
+	
     this.log.debug('creating sandbox %s',name);
 
     var Sandbox = {
@@ -599,6 +601,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
                 var args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 that.log.debug.apply(that.log, args);
+                fs.appendFileSync(that.myLogFile,new Date() + '[DEBUG] ' + args+"\r\n");
             },
             /**
              * Log an info message
@@ -610,6 +613,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
                 var args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 that.log.info.apply(that.log, args);
+                fs.appendFileSync(that.myLogFile,new Date() + '[INFO] ' + args+"\r\n");
             },
             /**
              * Log a warning message
@@ -621,6 +625,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
                 var args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 that.log.warn.apply(that.log, args);
+                fs.appendFileSync(that.myLogFile,new Date() + '[WARN] ' + args+"\r\n");
             },
             /**
              * Log an error message
@@ -632,6 +637,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
                 var args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 that.log.error.apply(that.log, args);
+                fs.appendFileSync(that.myLogFile,new Date()+  '[ERROR] ' + args+"\r\n");
             }
         },
         
@@ -1093,6 +1099,15 @@ LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request
 			  this.triggerScript(queryObject["script"]);
 		  }
 		  break;
+
+		  case "showlog": {
+			  var logdata = fs.readFileSync(this.myLogFile , "binary");
+			  htmlfile = "log.html"
+			  editorData["content"]=logdata;
+		  }
+		  
+		  break;
+
 		  
 		  case "edit": {
 			  htmlfile = "editor.html";
