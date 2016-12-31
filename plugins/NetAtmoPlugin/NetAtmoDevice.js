@@ -40,14 +40,14 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 			
 			var mid = module["_id"];
 			if (module["type"] == "NAModule1") {
-				hmModule = new HomematicDevice();
+				var hmModule = new HomematicDevice();
 				hmModule.initWithType("HM-WDS10-TH-O", serialprefix + mi);
 				hmModule.firmware = naDevice["firmware"];
 				hmModule.serialNumber = mid;
 				that.bridge.addDevice(hmModule);
+				that.modules[mid] = hmModule;
 			}
 			
-			that.modules[mid] = hmModule;
 			mi = mi + 1;
 		});
 
