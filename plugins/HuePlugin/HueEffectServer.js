@@ -23,6 +23,15 @@ HueEffectServer.prototype.addLight = function(light) {
    this.lights.push(light);
 }
 
+
+HueEffectServer.prototype.removeLight = function(light) {
+   var index = this.lights.indexOf(light);
+   if (index > -1) {
+	   this.lights.splice(index, 1);
+   }
+}
+
+
 HueEffectServer.prototype.stopScene = function() {
    this.interrupt = true;
    clearTimeout(this.timer);

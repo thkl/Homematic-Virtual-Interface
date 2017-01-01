@@ -504,6 +504,24 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 				this.saveEffectScenes();
 			}
 			break;
+
+			case "efxs.removelight":
+			{
+				var servername = queryObject["efxs.name"];
+				var lightid = queryObject["light"];
+				var efs = this.effectServers[servername];
+				if (efs) {
+					this.log.debug("SFX Found");
+					var lightObject = this.lightWithId(lightid);
+					if (lightObject) {
+						this.log.debug("Remove Light from efxs");
+						efs.removeLight(lightObject);
+					}
+				}
+				this.saveEffectScenes();
+			}
+			break;
+
 			
 			
 			case "efxs.play":
