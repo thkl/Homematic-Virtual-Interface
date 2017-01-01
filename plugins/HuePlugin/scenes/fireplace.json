@@ -3,6 +3,8 @@
 	 "loop":true,
 	 "frames": [
 		 {"bulbs":1, "transition":[7,13], "brightness": [30,50], "saturation":100, "hue":[5,20]},
-		 {"bulbs":0, "pause":15}
+		 {"bulbs":0, "pause":40}
+		 {"bulbs":0, "transition":[5,10], "brightness": [60,80], "saturation":100, "hue":[40]},
+		 {"bulbs":0, "pause":10}
 	]
  }

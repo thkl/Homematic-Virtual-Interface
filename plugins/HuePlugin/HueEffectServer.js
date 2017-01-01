@@ -149,7 +149,7 @@ HueEffectServer.prototype.runFXScene = function(loop,frames,curFrame) {
 		   this.timer = setTimeout(function() {
 			   that.runFXScene(loop,frames,curFrame+1);
 			}
-			, pause*100);
+			, pause*10);
 			
 		   return;
 		} else {
