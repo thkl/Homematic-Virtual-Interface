@@ -1,0 +1,14 @@
+{
+	 "mode":"fx",
+	 "loop":false,
+	 "frames": [
+                {"bulbs":0, "pause": 20},
+                {"bulbs":1, "transition": 1, "brightness": 5, "hue":265, "saturation":100},
+                {"bulbs":0, "pause": [10,25]},
+                {"bulbs":1, "transition": 1, "brightness": 40, "hue":225, "saturation":50},
+                {"bulbs":0, "pause": [5,10]},
+                {"bulbs":1, "transition": 1, "brightness": 70, "hue":225, "saturation":50},
+                {"bulbs":0, "pause": [5,10]},
+                {"bulbs":1, "transition": 1, "brightness": 100, "hue":225, "saturation":50}
+	]
+ }

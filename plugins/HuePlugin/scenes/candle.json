@@ -2,9 +2,9 @@
 	 "mode":"fx",
 	 "loop":true,
 	 "frames": [
-		 {"bulbs":1, "transition":[2,5], "brightness": [35,50], "saturation":85, "hue":[45,50]},
-		 {"bulbs":0, "pause":[10,30]}
-		 {"bulbs":1, "transition":[1,4], "brightness": [50,80], "saturation":85, "hue":[50,70]},
+		 {"bulbs":1, "transition":[2,5], "brightness": [30,40], "saturation":85, "hue":[45,50]},
+		 {"bulbs":0, "pause":[10,30]},	
+		 {"bulbs":1, "transition":[1,4], "brightness": [30,40], "saturation":85, "hue":[50,70]},
 		 {"bulbs":0, "pause":[30,50]}
 	]
  }
