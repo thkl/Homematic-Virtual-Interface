@@ -1,0 +1,23 @@
+ <a name="$efxs.name$" />
+ <div name="$efxs.name$" class="ph" >
+          $efxs.name$
+ </div>
+ <div class="ty">Start scene 
+ <form action="index.html" method="get">
+	 <input type="hidden" name="do" value="efxs.play" />
+	 <input type="hidden" name="efxs.name" value="$efxs.name$" />
+	 
+	 <select name="efxs.scene">
+		 $efxs.scenes$
+	 </select>
+	 <input type="submit" value="Run" />
+ </form>
+ <form action="index.html" method="get">
+	 <input type="hidden" name="do" value="efxs.stop" />
+	 <input type="hidden" name="efxs.name" value="$efxs.name$" />
+	 <input type="submit" value="Stop" />
+ </form>
+
+ </span>
+ </div>
+$efxs.lights$

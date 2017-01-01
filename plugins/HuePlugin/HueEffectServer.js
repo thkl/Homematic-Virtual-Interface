@@ -14,7 +14,8 @@ var path = require('path');
 var Logger = require(__dirname + '/../../lib/Log.js').Logger;
 var logger =  Logger.withPrefix("HueEffectServer");
 
-var HueEffectServer = function () {
+var HueEffectServer = function (name) {
+	this.name = name;
 	this.lights = [];
 }
 
@@ -25,6 +26,37 @@ HueEffectServer.prototype.addLight = function(light) {
 HueEffectServer.prototype.stopScene = function() {
    this.interrupt = true;
    clearTimeout(this.timer);
+}
+
+HueEffectServer.prototype.listScenes = function() {
+  var sceneDir = __dirname +"/scenes/";
+  var that = this;
+  var list = [];
+  try {  
+  var data = fs.readdirSync(sceneDir);
+  data.sort().forEach(function (file) {
+      if (file.match(/\.(json)$/)) {
+       list.push(file.replace(/\.[^/.]+$/, ""));
+	  }
+  });
+
+  } catch (e) {
+	  logger.error("Error while loading Sceneslist %s",e);
+  }
+  return list;
+}
+
+HueEffectServer.prototype.hasLightWithId = function(lightId) {
+   return (this.lights.filter(function (light) { return light.lightId == lightId}).pop()!=undefined);
+}
+
+
+HueEffectServer.prototype.persinstentData = function() {
+  var lightIDs = [];
+  this.lights.forEach(function (light){
+	  lightIDs.push(light.lightId);
+  });
+  return {"name":this.name,"lights":lightIDs};
 }
 
 HueEffectServer.prototype.runScene = function(sceneName) {

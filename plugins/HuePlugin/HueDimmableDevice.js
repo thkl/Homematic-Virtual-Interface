@@ -14,7 +14,7 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 		
 		HomematicDevice = plugin.server.homematicDevice;
 		
-		this.lightId = light["id"];
+		this.c = light["id"];
 		this.isGroup = (light["uniqueid"] == undefined);
 		this.transitiontime = 4; // Default Hue
 		this.onTime = 0;

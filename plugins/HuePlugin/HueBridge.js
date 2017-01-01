@@ -18,6 +18,7 @@ var HueDeviceOsramPlug = require(__dirname + "/HueDeviceOsramPlug.js").HueDevice
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
 var HueEffectServer = require(__dirname + "/HueEffectServer.js").HueEffectServer;
+var HueSFXDevice = require(__dirname + "/HueSFXDevice.js").HueSFXDevice;
 
 var HueBridge = function(plugin,name,server,log,instance) {
 	this.plugin = plugin;
@@ -31,6 +32,8 @@ var HueBridge = function(plugin,name,server,log,instance) {
 	this.groups = [];
 	this.name = name;
 	this.instance = instance;
+	this.effectServers={};
+	this.sfxDevice;
 }
 
 
@@ -38,7 +41,6 @@ HueBridge.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
-	this.effectServer = new HueEffectServer();
 	
 	this.log.info("Init %s",this.name);
 	var ip = this.configuration.getValueForPlugin(this.name,"hue_bridge_ip");
@@ -135,6 +137,36 @@ this.queryScenes();
 setTimeout(function() {that.checkReady();}, 1);
 }
 
+HueBridge.prototype.setupEffectServer = function() {
+	var that = this;
+	this.effectServers = {};
+	var count=0;
+	var efs = this.getConfiguredEffectServer();
+	efs.forEach(function (definition){
+		var name = definition["name"];
+		var lights = definition["lights"];
+		var efserver = new HueEffectServer(name);
+		
+		lights.forEach(function (lightid){
+			that.log.debug("Try adding light with ID %s",lightid)
+			var lightObject = that.lightWithId(lightid);
+			if (lightObject) {
+				efserver.addLight(lightObject);
+			} else {
+				that.log.error("Light with ID %s not found",lightid);
+			}
+		});
+		count=count+1;
+		that.effectServers[name] = efserver;
+  	});
+  	
+  	// Create a HM Device if we had one EFXs
+  	if (count > 0) {
+  		this.sfxDevice = new HueSFXDevice(this);
+  		this.sfxDevice.setServerList(that.effectServers);
+  	}
+}
+
 HueBridge.prototype.checkReady = function() {
   var that = this;
   if ((this.lightsInitialized) && (this.groupsInitialized) && (this.scenesInitialized)) {
@@ -171,10 +203,6 @@ HueBridge.prototype.queryLights = function() {
 	    		var devName = "HUE000" +  that.instance;
 				var hd = new HueColorDevice(that,that.hue_api,light,devName);
 				light["hm_device_name"] = devName + light["id"];
-				
-				
-				that.effectServer.addLight(hd);
-				
     		  }
     		  break;
     		   
@@ -199,6 +227,11 @@ HueBridge.prototype.queryLights = function() {
   		});
   	that.log.debug("Lightinit completed with " + that.lights.length + " devices mapped.");
   	that.lightsInitialized = true;
+  	
+  	
+  	// Setup All EffectServer
+  	that.setupEffectServer();
+
   	}
 	});
 }
@@ -325,9 +358,35 @@ HueBridge.prototype.getConfiguredScenes = function() {
 	return [];	
 } 
 
+HueBridge.prototype.getConfiguredEffectServer = function() {
+	var ps = this.configuration.getPersistValueForPluginWithDefault(this.name,"EffectServer",undefined);
+	if (ps != undefined) {
+		try {
+			return JSON.parse(ps);
+		}catch (err) {
+			this.log.warn("persistent effect definition is broken. ignore that one.");
+			this.configuration.setPersistValueForPlugin(this.name,"EffectServer","[]");
+			return [];
+		}
+	}
+	return [];	
+} 
+
 HueBridge.prototype.saveConfiguredScenes = function(publishedscenes) {
 	var s = JSON.stringify(publishedscenes);
 	this.configuration.setPersistValueForPlugin(this.name,"PublishedScenes",s);
+} 
+
+HueBridge.prototype.saveEffectScenes = function(publishedscenes) {
+	var efs = [];
+	var that = this;
+	
+	Object.keys(this.effectServers).forEach(function (name) {
+	  var server = that.effectServers[name];
+	  efs.push(server.persinstentData());
+	});
+	var s = JSON.stringify(efs);
+	this.configuration.setPersistValueForPlugin(this.name,"EffectServer",s);
 } 
 
 
@@ -335,6 +394,8 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var listLights = "";
 	var listGroups = "";
 	var listScenes = "";
+	var listEfxS = "";
+	
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
 	
@@ -413,19 +474,71 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 			}
 			break;
 			
-			
-			case "play":
+			case "efxs.createserver":
 			{
-				var scene = queryObject["scene"];
-				this.effectServer.runScene(scene);
+				var servername = queryObject["efxs.newname"];
+				if (servername) {
+					var efs = new HueEffectServer(servername);
+					this.effectServers[servername] = efs;
+					this.saveEffectScenes();
+				} else {
+					this.log.warn("Servername not provided %s",servername);
+				}
 			}
 			break;
 			
-			case "stop":
+			
+			case "efxs.addlight":
 			{
-				this.effectServer.stopScene();
+				var servername = queryObject["efxs.name"];
+				var lightid = queryObject["light"];
+				var efs = this.effectServers[servername];
+				if (efs) {
+					this.log.debug("SFX Found");
+					var lightObject = this.lightWithId(lightid);
+					if (lightObject) {
+						this.log.debug("Add Light to efxs");
+						efs.addLight(lightObject);
+					}
+				}
+				this.saveEffectScenes();
 			}
 			break;
+			
+			
+			case "efxs.play":
+			{
+				var scene = queryObject["efxs.scene"];
+				var servername = queryObject["efxs.name"];
+				var efs = this.effectServers[servername];
+				if (efs) {
+					efs.runScene(scene);
+				}
+
+			}
+			break;
+			
+			case "efxs.stop":
+			{
+				var servername = queryObject["efxs.name"];
+				var efs = this.effectServers[servername];
+				if (efs) {
+					efs.stopScene();
+				}
+			}
+			break;
+
+			case "efxs.stopall":
+			{
+				Object.keys(this.effectServers).forEach(function (name) {
+					var efs = that.effectServers[name];
+					if (efs) {
+						efs.stopScene();
+					}
+				});
+			}
+			break;
+
 		}
 		
 	}
@@ -434,6 +547,10 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var lighttemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_tmp.html",null);
 	var grouptemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_group_tmp.html",null);
 	var szenetemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_scene_tmp.html",null);
+
+	var efxtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_efx_tmp.html",null);
+	var efxSceneListtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_efx_slist_tmp.html",null);
+	var efxLighttemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_efx_light_tmp.html",null);
 	
 	var that = this;
 
@@ -471,7 +588,42 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 		});
 	} 
 
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"refresh":refresh,"listLights":listLights,"listGroups":listGroups,"listScenes":listScenes});
+    // Build EfxS List
+    Object.keys(this.effectServers).forEach(function (name) {
+	    that.log.debug("Show EfxS %s",name);
+	    var lightList = "";
+	    var scenelist = "";
+	    var efxs = that.effectServers[name];
+	    if (efxs) {
+	    
+	    that.lights.forEach(function (light){
+		    var hazLight = efxs.hasLightWithId(light["id"]);
+			var inUse = (hazLight == true) ? "X":" ";
+		    var efxsfunction = (hazLight == true) ? "removelight":"addlight";
+		    
+			lightList = lightList +  dispatched_request.fillTemplate(efxLighttemplate,{"efxs.name":name,
+																					   "lamp.name":light["name"],
+																					 "lamp.lampid":light["id"],
+																					  "lamp.inuse":inUse,
+																				   "efxs.function":efxsfunction});
+		});
+	    
+	    efxs.listScenes().forEach(function (scene){
+		    scenelist = scenelist + dispatched_request.fillTemplate(efxSceneListtemplate,{"efxs.scene":scene});
+	    });
+	    
+		listEfxS = listEfxS + dispatched_request.fillTemplate(efxtemplate,{"efxs.name":name,
+																		 "efxs.lights":lightList,
+																		 "efxs.scenes":scenelist});
+																		 
+		}
+	});
+
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"refresh":refresh,
+																		"listLights":listLights,
+																		"listGroups":listGroups,
+																		"listScenes":listScenes,
+																		  "listEfxS":listEfxS});
 }
 
 module.exports = {
