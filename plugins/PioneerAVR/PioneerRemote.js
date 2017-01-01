@@ -22,7 +22,9 @@ Pioneer_Remote.prototype.init = function(remoteName,index,HomematicDevice) {
 	this.hmDevice = new HomematicDevice();
 	this.index = index;
 	var that = this;
+	
 	var data = this.bridge.deviceDataWithSerial(remoteName);
+		
 		if (data!=undefined) {
 			this.hmDevice.initWithStoredData(data);
 		} 
@@ -32,7 +34,9 @@ Pioneer_Remote.prototype.init = function(remoteName,index,HomematicDevice) {
 		} else {
 			this.bridge.addDevice(this.hmDevice,false);
 		}
+		
     	this.hmDevice.on('device_channel_value_change', function(parameter){
+			
 			var newValue = parameter.newValue;
 			if (parameter.name == "TARGET_VOLUME") {
 				var newVolume = parameter.newValue;
@@ -95,6 +99,10 @@ Pioneer_Remote.prototype.removeFromHMLayer=function() {
 	this.bridge.deleteDeviceTemporary(this.hmDevice);
 }
 
+
+Pioneer_Remote.prototype.setVolume=function(newVolume) {
+	this.pioneer_bridge.setVolume(newVolume);
+}
 
 Pioneer_Remote.prototype.functionForChannel=function(type,channel) {
 	var result = channel.getParamsetValueWithDefault("MASTER","CMD_" + type,"");
