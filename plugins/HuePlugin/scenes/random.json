@@ -1,0 +1,6 @@
+{
+	 "mode":"static",
+	 "frames": [
+		 {"bulbs":1, "transition": 5,  "hue": [0,360], "saturation": 100, "brightness": 100}
+	 ]
+ }

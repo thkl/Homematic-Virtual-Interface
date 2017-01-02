@@ -7,5 +7,8 @@
 		 {"bulbs":0, "pause":[200,550]},
          {"bulbs":0, "transition":[15,75], "brightness": 65, "saturation": 72, "hue": 43},
          {"bulbs":0, "pause":[200,550]}
-	 ]
+	 ],
+	 
+	 	 "stopframe": {"bulbs":0, "transition":5, "brightness": 0, "saturation":0, "hue":0}
+
  }

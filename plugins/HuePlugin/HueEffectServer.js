@@ -31,10 +31,25 @@ HueEffectServer.prototype.removeLight = function(light) {
    }
 }
 
+HueEffectServer.prototype.stopSceneWithLight = function(light) {
+   var index = this.lights.indexOf(light);
+   if (index > -1) {
+	   logger.debug("Stop Scene");
+	   this.stopScene();
+   }
+}
+
 
 HueEffectServer.prototype.stopScene = function() {
+   if (this.isRunning==true) {
    this.interrupt = true;
    clearTimeout(this.timer);
+   this.isRunning = false;
+   if (this.offFrame) {
+	   logger.debug("Running the stop frame");
+	   this.runStaticScene(this.offFrame);
+   }
+   } 
 }
 
 HueEffectServer.prototype.listScenes = function() {
@@ -72,6 +87,7 @@ HueEffectServer.prototype.runScene = function(sceneName) {
    	try {
 	   	this.stopScene();
 		this.interrupt = false;
+		this.isRunning = true;
 		var sceneFile = __dirname +"/scenes/"+sceneName + ".json";
 		logger.info("try to load scene : %s",sceneFile);
     	var buffer = fs.readFileSync(sceneFile);
@@ -82,6 +98,7 @@ HueEffectServer.prototype.runScene = function(sceneName) {
     	  if ((scene_settings) && (scene_settings.mode)){
 	    	  var mode = scene_settings.mode;
 	    	  var frames = scene_settings.frames;
+	    	  this.offFrame = scene_settings.stopframe;
 	    	  if (mode=="static") {
 		    	  this.runStaticScene(frames[0]);
 	    	  }
@@ -118,16 +135,35 @@ HueEffectServer.prototype.hs360 = function(input,max,base) {
 
 HueEffectServer.prototype.runStaticScene = function(frame) {
     // We only have one Frame	
-    var hue = this.hs360(frame.hue,65535,360);
-    var bri = this.hs360(frame.brightness,254,100);
-    var sat = this.hs360(frame.saturation,254,100);
-    var transition = this.getArgument(frame.transition) || 5;
+    var that = this;
     
-    var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":true};
+   	if ((frame.bulbs==undefined) || (frame.bulbs==0)) {
+				
+		var hue = this.hs360(frame.hue,65535,360);
+		var bri = this.hs360(frame.brightness,254,100);
+		var sat = this.hs360(frame.saturation,254,100);
+		var isOn = (bri==0)?false:true;
+		var transition = this.getArgument(frame.transition) || 5;
+		var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":isOn};
+		logger.debug(lightstate);
+		this.lights.forEach(function (light) {
+	    		light.setLightData(lightstate);
+    	});
+    			
+	} else {
+				
+		this.lights.forEach(function (light) {
+			var hue = that.hs360(frame.hue,65535,360);
+			var bri = that.hs360(frame.brightness,254,100);
+			var sat = that.hs360(frame.saturation,254,100);
+			var isOn = (bri==0)?false:true;
+			var transition = that.getArgument(frame.transition) || 5;
+			var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":isOn};
+			light.setLightData(lightstate);
+    	});
 
-    this.lights.forEach(function (light) {
-	    light.setLightData(lightstate);
-    });
+	}
+	this.isRunning=false;
 }
 
 HueEffectServer.prototype.runFXScene = function(loop,frames,curFrame) {
@@ -160,19 +196,23 @@ HueEffectServer.prototype.runFXScene = function(loop,frames,curFrame) {
 				var bri = this.hs360(frame.brightness,254,100);
 				var sat = this.hs360(frame.saturation,254,100);
 				var transition = this.getArgument(frame.transition) || 5;
-				var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":true};
+				var isOn = (bri==0)?false:true;
+
+				var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":isOn};
 				this.lights.forEach(function (light) {
 	    			light.setLightData(lightstate);
     			});
     			
 			} else {
-				
-				this.lights.forEach(function (light) {
+				var randomArray = this.shuffle(this.lights);
+				randomArray.forEach(function (light) {
 					var hue = that.hs360(frame.hue,65535,360);
 					var bri = that.hs360(frame.brightness,254,100);
 					var sat = that.hs360(frame.saturation,254,100);
 					var transition = that.getArgument(frame.transition) || 5;
-					var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":true};
+					var isOn = (bri==0)?false:true;
+
+					var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":isOn};
 	    			light.setLightData(lightstate);
     			});
 
@@ -187,6 +227,26 @@ HueEffectServer.prototype.runFXScene = function(loop,frames,curFrame) {
 			return;
 		}
     }
+}
+
+
+HueEffectServer.prototype.shuffle = function(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
 }
 
 module.exports = {

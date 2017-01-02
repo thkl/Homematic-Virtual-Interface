@@ -1,5 +1,7 @@
 "use strict";
 var hueconf = require("node-hue-api");
+const EventEmitter = require('events');
+const util = require('util');
 
 var HomematicDevice;
 
@@ -64,7 +66,6 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 
 		this.hmDevice.on('device_channel_value_change', function(parameter){
 			
-			that.log.debug("Value was changed " + JSON.stringify(parameter) );
 			var newValue = parameter.newValue;
 			
 			var channel = that.hmDevice.getChannel(parameter.channel);
@@ -144,7 +145,12 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		 	that.refreshDevice();
 		 }, 1000);
 */
+
+		EventEmitter.call(this);
 	}
+	
+	util.inherits(HueColorDevice, EventEmitter);
+	
 	
 	HueColorDevice.prototype.reload = function() {
 		if (this.config!=undefined) {
@@ -260,8 +266,6 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	        newState["on"] = false;
 	        newState["bri"] = 0;
 	    }
-		this.log.debug(JSON.stringify(newState));
-		
 		
 		if (that.isGroup == true) {
 
@@ -278,6 +282,11 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	        di_channel.endUpdating("LEVEL");
 	      }
 	    });
+	    }
+	    
+	    if (newLevel==0) {
+		    this.log.warn("LOF");
+		    this.emit('light_turned_off', this);
 	    }
 	}
 	
