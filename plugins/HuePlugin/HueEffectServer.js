@@ -35,17 +35,17 @@ HueEffectServer.prototype.stopSceneWithLight = function(light) {
    var index = this.lights.indexOf(light);
    if (index > -1) {
 	   logger.debug("Stop Scene");
-	   this.stopScene();
+	   this.stopScene(true);
    }
 }
 
 
-HueEffectServer.prototype.stopScene = function() {
+HueEffectServer.prototype.stopScene = function(playStopFrame) {
    if (this.isRunning==true) {
    this.interrupt = true;
    clearTimeout(this.timer);
    this.isRunning = false;
-   if (this.offFrame) {
+   if ((this.offFrame) && (playStopFrame==true)) {
 	   logger.debug("Running the stop frame");
 	   this.runStaticScene(this.offFrame);
    }
@@ -85,7 +85,7 @@ HueEffectServer.prototype.persinstentData = function() {
 
 HueEffectServer.prototype.runScene = function(sceneName) {
    	try {
-	   	this.stopScene();
+	   	this.stopScene(false);
 		this.interrupt = false;
 		this.isRunning = true;
 		var sceneFile = __dirname +"/scenes/"+sceneName + ".json";

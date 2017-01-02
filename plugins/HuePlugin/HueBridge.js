@@ -551,7 +551,7 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 				var servername = queryObject["efxs.name"];
 				var efs = this.effectServers[servername];
 				if (efs) {
-					efs.stopScene();
+					efs.stopScene(true);
 				}
 			}
 			break;
@@ -561,7 +561,7 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 				Object.keys(this.effectServers).forEach(function (name) {
 					var efs = that.effectServers[name];
 					if (efs) {
-						efs.stopScene();
+						efs.stopScene(true);
 					}
 				});
 			}
