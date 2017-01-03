@@ -82,7 +82,7 @@
     Info
   </h4>
    <div class="ph">$consumer$ active Connections ($consumer_detail$)</div>
-   <div class="ph">$message$ <a href="/index/?cleanup">Remove all Consumers</a></div>
+   <div class="ph">$message$ <a href="javascript:clean()">Remove all Consumers</a></div>
     
 </div>
       </div>
@@ -91,6 +91,16 @@
 
 </div>
 
+
+<script type="text/javascript">
+	    
+	    function clean() {
+		    var answer = confirm("This will remove all saved session tokens. You have to reboot your ccu to reconnect. Sure ??")
+			if (answer){
+				window.location.href = "/index/?cleanup"
+			}
+	    }
+    </script>
 
 
     <script src="assets/js/jquery.min.js"></script>
