@@ -78,25 +78,29 @@ LogicalBridge.prototype.init = function() {
     
     'listDevices': function listDevices(err, params, callback) {
       that.log.debug('rpc <- listDevices Zero Reply');
+      that.hm_layer.lastMessage = new Date();
       callback(null,[]);
     },
 
 
     'newDevices': function newDevices(err, params, callback) {
       that.log.debug('rpc <- newDevices Zero Reply');
+      that.hm_layer.lastMessage = new Date();
       callback(null,[]);
     },
    
    
     'event': function event(err, params, callback) {
       that.log.debug('rpc <- event Zero Reply');
+      that.hm_layer.lastMessage = new Date();
       callback(null,[]);
     },
     
     'system.multicall': function systemmulticall(err, params, callback) {
       that.log.debug('rpc <- system.multicall Zero Reply');
       
-      
+      that.hm_layer.lastMessage = new Date();
+
       params.map(function(events) {
         try {
           events.map(function(event) {
@@ -1085,6 +1089,7 @@ LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request
 	var queryObject = url.parse(requesturl,true).query;
 	var htmlfile = "index.html";
 	var editorData = {"error":""};
+	var that = this;
 	
 	if (queryObject["do"]!=undefined) {
 		
@@ -1101,9 +1106,23 @@ LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request
 		  break;
 
 		  case "showlog": {
-			  var logdata = fs.readFileSync(this.myLogFile , "binary");
 			  htmlfile = "log.html"
-			  editorData["content"]=logdata;
+			  var logContent;
+			  var backwardsStream = require('fs-backwards-stream')
+			  var s = backwardsStream(this.myLogFile);
+			  var data = '';
+			  	s.on('data',function(buf){
+		  			data += buf.toString()
+  			  	});
+
+			  	s.on('end',function(){
+			  		editorData["content"]=data;
+		  			dispatched_request.dispatchFile(that.plugin.pluginPath , htmlfile ,{"editor":editorData});
+
+  			  	});
+  			  	
+  			  	return;
+
 		  }
 		  
 		  break;
