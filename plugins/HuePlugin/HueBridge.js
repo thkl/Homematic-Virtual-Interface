@@ -31,7 +31,7 @@ var HueBridge = function(plugin,name,server,log,instance) {
 	this.lights = [];
 	this.groups = [];
 	this.name = name;
-	this.instance = instance;
+	this.instance = (instance) ? instance:"0";
 	this.effectServers={};
 	this.sfxDevice;
 }

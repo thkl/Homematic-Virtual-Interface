@@ -116,11 +116,15 @@ HueEffectServer.prototype.runScene = function(sceneName) {
 
 
 HueEffectServer.prototype.getArgument = function(input) {
+	if (input) {
 	if (typeof input === 'number') {
 	   return input;
 	} else {
        input = Math.random() * (input[1] - input[0]) + input[0];	
 	   return input;
+   	}
+   	} else {
+	   	return input;
    	}
 }
 
