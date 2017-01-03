@@ -1,4 +1,4 @@
-"use strict";
+	"use strict";
 var hueconf = require("node-hue-api");
 
 var HomematicDevice;
@@ -14,7 +14,7 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 		
 		HomematicDevice = plugin.server.homematicDevice;
 		
-		this.c = light["id"];
+		this.lightId = light["id"];
 		this.isGroup = (light["uniqueid"] == undefined);
 		this.transitiontime = 4; // Default Hue
 		this.onTime = 0;
