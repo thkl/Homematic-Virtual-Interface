@@ -41,7 +41,7 @@ var HueSFXDevice = function(plugin) {
 			Object.keys(that.serverList).forEach(function (name) {
 				var efs = that.serverList[name];
 				if (efs) {
-					efs.stopScene();
+					efs.stopScene(true);
 				}
 			});	
 		}
