@@ -204,7 +204,7 @@ HueBridge.prototype.queryLights = function() {
 				var hd = new HueColorDevice(that,that.hue_api,light,devName);
 				light["hm_device_name"] = devName + light["id"];
 				
-				hd.on("light_turned_off",function (light) {
+				hd.on("direct_light_event",function (light) {
 					// Call all EffectServer to stop
 					that.log.debug("Some Lights are off Check the Scenes");
 					Object.keys(that.effectServers).forEach(function (name) {
@@ -223,7 +223,7 @@ HueBridge.prototype.queryLights = function() {
 				var hd = new HueDimmableDevice(that,that.hue_api,light,devName);
 				light["hm_device_name"] = devName + light["id"];
 				
-				hd.on("light_turned_off",function (light) {
+				hd.on("direct_light_event",function (light) {
 					// Call all EffectServer to stop
 					that.log.debug("Some Lights are off Check the Scenes");
 					Object.keys(that.effectServers).forEach(function (name) {

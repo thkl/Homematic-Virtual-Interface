@@ -21,7 +21,8 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		this.transitiontime = 4; // Default Hue
 		this.onTime = 0;
 		this.lastLevel = 0;
-
+		this.bri = 0;
+		
 		this.config = plugin.server.configuration;
 		this.reportFaults = false;
 
@@ -182,15 +183,17 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		var that = this;
 		var newState = {};
 
+		this.emit('direct_light_event', this);
+
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
 
 	    if (newColor == 200) {
 	      // SpeZiale
 	        var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
 	        var sat = co_channel.getParamsetValueWithDefault("MASTER","DEFAULT_SATURATION",128);
-   	        newState = {"hue":white,"sat":sat};
+   	        newState = {"hue":white,"sat":sat,"bri":this.bri};
 	    } else {
-	        newState = {"hue":(newColor/199)*65535,"sat":255};
+	        newState = {"hue":(newColor/199)*65535,"sat":255,"bri":this.bri};
 	    }
 
 		this.log.debug("Hue Value set to " + JSON.stringify(newState) );
@@ -216,13 +219,13 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	      }
 	    });
 		}
-
 	}
 
 
 	HueColorDevice.prototype.setSaturation = function(newSaturation) {
 		var that = this;
 		var newState = {"sat":newSaturation};
+		this.emit('direct_light_event', this);
 
 		this.log.debug("Sat Value set to " + JSON.stringify(newState) );
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
@@ -248,12 +251,12 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	      }
 	    });
 		}
-
 	}
 
 
 	HueColorDevice.prototype.setLevel = function(newLevel) {
 	    var that = this;
+		this.emit('direct_light_event', this);
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 		di_channel.startUpdating("LEVEL");
 		di_channel.updateValue("LEVEL",newLevel);
@@ -266,7 +269,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	        newState["on"] = false;
 	        newState["bri"] = 0;
 	    }
-		
+		this.bri = newState["bri"];
 		if (that.isGroup == true) {
 
 	    that.api.setGroupLightState(that.lightId,newState, function(err, result) {
@@ -282,11 +285,6 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	        di_channel.endUpdating("LEVEL");
 	      }
 	    });
-	    }
-	    
-	    if (newLevel==0) {
-		    this.log.warn("LOF");
-		    this.emit('light_turned_off', this);
 	    }
 	}
 	
@@ -311,6 +309,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	    var bri = result["lastAction"]["bri"];
 	    var hue = result["lastAction"]["hue"];
 	    var sat = result["lastAction"]["sat"];
+		that.bri = bri;
 
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 	    var co_channel = that.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
@@ -345,7 +344,8 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	    var bri = result["state"]["bri"];
 	    var hue = result["state"]["hue"];
 		var sat = result["state"]["sat"];
-		
+		that.bri = bri;
+
 		if (that.reportFaults == true) {
 			var reachable = result["state"]["reachable"];
 			var ch_maintenance = that.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);
@@ -392,7 +392,8 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	    var bri = data["state"]["bri"];
 	    var hue = data["state"]["hue"];
 		var sat = data["state"]["sat"];
-		
+		that.bri = bri;
+
 		if (this.reportFaults == true) {
 			var reachable = data["state"]["reachable"];
 			var ch_maintenance = this.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);

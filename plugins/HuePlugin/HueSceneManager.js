@@ -19,6 +19,7 @@ var HueSceneManager = function(plugin, hueApi,instance) {
     this.server = plugin.server;
     this.bridge = plugin.server.getBridge();
 	this.instance = instance;
+    this.plugin = plugin;
     if (this.bridge == undefined) {
 	   throw("HM Layer was not set correctly");
     }
@@ -99,11 +100,12 @@ HueSceneManager.prototype.addHMRemote = function(remoteName) {
 		if (parameter.name == "PRESS_SHORT") {
 			that.mappedScenes.forEach(function (scene){
 				if (scene["hmchannel"] == channel.adress) {
-/*	TODO send Lights in this scene to the effect Server to stop 				
-	scene["lights"].forEach(function lightId() {
-						
-					});
-					*/
+				scene["lights"].forEach(function (lightId) {
+					var light = that.plugin.lightWithId(lightId);
+					if (light) {
+						light.emit('direct_light_event', light);
+					}	
+				});
 					that.log.debug("Scene found " + scene["name"] +  " will run that");
 					that.hueApi.activateScene(scene["id"],function(err, result) {});
 				}

@@ -32,10 +32,12 @@ HueEffectServer.prototype.removeLight = function(light) {
 }
 
 HueEffectServer.prototype.stopSceneWithLight = function(light) {
-   var index = this.lights.indexOf(light);
-   if (index > -1) {
-	   logger.debug("Stop Scene");
-	   this.stopScene(true);
+   if (this.isRunning==true) {
+   	var index = this.lights.indexOf(light);
+   	if (index > -1) {
+	   	logger.debug("Stop Scene");
+		this.stopScene(true);
+   	}
    }
 }
 
