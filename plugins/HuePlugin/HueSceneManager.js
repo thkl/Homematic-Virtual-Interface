@@ -71,12 +71,12 @@ HueSceneManager.prototype.publish = function(publishedscenes,ccuNotification) {
 	  scenes.forEach(function (sceneid){
 		var scene = that.getScene(sceneid);
 		if (scene != undefined) {
-			scene["hmchannel"] = "HUES" + that.instance + "0"  + cnt + ":"+i;
+			scene["hmchannel"] = "HUES_" + that.instance + "0"  + cnt + ":"+i;
 			i=i+1;
 			if (i>19) {
 			   i=1;
 			   cnt = cnt + 1; 
-			   that.addHMRemote("HUES" + that.instance +  "0" + cnt);
+			   that.addHMRemote("HUES_" + that.instance +  "0" + cnt);
 			}
  	  	}
  	  });
@@ -94,12 +94,16 @@ HueSceneManager.prototype.addHMRemote = function(remoteName) {
     var that = this;
     
     hmDevice.on('device_channel_value_change', function(parameter){
-			
 		var newValue = parameter.newValue;
 		var channel = hmDevice.getChannel(parameter.channel);
 		if (parameter.name == "PRESS_SHORT") {
 			that.mappedScenes.forEach(function (scene){
 				if (scene["hmchannel"] == channel.adress) {
+/*	TODO send Lights in this scene to the effect Server to stop 				
+	scene["lights"].forEach(function lightId() {
+						
+					});
+					*/
 					that.log.debug("Scene found " + scene["name"] +  " will run that");
 					that.hueApi.activateScene(scene["id"],function(err, result) {});
 				}
