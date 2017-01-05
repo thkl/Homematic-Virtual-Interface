@@ -741,6 +741,13 @@ LogicalBridge.prototype.runScript = function(script, name) {
 	        }	);
         },
         
+        setName : function Sandbox_setName(namOfScript) {
+	        
+        },
+        
+        setDescription : function Sandbox_setDescription(description) {
+	        
+        },
 
         setValue:   function Sandbox_setValue(target, val) {
 
