@@ -59,12 +59,17 @@ HarmonyHueServer.prototype.init = function() {
 	  that.log.debug("Request %s",dispatched_request.queryPath);
 	  that.handleRequest(dispatched_request);
     };
-
+	
+	try  {
 	//Create a server
 	this.server = http.createServer(handleRequest);
 	this.server.listen(this.localPort,this.hostName,511, function(){
 		that.log.info("HarmonyHueServer Server is listening on: Port %s",that.localPort);
  	});
+		
+	} catch (e) {
+		that.log.error("Cannot init Harmony Server at Port %s Error: %s",that.localPort , e);
+	}
  
  	this.udn =  "uuid:2f402f80-da50-11e1-9b23-"+this.myId;
  	

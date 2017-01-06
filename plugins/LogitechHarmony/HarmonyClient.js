@@ -22,6 +22,7 @@ var HarmonyClient = function (plugin) {
 	this.bridge = this.server.getBridge();
 	this.activities = [];
 	this.hubIP = this.config.getValueForPluginWithDefault(this.name,"hub_ip",undefined);
+	this.intervall = this.config.getValueForPluginWithDefault(this.name,"intervall",60000);
 
 	this.init();
 }
@@ -29,14 +30,15 @@ var HarmonyClient = function (plugin) {
 HarmonyClient.prototype.init = function() {
   var that = this;
   HomematicDevice = this.server.homematicDevice;
-  var hmDevice = new HomematicDevice();
-  hmDevice.initWithType("HM-RC-19", "HarmonyActivities");
-  this.bridge.addDevice(hmDevice);
+  this.hmDevice = new HomematicDevice();
+  this.hmDevice.initWithType("HM-RC-19_Harmony", "HarmonyActivities");
+  this.bridge.addDevice(this.hmDevice);
   var adx = 1;  
   harmony(this.hubIP).then(function(harmonyClient) {
 	  harmonyClient.getActivities().then(function(activities) {
 		activities.forEach(function (activity){
 			var ac = {"id":activity.id,"label":activity.label,"adress":adx};
+			
 			that.activities.push(ac);
 			adx = adx + 1;
 		});
@@ -49,10 +51,10 @@ HarmonyClient.prototype.init = function() {
   });
   });
   
-  hmDevice.on('device_channel_value_change', function(parameter){
+  this.hmDevice.on('device_channel_value_change', function(parameter){
 			
 		var newValue = parameter.newValue;
-		var channel = hmDevice.getChannel(parameter.channel);
+		var channel = that.hmDevice.getChannel(parameter.channel);
 		if (parameter.name == "PRESS_SHORT") {
 			
 			var selectedActivity = that.activities
@@ -65,6 +67,46 @@ HarmonyClient.prototype.init = function() {
 		
 	    }
 	});
+	
+ this.getCurrentActivity();
+}
+
+HarmonyClient.prototype.getCurrentActivity = function() {
+ var that = this;
+ try {
+	 
+ harmony(this.hubIP).then(function(harmonyClient) {
+	  harmonyClient.getCurrentActivity().then(function(c_activity) {
+	  	
+	  	that.log.debug("Responze",c_activity);
+
+	  	var selectedActivity = that.activities.filter(function (activity) { return activity.id == c_activity}).pop();
+	  	var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
+	  	if (selectedActivity) {
+		  	channel.updateValue("CURRENT_ACTIVITY",selectedActivity.label,true);
+	  	} else {
+		  	channel.updateValue("CURRENT_ACTIVITY","Unknow Activity",true);
+	  	}
+	  	harmonyClient.end();
+   });
+   
+   harmonyClient.on("error",function(error){
+	   that.log.error("Harmony Client Exception %s",error);
+   });
+   
+   harmony.on("error",function(error){
+	   that.log.error("Harmony Client Exception %s",error);
+   });
+ });
+ 
+
+ } catch (ex) {
+	 that.log.error(ex);
+ }
+ 
+  setTimeout(function () {
+	 that.getCurrentActivity();
+ }, this.intervall);	
 }
 
 HarmonyClient.prototype.getActivities = function() {
