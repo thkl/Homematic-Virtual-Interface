@@ -215,7 +215,8 @@ HueBridge.prototype.queryLights = function() {
 				
     		  }
     		  break;
-    		   
+    		  
+    		  case "Color temperature light": 
     		  case "Dimmable light": {
 	    		that.log.debug("Create new White Light " + light["name"]);
 	    		// Try to load device
