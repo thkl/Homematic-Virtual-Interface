@@ -1,5 +1,8 @@
-	"use strict";
+"use strict";
+
 var hueconf = require("node-hue-api");
+const EventEmitter = require('events');
+const util = require('util');
 
 var HomematicDevice;
 
@@ -131,7 +134,14 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 		 	that.refreshDevice();
 		 }, 1000);
 		*/
+		
+		EventEmitter.call(this);
+				
 	}
+	
+	util.inherits(HueColorDevice, EventEmitter);
+	
+	
 	
 	HueDimmableDevice.prototype.reload = function() {
 		if (this.config!=undefined) {
@@ -161,6 +171,9 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 
 	HueDimmableDevice.prototype.setLevel = function(newLevel) {
 	    var that = this;
+	    
+	    this.emit('direct_light_event', this);
+	    
 	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
 		di_channel.startUpdating("LEVEL");
 		di_channel.updateValue("LEVEL",newLevel);
