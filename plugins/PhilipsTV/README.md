@@ -13,5 +13,7 @@ config :
  ```
  
  The TV has to switched on while the plugin is initializing. Otherwise the API ID cannot be fetched from the TV.
- If you switch Off the Actor (Level < 100%), the Ambilight will switched off also, Switching ON the Actor (100%) the Ambilight will swt to automatic mode.
- You may also choose a Color.
+
+You can setup the Ambilight if the TV is on using the Dimmer and RGB settings.
+You can switch to loung-mode by set the automatic program of the RGB Device to slow cycle.
+You can switch back to internal mode (Ambilight controled by tv image) by set the automatic program to "TV-Simmulation"
