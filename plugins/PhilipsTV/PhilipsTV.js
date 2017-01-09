@@ -36,6 +36,13 @@ PhilipsTV.prototype.init = function() {
 	this.tv_ip = this.configuration.getValueForPlugin(this.name,"tv_ip");
 	var that = this;	
 
+	var api_id = this.configuration.getPersistValueForPlugin(this.name,"api_id");
+	if (api_id) {
+		this.api_id = api_id;
+		this.log.debug("using cached Philips API Version %s",that.api_id);
+		this.getTopology();
+	} else {
+
  	request('http://' + this.tv_ip + ":1925/system", function (error, response, body) {
 	if (!error && response.statusCode == 200) {
 		try {
@@ -44,6 +51,7 @@ PhilipsTV.prototype.init = function() {
 			if (system) {
 				that.api_id = system["api_version"]["Major"];
 				that.log.debug("Philips API Version is %s",that.api_id);
+				that.configuration.setPersistValueForPlugin(that.name,"api_id",that.api_id);
 				that.getTopology();
 			}	
 			
@@ -52,7 +60,8 @@ PhilipsTV.prototype.init = function() {
 	  	that.log.error("TV Init failed %s",error);
   	}
 	});
-
+	
+	}
 	
 	// Generate HM Actor
 	
@@ -121,30 +130,44 @@ PhilipsTV.prototype.init = function() {
 PhilipsTV.prototype.getTopology = function() {
 	this.log.debug("loading topology");
 	var that = this;	
-
- 	request('http://' + this.tv_ip + ":1925/" +  this.api_id + "/ambilight/topology", function (error, response, body) {
-	if (!error && response.statusCode == 200) {
-		try {
-			var topology = JSON.parse(body);
-			if (topology) {
-				that.layers = topology.layers;
-				that.leftPixels = topology.left;
-				that.topPixels = topology.top;
-				that.rightPixels = topology.right;
-				that.bottomPixels = topology.bottom;
-				that.pixels = (that.leftPixels + that.topPixels + that.rightPixels + that.bottomPixels);
-
-				that.log.debug("Topology loaded %s pixels.",that.pixels);
-				
-			} else {
-				that.log.error("Topology not readable");
-			}	
-		} catch (e) {that.log.error(e)}
-  	} else {
-	  	that.log.error("TV Ambilight Topology request failed %s",error);
-  	}
-	});
+	var topo = this.configuration.getPersistValueForPlugin(this.name,"topology");
+	if (topo) {
+		var topology = JSON.parse(topo);
+		this.log.debug("used cached topology");
+		this.parseTopology(topology);
+		return;		
+	} else {
+		
+	 	request('http://' + this.tv_ip + ":1925/" +  this.api_id + "/ambilight/topology", function (error, response, body) {
+	 	if (!error && response.statusCode == 200) {
+			try {
+				var topology = JSON.parse(body);
+				if (topology) {
+					that.configuration.setPersistValueForPlugin(that.name,"topology",JSON.stringify(topology));
+					that.parseTopology(topology);
+				} else {
+					that.log.error("Topology not readable");
+				}	
+				} catch (e) {that.log.error(e)}
+  		} else {
+	  		that.log.error("TV Ambilight Topology request failed %s",error);
+  		}
+		});
+	}
 }
+
+PhilipsTV.prototype.parseTopology = function(topology) {
+	
+	this.layers = topology.layers;
+	this.leftPixels = topology.left;
+	this.topPixels = topology.top;
+	this.rightPixels = topology.right;
+	this.bottomPixels = topology.bottom;
+	this.pixels = (this.leftPixels + this.topPixels + this.rightPixels + this.bottomPixels);
+	this.log.debug("Topology loaded %s pixels.",this.pixels);
+
+}
+
 
 PhilipsTV.prototype.switchOff = function(delay,callback) {
 	
