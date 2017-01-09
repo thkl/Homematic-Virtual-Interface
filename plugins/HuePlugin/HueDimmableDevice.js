@@ -139,7 +139,7 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 				
 	}
 	
-	util.inherits(HueColorDevice, EventEmitter);
+	util.inherits(HueDimmableDevice, EventEmitter);
 	
 	
 	
