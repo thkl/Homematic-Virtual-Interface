@@ -181,24 +181,27 @@ HueBridge.prototype.checkReady = function() {
 
 HueBridge.prototype.queryLights = function() {
 	var that = this;
+	var lightID = 0;
 	this.hue_api.lights(function(err, lights) {
 	
 	if ((lights != undefined) && (lights["lights"]!=undefined)) {
   		lights["lights"].forEach(function (light) {
     		
-    		switch (light["type"]) {
-	    		
-    		 case "On/Off plug-in unit": {
-    			that.log.debug("Create new Osram Plug " + light["name"]);
+    		
+    		    		
+    		switch (light["type"].toLowerCase()) {
+	    		  
+    		 case "on/off plug-in unit": {
+    			that.log.debug("Create new Osram Plug with name %s and id %s" , light["name"] ,  light["id"]);
     			var devName = "OSRPLG" +  that.instance;
 				var hd = new HueDeviceOsramPlug(that,that.hue_api,light,devName);
 				light["hm_device_name"] = devName + light["id"];
     		  } 
      		  break;
      		  
-     		  case "Extended color light": 
-    		  case "Color light": {
-	    		that.log.debug("Create new Color Light " + light["name"]);
+     		  case "extended color light": 
+    		  case "color light": {
+	    		that.log.debug("Create new Color Light with name %s and id %s " , light["name"] ,  light["id"]);
 	    		// Try to load device
 	    		var devName = "HUE000" + (that.instance)?that.instance:"0";
 				var hd = new HueColorDevice(that,that.hue_api,light,devName);
@@ -216,9 +219,9 @@ HueBridge.prototype.queryLights = function() {
     		  }
     		  break;
     		  
-    		  case "Color temperature light": 
-    		  case "Dimmable light": {
-	    		that.log.debug("Create new White Light " + light["name"]);
+    		  case "color temperature light": 
+    		  case "dimmable light": {
+	    		that.log.debug("Create new White Light with name %s and id %s" , light["name"] ,  light["id"]);
 	    		// Try to load device
 	    		var devName = "HUE000" +  (that.instance)?that.instance:"0";
 				var hd = new HueDimmableDevice(that,that.hue_api,light,devName);
@@ -245,6 +248,7 @@ HueBridge.prototype.queryLights = function() {
     		
     		that.lights.push(light);
     		that.mappedDevices.push(hd);
+    		lightID++;
   		});
   	that.log.debug("Lightinit completed with " + that.lights.length + " devices mapped.");
   	that.lightsInitialized = true;
