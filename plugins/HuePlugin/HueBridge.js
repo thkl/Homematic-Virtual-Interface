@@ -250,11 +250,12 @@ HueBridge.prototype.queryLights = function() {
     		
     		that.lights.push(light);
     		that.mappedDevices.push(hd);
+  		});
     	 }
     	 catch (e) {
 	    	 that.log.error("Sorry there was an error while initializing the lights ",e);
     	 }
-  		});
+
   	that.log.debug("Lightinit completed with " + that.lights.length + " devices mapped.");
   	that.lightsInitialized = true;
   	
