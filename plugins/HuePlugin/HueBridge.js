@@ -181,10 +181,12 @@ HueBridge.prototype.checkReady = function() {
 
 HueBridge.prototype.queryLights = function() {
 	var that = this;
-	var lightID = 0;
+
 	this.hue_api.lights(function(err, lights) {
 	
 	if ((lights != undefined) && (lights["lights"]!=undefined)) {
+  		
+  		try {
   		lights["lights"].forEach(function (light) {
     		
     		
@@ -248,7 +250,10 @@ HueBridge.prototype.queryLights = function() {
     		
     		that.lights.push(light);
     		that.mappedDevices.push(hd);
-    		lightID++;
+    	 }
+    	 catch (e) {
+	    	 that.log.error("Sorry there was an error while initializing the lights ",e);
+    	 }
   		});
   	that.log.debug("Lightinit completed with " + that.lights.length + " devices mapped.");
   	that.lightsInitialized = true;
