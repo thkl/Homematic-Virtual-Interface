@@ -10,6 +10,8 @@
 "use strict";
 
 var request = require('request');
+var color = require('onecolor');
+
 var HomematicDevice;
 	
 var PhilipsTV = function(plugin,name,server,log,instance) {
@@ -68,7 +70,7 @@ PhilipsTV.prototype.init = function() {
 
 	
 	this.hmDevice = new HomematicDevice();
-	this.hmDevice.initWithType("VIR-LG-RGBW-DIM", "PhilipsTV");
+	this.hmDevice.initWithType("HM-LC-RGBW-WM", "PhilipsTV");
 	this.bridge.addDevice(this.hmDevice);
 
 	this.hmDevice.on('device_channel_value_change', function(parameter){
@@ -79,50 +81,104 @@ PhilipsTV.prototype.init = function() {
 
 		    channel.startUpdating("LEVEL");
 			channel.updateValue("LEVEL",newValue);
-		    
-		    if (newValue==1) {
-			    that.switchMode("internal",function() {
-					channel.endUpdating("LEVEL");
-			    });
-		    } else {
+			
+			if (newValue==0) {
+			 
 			    that.curPix = 0;
 				that.loadCurrentLampData(function () {
 					that.switchOff(10, function () {
-					channel.endUpdating("LEVEL");
+						channel.endUpdating("LEVEL");
+					});
+				});
+
+			} else {
+				that.setColor();
+				that.switchMode("manual",function() {
+					that.sendLampData(function () {
+						channel.endUpdating("LEVEL");
+					});			
+				});
+			}
+		}
+		
+		
+		if (parameter.name == "OLD_LEVEL") {
+		   
+		   if (newValue == true) {
+			   channel.startUpdating("LEVEL");
+			   channel.updateValue("LEVEL",1);
+			   that.setColor();
+			
+			   that.switchMode("manual",function() {
+				that.sendLampData(function () {
+				channel.endUpdating("LEVEL");
+			});
+			});
+		   }
+		
+		}
+		
+		if (parameter.name == "PROGRAM") {
+			channel.startUpdating("PROGRAM");
+			channel.updateValue("PROGRAM",newValue);
+			if (newValue==6) {
+			    that.switchMode("internal",function() {
+			
+			    });
+		    }
+
+
+			if (newValue==1) {
+			    that.switchMode("lounge",function() {
+			
+			    });
+		    }
+		    
+		    if (newValue==0) {
+			    that.curPix = 0;
+				that.loadCurrentLampData(function () {
+					that.switchOff(10, function () {
 					});
 				});
 		    }
-		    
+
+			channel.endUpdating("PROGRAM");
 		}
-		
-		
-		if (parameter.name == "RGBW") {
-			channel.startUpdating("RGBW");
-			channel.updateValue("RGBW",newValue);
 
-			that.loadCurrentLampData(function () {
+		if (parameter.name == "COLOR") {
+			channel.startUpdating("COLOR");
+			channel.updateValue("COLOR",newValue);
 
-			var regex = /(\s*[0-9]{1,3}),(\s*[0-9]{1,3}),(\s*[0-9]{1,3})/
-			var result = newValue.match(regex);
-			var r = parseInt(result[1]);
-			var g = parseInt(result[2]);
-			var b = parseInt(result[3]);
-			for (var i = 0;i<=that.pixels;i++) {
-				that.switchPixelToColor(1,i,r,g,b);	
-			}
-			});
-			
-			
+			that.setColor();
 			
 			that.switchMode("manual",function() {
 				that.sendLampData(function () {
-				channel.endUpdating("RGBW");
+				channel.endUpdating("COLOR");
 			});
 			});
 			
 			
 		}
 		
+	});
+}
+
+PhilipsTV.prototype.setColor=function() {
+	var that = this;
+	var co_channel = this.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
+	var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
+	
+	var col = co_channel.getValue("COLOR");
+	var bri = di_channel.getValue("LEVEL");
+		
+	this.loadCurrentLampData(function () {
+		var myColor = new color.HSV((col/199),1,bri);
+		var myRGB = myColor.rgb();
+		that.log.debug(JSON.stringify(myColor));
+		that.log.debug(JSON.stringify(myRGB));
+		for (var i = 0;i<=that.pixels;i++) {
+			that.switchPixelToColor(1,i,Math.ceil(myRGB.red()*255), Math.ceil(myRGB.green()*255),Math.ceil(myRGB.blue()*255));	
+		}
 	});
 }
 
@@ -252,6 +308,7 @@ PhilipsTV.prototype.switchPixelToColor = function(layer,pixelId,red,green,blue) 
 	  }	
   	}
 }
+
 
 PhilipsTV.prototype.sendCommand = function(path,data,callback) {
 	var url = 'http://' + this.tv_ip + ':1925/' +  this.api_id + '/' + path;
