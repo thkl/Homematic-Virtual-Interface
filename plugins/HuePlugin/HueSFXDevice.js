@@ -55,10 +55,10 @@ var HueSFXDevice = function(plugin) {
 				var scene = cmds[1];
 				var efs = that.serverList[efsx];
 				if (efs) {
-					if (scene.toLocaleString()=="stop") {
+					if (scene.toLowerCase()=="stop") {
 						efs.stopScene();
 					} else
-					if (scene.toLocaleString()=="stop_dark") {
+					if (scene.toLowerCase()=="stop_dark") {
 						efs.stopScene(true);
 					} 
 					else {
