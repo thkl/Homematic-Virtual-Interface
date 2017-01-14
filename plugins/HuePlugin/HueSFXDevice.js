@@ -57,7 +57,11 @@ var HueSFXDevice = function(plugin) {
 				if (efs) {
 					if (scene.toLocaleString()=="stop") {
 						efs.stopScene();
-					} else {
+					} else
+					if (scene.toLocaleString()=="stop_dark") {
+						efs.stopScene(true);
+					} 
+					else {
 						efs.runScene(scene);
 					}
 				}
