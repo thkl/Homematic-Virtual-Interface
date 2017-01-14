@@ -1,8 +1,9 @@
 
-function GenericAlexaHomematicService (homematicDevice,rpcClient,log) {
+function GenericAlexaHomematicService (homematicDevice,rpcClient,log,hmlayer) {
 	this.homematicDevice = homematicDevice;
 	this.rpcClient = rpcClient;
 	this.log = log;
+	this.hm_layer = hmlayer;
 }
 
 

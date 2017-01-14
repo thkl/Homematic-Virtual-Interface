@@ -106,7 +106,42 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 				case "Spotify":
 				   var url = channel.getParamsetValueWithDefault("MASTER","CMD_PRESS_LONG","");
 				   that.sonos.flush(function (err, flushed) {that.sonos.addSpotifyPlaylist(url,function (err, playing) {that.sonos.play(function (err, playing) {})})});
-				   
+				break;
+				
+				
+				default:
+				{
+					switch (channel.index) {
+						case "1": 
+							that.sonos.play(function (err, playing) {})
+						break;
+						case "2": 
+							that.sonos.pause(function (err, playing) {})
+						break;
+						case "3": 
+							that.sonos.stop(function (err, playing) {})
+						break;
+						case "4": 
+							that.sonos.previous(function (err, playing) {})
+						break;
+						case "5": 
+							that.sonos.next(function (err, playing) {})
+						break;
+						case "6": 
+							that.sonos.getVolume(function (err, volume) {
+								volume = volume + 1;	
+								that.sonos.setVolume(volume, function (err, playing) {})
+								});
+						break;
+						case "7": 
+							that.sonos.getVolume(function (err, volume) {
+							volume = volume - 1;	
+							that.sonos.setVolume(volume, function (err, playing) {})
+							});
+						break;
+					}
+				}
+				break;
 			}
 	    } else {
 		    

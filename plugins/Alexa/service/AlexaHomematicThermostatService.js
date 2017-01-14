@@ -4,7 +4,7 @@ var GenericAlexaHomematicService = require('./GenericService.js').GenericAlexaHo
 var util = require("util");
 
 
-function AlexaHomematicThermostatService(plugin,homematicDevice,rpcClient) {
+function AlexaHomematicThermostatService(plugin,homematicDevice,rpcClient,log,hmlayer) {
     AlexaHomematicThermostatService.super_.apply(this,arguments);
 }
 

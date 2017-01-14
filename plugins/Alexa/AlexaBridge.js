@@ -131,7 +131,7 @@ AlexaBridge.prototype.reloadApplicances = function() {
 	    objects.forEach(function (alexa_object) {
 			that.log.info("Adding %s to Alexa",alexa_object.name);
 	
-			if (alexa_object.type=="AlexaLogicService") {
+			if ((alexa_object.type=="AlexaLogicService")||(alexa_object.isVirtual!=undefined)) {
 				that.add_virtual_appliance(alexa_object.adress,alexa_object.name,alexa_object.type);
 			} else {
 				that.add_appliance(alexa_object.adress,alexa_object.name,alexa_object.type);
@@ -172,7 +172,7 @@ AlexaBridge.prototype.get_appliances = function() {
 AlexaBridge.prototype.add_appliance = function(id,name,hmService) {
 
   var service = require ('./service/' + hmService);
-  var hms = new service(id,this.client,this.log);
+  var hms = new service(id,this.client,this.log,this.hm_layer);
 
 
   var al_ap = {"applianceId":id,
