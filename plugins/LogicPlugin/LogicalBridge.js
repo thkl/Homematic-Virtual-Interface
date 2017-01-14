@@ -35,6 +35,7 @@ var url = modules.url;
 var http = modules.http;
 var Promise = modules.promise;
 var moment = modules.moment;
+const util = require('util');
 
 var _global = {};
 
@@ -1000,14 +1001,22 @@ LogicalBridge.prototype.runScript = function(script, name) {
 LogicalBridge.prototype.processLogicalBinding = function(source_adress) {
   var channel = this.hm_layer.channelWithAdress(source_adress);
   var that = this;
-  that.log.debug("uhh someone is intrested in my value changes");
   if (channel) {
+	  that.log.debug("uhh someone is intrested in my value changes %s",source_adress);
 	  
-  channel.on('event_channel_value_change', function(parameter){
-	  parameter.parameters.forEach(function (pp){
+	  channel.removeAllListeners("logicevent_channel_value_change");
+	  
+	  channel.on('logicevent_channel_value_change', function(parameter){
+		  
+		 parameter.parameters.forEach(function (pp){
+		  that.log.debug("Channel was updated processing subscription ","HMVirtual."+parameter.channel,pp.name,pp.value);
 		  that.processSubscriptions("HMVirtual."+parameter.channel,pp.name,pp.value);
-	  });
-  });
+		});
+		
+	  });	
+	  
+  } else {
+	  that.log.debug("channel with adress %s not found - cannot add event listener",source_adress);
   }
 }
 

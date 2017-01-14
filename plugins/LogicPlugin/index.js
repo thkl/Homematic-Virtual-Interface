@@ -20,7 +20,7 @@ module.exports = function(server,name,logger,instance) {
 	
 	var dependencies = server.configuration.getValueForPlugin(name,"dependencies");
 		
-	if (server.dependenciesInitialized(dependencies)== true) {
+	if (server.dependenciesInitialized(dependencies) == true) {
 		that.bridge = new LogicalBridge(that,name,server,logger);
 		that.bridge.init();
 	
@@ -29,7 +29,7 @@ module.exports = function(server,name,logger,instance) {
     	};
 		
 	} else {
-		logger.debug("have to Wait for someone else");
+		logger.debug("have to Wait for someone else %",dependencies);
 		setTimeout(function() {
 			init();
 		}, 1000);

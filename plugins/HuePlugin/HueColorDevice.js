@@ -13,7 +13,6 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		this.log = plugin.log;
 		this.bridge = plugin.server.getBridge();
 		this.plugin = plugin;
-		
 		HomematicDevice = plugin.server.homematicDevice;
 		
 		this.lightId = light["id"];
