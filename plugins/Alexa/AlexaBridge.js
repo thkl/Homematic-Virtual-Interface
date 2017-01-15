@@ -348,7 +348,7 @@ AlexaBridge.prototype.loadHMDevices = function(callback) {
 				   var service = that.channelService(channel.type);
 				   if (service) {
 					   var address = channel.address;
-					   address.replace('BidCos-RF.', '');
+					   address = address.replace('BidCos-RF.', '');
 					result_list[channel.address] = {"device":device.name,"address":address,"name":channel.name,"service":service};   
 				   };
 			    });
