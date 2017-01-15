@@ -20,6 +20,7 @@ AlexaHomematicThermostatService.prototype.getActions = function() {
 }
 
 
+
 AlexaHomematicThermostatService.prototype.handleEvent = function(event,callback) {
 	
 	

@@ -77,12 +77,9 @@
   <h4 class="ty">
     Alexa Devices
   </h4>
+    
     $listDevices$
-	<div class="ph">
-          <span class="dh">
-          	<input type="button" value="New Device" onclick="window.location.href = '?do=appliance.new'"/>
-          </span>
-	 </div></div>
+</div>
 After you change something here you have to ask alexa to discover new smarthome devices: "Alexa, search for smarthome devices"
 
       </div>
@@ -98,13 +95,8 @@ After you change something here you have to ask alexa to discover new smarthome 
 			if (answer){
 				window.location.href = "?do=appliance.delete&id=" + appliance;
 			}
-		}
-		
-				
-		function editAppliance(appliance) {
-				window.location.href = "?do=appliance.edit&id=" + appliance;
-		}
 
+		}
 	</script>
 
 

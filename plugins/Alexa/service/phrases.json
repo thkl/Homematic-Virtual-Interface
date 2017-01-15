@@ -1,0 +1,43 @@
+{
+	"turnOn" : {
+		"en-en": "Alexa, turn on the $device$.",
+		"de-de": "Alexa, schalte $device$ ein."
+	},
+
+	"turnOff" : {
+		"en-en": "Alexa, turn off the $device$.",
+		"de-de": "Alexa, schalte $device$ aus."
+	},
+
+	"setPercentage" : {
+		"en-en": "Alexa, set $device$ to XX percent.",
+		"de-de": "Alexa, stelle $device$ auf XX Prozent."
+	},
+
+	"incrementPercentage" : {
+		"en-en": "Alexa, increase $device$ by XX percent.",
+		"de-de": "Alexa, erh&ouml;he $device$ um XX Prozent."
+	},
+
+	"decrementPercentage" : {
+		"en-en": "Alexa, decrease $device$ name by XX percent.",
+		"de-de": "Alexa, reduziere $device$ um XX Prozent."
+	},
+
+	"decrementTargetTemperature" : {
+		"en-en": "Alexa, decrease $device$ name by XX degrees.",
+		"de-de": "Alexa, reduziere $device$ um XX Grad"
+	},
+
+
+	"incrementTargetTemperature" : {
+		"en-en": "Alexa, increase the $device$ name by XX degrees",
+		"de-de": "Alexa, erh&ouml;he $device$ um XX Grad."
+	},
+
+
+	"setTargetTemperature" : {
+		"en-en": "Alexa, set the $device$ to XX degrees.",
+		"de-de": "Alexa, stelle $device$ auf XX Grad."
+	}
+}

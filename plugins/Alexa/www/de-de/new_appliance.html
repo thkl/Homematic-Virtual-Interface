@@ -75,15 +75,49 @@
 
 <div class="by">
   <h4 class="ty">
-    Alexa Devices
+    Neues Ger&auml;t
   </h4>
-    $listDevices$
+  
+  <h5 class="ty">
+    Erster Schritt: Ger&auml;t ausw&auml;hlen
+  </h5>
+  <div class="ph">
+ 	<input type="button" value="Homematic" onclick="javascript:loadHMDevices()" />
+ 	<input type="button" value="Virtual Layer Device" onclick="javascript:loadVirtDevices()" />
+ 	<br />
+ 		<div id="devicelist"></div>
+ 	</div>
+
+  <h5 class="ty">
+    Schritt 2 : Einstellen der Eigenschaften und speichern
+  </h5>
+  <form action="." method="get">
+	<input type="hidden" name="do" value="appliance.save" />
+	<input type="hidden" name="appliance.device" id="appliance.device" value="" />
+	<input type="hidden" name="appliance.service" id="appliance.service" value="" />
+
 	<div class="ph">
-          <span class="dh">
-          	<input type="button" value="New Device" onclick="window.location.href = '?do=appliance.new'"/>
-          </span>
-	 </div></div>
-After you change something here you have to ask alexa to discover new smarthome devices: "Alexa, search for smarthome devices"
+    	<span class="dh">Geräteadresse :<span id="appliance.device_2"></span></span>
+	</div>
+	<div class="ph">
+    	<span class="dh">Alexa Name : <input type="text" name="appliance.name" id="appliance.name" value="" />&nbsp;Dieser Name wird zum Alexa Dienst &uuml;bertragen.</span>
+	</div>
+	<div class="ph">
+    	<span class="dh">Handler : <span id="appliance.service_2" /></span>
+	</div>
+	<div class="ph">
+    	<input type="submit" value="Save" />
+	</div>
+   </form>
+   <div class="ph">
+    Aktuellen Phrasen sind : <br /><br />
+    <span id="phrase_list"></span>
+   </div>
+
+
+  <h5 class="ty">
+    Schritt 3 : es gibt keinen Schritt 3 ...
+  </h5>
 
       </div>
     </div>
@@ -91,25 +125,10 @@ After you change something here you have to ask alexa to discover new smarthome 
 
 </div>
 
-<script type="text/javascript">
-		
-		function deleteAppliance(appliance) {
-			var answer = confirm("Sure ?")
-			if (answer){
-				window.location.href = "?do=appliance.delete&id=" + appliance;
-			}
-		}
-		
-				
-		function editAppliance(appliance) {
-				window.location.href = "?do=appliance.edit&id=" + appliance;
-		}
-
-	</script>
-
-
-    <script src="../assets/js/jquery.min.js"></script>
+    <script src="../assets/js/jquery.min.js" type="text/javascript"></script>
     <script src="../assets/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="?do=app.js" type="text/javascript" ></script>
+
   </body>
 </html>
 

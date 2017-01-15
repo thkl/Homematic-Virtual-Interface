@@ -1,0 +1,13 @@
+{
+	"handler":["AlexaHomematicDimmerService","AlexaLogicService","AlexaHomematicSwitchService","AlexaSonosService","AlexaHomematicThermostatService","AlexaHueService"],
+	
+	"hm_device_settings" : {
+		
+		"SWITCH" : "AlexaHomematicSwitchService",
+		"DIMMER" : "AlexaHomematicDimmerService",
+		"BLIND"  : "AlexaHomematicDimmerService",
+		"THERMALCONTROL_TRANSMIT" : "AlexaHomematicThermostatService",
+		"CLIMATECONTROL_REGULATOR": "AlexaHomematicThermostatService"
+		
+	}
+}

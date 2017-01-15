@@ -260,6 +260,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		di_channel.startUpdating("LEVEL");
 		di_channel.updateValue("LEVEL",newLevel);
 		var newState = {"transitiontime":that.transitiontime};
+		that.log.debug("New Level Hue: %s",newLevel);
 	      if (newLevel > 0) {
 	        newState["on"] = true;
 	        newState["bri"] = (newLevel/1)*255;

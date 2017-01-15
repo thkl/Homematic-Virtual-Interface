@@ -1,9 +1,23 @@
+//
+//  GenericAlexaHomematicService.js
+//  Homematic Virtual Interface Core
+//
+//  Created by Thomas Kluge on 15.01.17.
+//  Copyright © 2016 kSquare.de. All rights reserved.
+//
+
+
+"use strict";
+
+var fs = require('fs');
+
 
 function GenericAlexaHomematicService (homematicDevice,rpcClient,log,hmlayer) {
 	this.homematicDevice = homematicDevice;
 	this.rpcClient = rpcClient;
 	this.log = log;
-	this.hm_layer = hmlayer;
+	this.hm_layer = hmlayer; 
+	this.alexaname = "unknow";
 }
 
 
@@ -15,6 +29,31 @@ GenericAlexaHomematicService.prototype =  {
 	getType : function(){return undefined},
 		
 	handleEvent: function(event,callback) {},
+
+	getPhrases: function(lng){
+		var that = this;
+    	var result = [];
+		
+		try {
+
+		var buffer = fs.readFileSync(__dirname + '/phrases.json');
+    	var phrases = JSON.parse(buffer.toString());
+    	if (phrases) {
+	    	
+	    	this.getActions().forEach(function (action){
+		    	
+		    	var phrase = phrases[action];
+		    	if (phrase) {
+			    	var localized_phrase = phrase[lng];
+			    	if (localized_phrase) {
+				    	result.push(localized_phrase.split("$device$").join(that.alexaname));
+			    	}
+		    	}
+	    	});
+    	}
+    	} catch (e){}
+    	return result;
+	},	
 
 
 	setState: function(adress,datapoint,value,callback) {

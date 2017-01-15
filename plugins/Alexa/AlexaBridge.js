@@ -4,6 +4,8 @@ var xmlrpc = require(__dirname + "/../../lib/homematic-xmlrpc");
 var uuid = require('uuid');
 var HomematicDevice;
 var url = require("url");
+var fs = require("fs");
+var regaRequest = require(__dirname + "/../../lib/HomematicReqaRequest.js");
 
 var AlexaBridge = function(plugin,name,server,log,instance) {
 	this.plugin = plugin;
@@ -119,6 +121,8 @@ AlexaBridge.prototype.init = function() {
 	});
 	}
 	
+	this.supportedChannels = this.loadChannelHandler();
+	
 	 this.plugin.initialized = true;
 	 this.log.info("initialization completed %s",this.plugin.initialized);
 }
@@ -174,7 +178,7 @@ AlexaBridge.prototype.add_appliance = function(id,name,hmService,virtual) {
 
   var service = require ('./service/' + hmService);
   var hms = new service(id,this.client,this.log,this.hm_layer);
-
+  hms.alexaname = name;
 
   var al_ap = {"applianceId":id,
 	  "manufacturerName":"ksquare.de",
@@ -203,7 +207,7 @@ AlexaBridge.prototype.add_virtual_appliance = function(id,name,hmService) {
 	hms.virtual_device = hmDevice;
 }
 
-AlexaBridge.prototype.save_appliances = function() {
+AlexaBridge.prototype.save_appliances = function(callback) {
 	var pobj = [];
 	var that = this;
 	Object.keys(this.alexa_appliances).forEach(function (key) {
@@ -215,15 +219,158 @@ AlexaBridge.prototype.save_appliances = function() {
 	  pobj.push(aobj);
 	});
 		  	  
-     this.configuration.savePersistentObjektToFile({"alexa":pobj},"alexa_objects");
+     this.configuration.savePersistentObjektToFile({"alexa":pobj},"alexa_objects",callback);
+}
+
+
+AlexaBridge.prototype.remove_appliance_withID = function(dispatched_request) {
+	var that = this;
+	var requesturl = dispatched_request.request.url;
+	var queryObject = url.parse(requesturl,true).query;
+	var applicanceId = queryObject["id"];
+
+	var obj = this.alexa_appliances[applicanceId];
+	if (obj) {
+		this.log.debug("Object to delete was found");
+		
+	}
+	delete this.alexa_appliances[applicanceId];
+	this.save_appliances( function (){
+		that.reloadApplicances();
+	});
+}
+
+AlexaBridge.prototype.loadChannelHandler = function() {
+	var buffer = fs.readFileSync(__dirname + '/service/config.json');
+    try {
+    	var c_object = JSON.parse(buffer.toString());
+		var serviceList = [];
+		if ((c_object) && (c_object["hm_device_settings"])) {
+	 	   return c_object["hm_device_settings"];
+		}
+	} catch (e) {
+		this.log.error(e);
+	}
+	return [];
+}
+
+
+AlexaBridge.prototype.serviceList = function() {
+	var buffer = fs.readFileSync(__dirname + '/service/config.json');
+    try {
+    	var c_object = JSON.parse(buffer.toString());
+		if ((c_object) && (c_object["handler"])) {
+	 	   return c_object["handler"];
+		}
+	} catch (e) {
+		this.log.error(e);
+	}
+	return [];
+}
+
+AlexaBridge.prototype.generateEditForm = function(dispatched_request) {
+	var requesturl = dispatched_request.request.url;
+	var queryObject = url.parse(requesturl,true).query;
+	var applicanceId = queryObject["id"];
+	var formData = "";
+	var appliance_template = dispatched_request.getTemplate(this.plugin.pluginPath , "list_edit.html",null);
+	var appliance = this.alexa_appliances[applicanceId];
+	var phrases = "";
+	appliance.service.getPhrases(dispatched_request.language).forEach(function (phrase){
+			phrases = phrases + phrase + "<br />";
+	});
+	
+	var str_service = "";
+	
+	this.serviceList().forEach(function (service){
+		if (service == appliance.service_name) {
+			str_service = str_service + "<option selected=selected>"+service+"</option>";	
+		} else {
+			str_service = str_service + "<option>"+service+"</option>";	
+		}
+	});
+								
+	formData = dispatched_request.fillTemplate(appliance_template,{"appliance.device":appliance.id,
+  																				  "appliance.name":appliance.name,
+  																				  "appliance.service":str_service,
+  																				  "appliance.phrases":phrases});
+  																				  
+  	return formData;
+}
+
+AlexaBridge.prototype.saveApplicance = function(dispatched_request) {
+	
+	var requesturl = dispatched_request.request.url;
+	var queryObject = url.parse(requesturl,true).query;
+	var that = this;
+	var applianceID = 	queryObject["appliance.device"]
+	var applianceName = queryObject["appliance.name"];
+	var service = 		queryObject["appliance.service"];
+	
+	if ((applianceID) && (applianceName) && (service)) {
+		
+		var appliance = this.alexa_appliances[applianceID];
+		if (appliance) {
+			appliance.name = applianceName;
+			appliance.service_name = service;
+			this.log.debug("Edit Mode");
+		} else {
+			if (service.type=="AlexaLogicService") {
+				this.add_virtual_appliance(applianceID,applianceName,service);
+			} else {
+				that.add_appliance(applianceID,applianceName,service);
+			}
+		}
+		
+		this.save_appliances( function (){
+			that.reloadApplicances();
+		});
+	}
+	
+}
+
+AlexaBridge.prototype.channelService = function(channelType) {
+	return  this.supportedChannels[channelType];
+}
+
+AlexaBridge.prototype.loadHMDevices = function(callback) {
+    var that = this;
+    var result_list = {};
+    var script = "string sDeviceId;string sChannelId;boolean df = true;Write(\'{\"devices\":[\');foreach(sDeviceId, root.Devices().EnumIDs()){object oDevice = dom.GetObject(sDeviceId);if(oDevice){var oInterface = dom.GetObject(oDevice.Interface());if (oInterface.Name() == 'BidCos-RF') { if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # sDeviceId # \'\",\');Write(\'\"if\": \"\' # oInterface # \'\",\');Write(\'\"name\": \"\' # oDevice.Name() # \'\",\');Write(\'\"address\": \"\' # oDevice.Address() # \'\",\');Write(\'\"type\": \"\' # oDevice.HssType() # \'\",\');Write(\'\"channels\": [\');boolean bcf = true;foreach(sChannelId, oDevice.Channels().EnumIDs()){object oChannel = dom.GetObject(sChannelId);if(bcf) {bcf = false;} else {Write(\',\');}Write(\'{\');Write(\'\"cId\": \' # sChannelId # \',\');Write(\'\"name\": \"\' # oChannel.Name() # \'\",\');if(oInterface){Write(\'\"intf\": \"\' # oInterface.Name() 	# \'\",\');Write(\'\"address\": \"\' # oInterface.Name() #\'.'\ # oChannel.Address() # \'\",\');}Write(\'\"type\": \"\' # oChannel.HssType() # \'\"\');Write(\'}\');}Write(\']}\');}}}Write(\']}\');";
+    
+    new regaRequest(this.server.getBridge(),script,function(result){
+	    
+	    try {
+		    if (result) {
+		    var jobj = JSON.parse(result);
+		    jobj.devices.forEach(function (device){
+			    device.channels.forEach(function (channel){
+				   var service = that.channelService(channel.type);
+				   if (service) {
+					   var address = channel.address;
+					   address.replace('BidCos-RF.', '');
+					result_list[channel.address] = {"device":device.name,"address":address,"name":channel.name,"service":service};   
+				   };
+			    });
+		    });
+			}    
+	    } catch (e) {
+		    console.log(e.stack);
+	    }
+	    
+	    callback(result_list);
+    });
+    
 }
 
 
 AlexaBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
-	var deviceList = "";
+	var deviceList = undefined;
 	var that = this;
+	var template = "index.html";
 	
 	var requesturl = dispatched_request.request.url;
+	
 	var queryObject = url.parse(requesturl,true).query;
 
 	if (queryObject["do"]!=undefined) {
@@ -231,23 +378,85 @@ AlexaBridge.prototype.handleConfigurationRequest = function(dispatched_request) 
 		switch (queryObject["do"]) {
 			
 			
-			case "settings.save":
+			case "appliance.delete": 
 			{
-				this.save_appliances();
+				this.remove_appliance_withID(dispatched_request);
 			}
+			break;
+			
+			case "appliance.edit": 
+			{
+				template = "edit.html";
+				deviceList = this.generateEditForm(dispatched_request);
+			}
+			break;
+			
+			case "appliance.save":
+			{
+				this.log.debug("Saving ");
+				this.saveApplicance(dispatched_request);
+			}
+			break;
+			
+			case "appliance.new":
+			{
+				template = "new_appliance.html";
+				deviceList = "";
+			}
+			break;
+			
+			case "device.list":
+			{
+				this.loadHMDevices(function (result){
+				   dispatched_request.dispatchFile(that.plugin.pluginPath , "list.json" ,{"list":JSON.stringify(result)});
+				});
+				return;
+			}
+			break;
+			
+			
+			case "phrase.list":
+			{
+				var hmService = queryObject["service"];
+				var name = queryObject["name"];
+				var service = require ('./service/' + hmService);
+				var hms = new service("",this.client,this.log,this.hm_layer);
+				hms.alexaname = name;
+				var phrases = "";
+				
+				hms.getPhrases(dispatched_request.language).forEach(function (phrase){
+					phrases = phrases + phrase + "<br />";
+				});
+
+				dispatched_request.dispatchFile(this.plugin.pluginPath , "list.html" ,{"list":phrases});
+				
+				return;
+			}
+			break;
+			
+			case "app.js":
+			{
+				template="app.js";
+			}
+			break;
+			
 		}
 	}
 	
-	var appliance_template = dispatched_request.getTemplate(this.plugin.pluginPath , "list_appliance.html",null);
+	if (deviceList==undefined) {
+		deviceList="";
+		var appliance_template = dispatched_request.getTemplate(this.plugin.pluginPath , "list_appliance.html",null);
 
-	 Object.keys(this.alexa_appliances).forEach(function (key) {
-	  var applicance = that.alexa_appliances[key];
-	  deviceList = deviceList + dispatched_request.fillTemplate(appliance_template,{"appliance.device":applicance.id,
-  																				  "appliance.name":applicance.name,
-																					  "appliance.service":applicance.service_name});
-	});
-	
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listDevices":deviceList});
+		Object.keys(this.alexa_appliances).forEach(function (key) {
+		var appliance = that.alexa_appliances[key];
+		deviceList = deviceList + dispatched_request.fillTemplate(appliance_template,{"appliance.device":appliance.id,
+  																					  "appliance.name":appliance.name,
+																					  "appliance.service":appliance.service_name});
+		});
+
+	}
+	this.log.debug("Dispatch Result");
+	dispatched_request.dispatchFile(this.plugin.pluginPath , template ,{"listDevices":deviceList});
 
 }
 

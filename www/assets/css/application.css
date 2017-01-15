@@ -28,3 +28,10 @@ hr {
 }
 
 
+#devicelist {
+	
+	height: 100%;
+    max-height: 80%;
+    overflow: auto;
+    
+}

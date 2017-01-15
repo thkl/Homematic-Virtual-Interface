@@ -1,0 +1,25 @@
+<form action=".">
+	<input type="hidden" name="do" value="appliance.save" />
+	<input type="hidden" name="appliance.device" value="$appliance.device$" />
+
+	<div class="ph">
+    	<span class="dh">Device Adress :  $appliance.device$</span>
+	</div>
+	<div class="ph">
+    	<span class="dh">Alexa Name : <input type="text" name="appliance.name" value="$appliance.name$" />&nbsp;This name will be send to the Alexa service.</span>
+	</div>
+	<div class="ph">
+    	<span class="dh">Handler : <select name="appliance.service">$appliance.service$</select></span>
+	</div>
+	<div class="ph">
+    	<input type="submit" value="Save" />
+	</div>
+</form>
+<div class="ph">
+    Current phrase will be : <br /><br />
+    $appliance.phrases$
+</div>
+ 
+<div class="ph">
+ 	<input type="button" value="Cancel" onclick="window.location.href='./'" />
+</div>

@@ -51,4 +51,4 @@ AlexaLogicService.prototype.handleEvent = function(event,callback) {
 
 
 
-module.exports = AlexaLogicService; 
+module.exports = AlexaLogicService;

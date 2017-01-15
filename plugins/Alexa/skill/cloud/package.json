@@ -1,0 +1,31 @@
+{
+  "name": "Alexa-helpder",
+  "version": "0.0.1",
+  "description": "Virtual Alexa Bridge",
+  "license": "ISC",
+  "keywords": [
+    "homematic-virtual-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/"
+  },
+  "bugs": {
+    "url": "http://"
+  },
+  "engines": {
+    "node": ">=0.12.0"
+  },
+  
+  "dependencies": {
+    "express": "^4.10.2",
+    "socket.io":"latest",
+    "socket.io-client": "^1.5.0"
+  },
+  
+   "scripts": {
+    "start": "node index.js || true",
+    "dev": "DEBUG=* node index.js -D || true"
+  }
+
+}

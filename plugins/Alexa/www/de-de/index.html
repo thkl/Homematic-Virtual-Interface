@@ -43,7 +43,7 @@
         <nav class="aot">
           <div class="aon">
             <button class="amy amz aoo" type="button" data-toggle="collapse" data-target="#nav-toggleable-sm">
-              <span class="ct">Toggle nav</span>
+              <span class="ct">Navigation</span>
             </button>
             <a class="aop cn" href="index.html">
             </a>
@@ -75,16 +75,17 @@
 
 <div class="by">
   <h4 class="ty">
-    Alexa Devices
+    Alexa Geräte
   </h4>
+    
     $listDevices$
-	<div class="ph">
+     <div class="ph">
           <span class="dh">
-          	<input type="button" value="New Device" onclick="window.location.href = '?do=appliance.new'"/>
+          	<input type="button" value="Neues Ger&auml;t" onclick="window.location.href = '?do=appliance.new'"/>
           </span>
-	 </div></div>
-After you change something here you have to ask alexa to discover new smarthome devices: "Alexa, search for smarthome devices"
-
+	 </div>
+</div>
+Nach einer &Auml;nderung musst Du Alexa bitten, die Smarthome-Geräte neu zu erkennen: "Alexa, suche Smarthomeger&auml;te"
       </div>
     </div>
   </div>
@@ -94,13 +95,12 @@ After you change something here you have to ask alexa to discover new smarthome 
 <script type="text/javascript">
 		
 		function deleteAppliance(appliance) {
-			var answer = confirm("Sure ?")
+			var answer = confirm("Sicher ?")
 			if (answer){
 				window.location.href = "?do=appliance.delete&id=" + appliance;
 			}
 		}
 		
-				
 		function editAppliance(appliance) {
 				window.location.href = "?do=appliance.edit&id=" + appliance;
 		}

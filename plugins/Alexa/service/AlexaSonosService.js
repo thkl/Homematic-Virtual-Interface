@@ -20,7 +20,6 @@ AlexaSonosService.prototype.getActions = function() {
 }
 
 
-
 AlexaSonosService.prototype.handleEvent = function(event,callback) {
 	
 	
