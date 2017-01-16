@@ -19,6 +19,29 @@ function loadHMDevices() {
 });
 }
 
+
+
+function loadVirtDevices() {
+		
+	$("#devicelist").empty();
+	
+	$.getJSON( "?do=device.listvirtual", function( data ) {
+	var items = [];
+		devicelist = data;
+		$.each( data, function( key, val ) {
+			items.push( "<li id='" + key + "'><a href='#' onClick=\"select_device('"+key+"')\">" + val.device + " / " + val.name + "</a></li>" );
+  	});
+ 
+  	var list = $( "<ul/>", {
+    	"class": "my-new-list",
+		html: items.join( "" )
+  	});
+  	$("#devicelist").append($("<div>",{"class":"ph"}).append(list));
+});
+}
+
+
+
 function select_device(key) {
 
 	var device = devicelist[key];
