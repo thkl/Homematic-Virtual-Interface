@@ -3,6 +3,8 @@
 
 var path = require('path');
 var appRoot = path.dirname(require.main.filename);
+if (appRoot.endsWith("bin")) {appRoot =  appRoot+"../lib";}
+
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
 
 var util = require("util");
@@ -507,7 +509,7 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 		});
 
 	}
-	this.log.debug("Dispatch Result");
+
 	dispatched_request.dispatchFile(this.plugin.pluginPath , template ,{"listDevices":deviceList});
 
 }

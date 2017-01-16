@@ -13,16 +13,18 @@ var path = require('path');
 var url = require("url");
 var HarmonyHueServer = require(__dirname + '/HarmonyHueServer.js').HarmonyHueServer;
 var HarmonyClient = require(__dirname + '/HarmonyClient.js').HarmonyClient;
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+if (appRoot.endsWith("bin")) {appRoot =  appRoot+"../lib";}
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var util = require("util");
 
 
-var HarmonyPlatform = function(plugin,name,server,log) {
-	this.plugin = plugin;
-	this.server = server;
-	this.log = log;
-	this.name = name;
-	this.config = this.server.configuration;
-	this.bridge = server.getBridge();
+function HarmonyPlatform(plugin,name,server,log,instance) {
+	HuePlatform.super_.apply(this,arguments);
 }
+
+util.inherits(HarmonyPlatform, HomematicVirtualPlatform);
 
 
 HarmonyPlatform.prototype.init = function() {
