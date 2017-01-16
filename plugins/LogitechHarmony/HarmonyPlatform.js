@@ -21,7 +21,7 @@ var util = require("util");
 
 
 function HarmonyPlatform(plugin,name,server,log,instance) {
-	HuePlatform.super_.apply(this,arguments);
+	HarmonyPlatform.super_.apply(this,arguments);
 }
 
 util.inherits(HarmonyPlatform, HomematicVirtualPlatform);
