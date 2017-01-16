@@ -21,8 +21,9 @@ var AlexaBridge = function(plugin,name,server,log,instance) {
 AlexaBridge.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
-	this.log.debug("Name %s",this.name);
+	this.myLogFile = this.configuration.storagePath() + "/alexa.log";
 	this.api_key =  this.configuration.getValueForPlugin(this.name,"api_key");
+	fs.writeFileSync(this.myLogFile, "[INFO] Alexa Plugin launched .. .\r\n");
 
 	if (this.api_key == undefined) {
 		this.log.error("Missing api_key ... you can get one from https://console.ksquare.de/alexa");
@@ -68,10 +69,13 @@ AlexaBridge.prototype.init = function() {
 		var alx_message = JSON.parse(data);
 		if (alx_message) {
 			that.log.info("Message : %s",JSON.stringify(alx_message));
+			
 			switch (alx_message.header.name) {
 			
 				case "DiscoverAppliancesRequest" : {
 					that.log.info("Discover Request");
+					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Discovery Event\r\n');
+
 					var result = that.generateResponse("Alexa.ConnectedHome.Discovery","DiscoverAppliancesResponse", {"discoveredAppliances":that.get_appliances()});
 					that.log.info(result);
 					socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
@@ -81,6 +85,7 @@ AlexaBridge.prototype.init = function() {
 				break;
 				
 				case "HealthCheckRequest" : {
+					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Ping Event\r\n');
 					var result = that.generateResponse("Alexa.ConnectedHome.System","HealthCheckResponse", {"description":"Iam alive","isHealthy":true});
 					that.log.info(result);
 					socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
@@ -93,6 +98,7 @@ AlexaBridge.prototype.init = function() {
 				default:
 				{
 					var ap_id = alx_message.payload.appliance.applianceId;
+					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Message '+ ap_id + ' ' +  alx_message.header.name + '\r\n');
 					if (ap_id) {
 						var ap_obj = that.alexa_appliances[ap_id];
 						if (ap_obj) {
@@ -103,7 +109,11 @@ AlexaBridge.prototype.init = function() {
 									socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {});
 								});
 							}
-						}
+					} else {
+						that.log.warn("Appliance %s was not found or is not alaxa enabled",ap_id);
+					}
+					} else {
+						that.log.debug("missed appliance id");
 					}
 				}
 				break;
