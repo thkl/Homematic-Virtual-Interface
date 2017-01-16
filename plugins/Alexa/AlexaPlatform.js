@@ -1,24 +1,29 @@
 "use strict";
 
-var xmlrpc = require(__dirname + "/../../lib/homematic-xmlrpc");
+
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+
+var util = require("util");
+var xmlrpc = require(appRoot + "/homematic-xmlrpc");
 var uuid = require('uuid');
 var HomematicDevice;
 var url = require("url");
 var fs = require("fs");
-var regaRequest = require(__dirname + "/../../lib/HomematicReqaRequest.js");
+var regaRequest = require(appRoot + "/HomematicReqaRequest.js");
 
-var AlexaBridge = function(plugin,name,server,log,instance) {
-	this.plugin = plugin;
-	this.server = server;
-	this.log = log;
-	this.name = name;
-	this.instance = (instance) ? instance:"0";
+
+function AlexaPlatform(plugin,name,server,log,instance) {
+	AlexaPlatform.super_.apply(this,arguments);
 	this.alexa_appliances = {};
 	HomematicDevice = server.homematicDevice;
 }
 
+util.inherits(AlexaPlatform, HomematicVirtualPlatform);
 
-AlexaBridge.prototype.init = function() {
+
+AlexaPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
 	this.myLogFile = this.configuration.storagePath() + "/alexa.log";
@@ -133,11 +138,11 @@ AlexaBridge.prototype.init = function() {
 	
 	this.supportedChannels = this.loadChannelHandler();
 	
-	 this.plugin.initialized = true;
-	 this.log.info("initialization completed %s",this.plugin.initialized);
+	this.plugin.initialized = true;
+	this.log.info("initialization completed %s",this.plugin.initialized);
 }
 
-AlexaBridge.prototype.reloadApplicances = function() {
+AlexaPlatform.prototype.reloadApplicances = function() {
 	this.alexa_appliances = {};
 	var that = this;
     var p_applicances = this.configuration.loadPersistentObjektfromFile("alexa_objects");
@@ -159,7 +164,7 @@ AlexaBridge.prototype.reloadApplicances = function() {
     
 }
 
-AlexaBridge.prototype.generateResponse = function(nameSpace,cmdname, response_payload) {
+AlexaPlatform.prototype.generateResponse = function(nameSpace,cmdname, response_payload) {
 
   var header = {};
   header["messageId"] = uuid.v1();
@@ -173,7 +178,7 @@ AlexaBridge.prototype.generateResponse = function(nameSpace,cmdname, response_pa
   return {"header":header,"payload":payload};
 }
 
-AlexaBridge.prototype.get_appliances = function() {
+AlexaPlatform.prototype.get_appliances = function() {
   var result = [];
   var that = this;
   Object.keys(this.alexa_appliances).forEach(function (key) {
@@ -184,7 +189,7 @@ AlexaBridge.prototype.get_appliances = function() {
 }
 
 
-AlexaBridge.prototype.add_appliance = function(id,name,hmService,virtual) {
+AlexaPlatform.prototype.add_appliance = function(id,name,hmService,virtual) {
 
   var service = require ('./service/' + hmService);
   var hms = new service(id,this.client,this.log,this.hm_layer);
@@ -208,7 +213,7 @@ AlexaBridge.prototype.add_appliance = function(id,name,hmService,virtual) {
 }
 
 
-AlexaBridge.prototype.add_virtual_appliance = function(id,name,hmService) {
+AlexaPlatform.prototype.add_virtual_appliance = function(id,name,hmService) {
 	var hmDevice = new HomematicDevice();
 	hmDevice.initWithType("HM-LC-Sw1-Pl", id );
 	this.hm_layer.addDevice(hmDevice,false,true); // Hide device from CCU
@@ -217,7 +222,7 @@ AlexaBridge.prototype.add_virtual_appliance = function(id,name,hmService) {
 	hms.virtual_device = hmDevice;
 }
 
-AlexaBridge.prototype.save_appliances = function(callback) {
+AlexaPlatform.prototype.save_appliances = function(callback) {
 	var pobj = [];
 	var that = this;
 	Object.keys(this.alexa_appliances).forEach(function (key) {
@@ -233,7 +238,7 @@ AlexaBridge.prototype.save_appliances = function(callback) {
 }
 
 
-AlexaBridge.prototype.remove_appliance_withID = function(dispatched_request) {
+AlexaPlatform.prototype.remove_appliance_withID = function(dispatched_request) {
 	var that = this;
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
@@ -250,7 +255,7 @@ AlexaBridge.prototype.remove_appliance_withID = function(dispatched_request) {
 	});
 }
 
-AlexaBridge.prototype.loadChannelHandler = function() {
+AlexaPlatform.prototype.loadChannelHandler = function() {
 	var buffer = fs.readFileSync(__dirname + '/service/config.json');
     try {
     	var c_object = JSON.parse(buffer.toString());
@@ -265,7 +270,7 @@ AlexaBridge.prototype.loadChannelHandler = function() {
 }
 
 
-AlexaBridge.prototype.serviceList = function() {
+AlexaPlatform.prototype.serviceList = function() {
 	var buffer = fs.readFileSync(__dirname + '/service/config.json');
     try {
     	var c_object = JSON.parse(buffer.toString());
@@ -278,7 +283,7 @@ AlexaBridge.prototype.serviceList = function() {
 	return [];
 }
 
-AlexaBridge.prototype.generateEditForm = function(dispatched_request) {
+AlexaPlatform.prototype.generateEditForm = function(dispatched_request) {
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
 	var applicanceId = queryObject["id"];
@@ -308,7 +313,7 @@ AlexaBridge.prototype.generateEditForm = function(dispatched_request) {
   	return formData;
 }
 
-AlexaBridge.prototype.saveApplicance = function(dispatched_request) {
+AlexaPlatform.prototype.saveApplicance = function(dispatched_request) {
 	
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
@@ -339,11 +344,11 @@ AlexaBridge.prototype.saveApplicance = function(dispatched_request) {
 	
 }
 
-AlexaBridge.prototype.channelService = function(channelType) {
+AlexaPlatform.prototype.channelService = function(channelType) {
 	return  this.supportedChannels[channelType];
 }
 
-AlexaBridge.prototype.loadHMDevices = function(callback) {
+AlexaPlatform.prototype.loadHMDevices = function(callback) {
     var that = this;
     var result_list = {};
     var script = "string sDeviceId;string sChannelId;boolean df = true;Write(\'{\"devices\":[\');foreach(sDeviceId, root.Devices().EnumIDs()){object oDevice = dom.GetObject(sDeviceId);if(oDevice){var oInterface = dom.GetObject(oDevice.Interface());if (oInterface.Name() == 'BidCos-RF') { if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # sDeviceId # \'\",\');Write(\'\"if\": \"\' # oInterface # \'\",\');Write(\'\"name\": \"\' # oDevice.Name() # \'\",\');Write(\'\"address\": \"\' # oDevice.Address() # \'\",\');Write(\'\"type\": \"\' # oDevice.HssType() # \'\",\');Write(\'\"channels\": [\');boolean bcf = true;foreach(sChannelId, oDevice.Channels().EnumIDs()){object oChannel = dom.GetObject(sChannelId);if(bcf) {bcf = false;} else {Write(\',\');}Write(\'{\');Write(\'\"cId\": \' # sChannelId # \',\');Write(\'\"name\": \"\' # oChannel.Name() # \'\",\');if(oInterface){Write(\'\"intf\": \"\' # oInterface.Name() 	# \'\",\');Write(\'\"address\": \"\' # oInterface.Name() #\'.'\ # oChannel.Address() # \'\",\');}Write(\'\"type\": \"\' # oChannel.HssType() # \'\"\');Write(\'}\');}Write(\']}\');}}}Write(\']}\');";
@@ -374,7 +379,33 @@ AlexaBridge.prototype.loadHMDevices = function(callback) {
 }
 
 
-AlexaBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+AlexaPlatform.prototype.loadVirtualDevices = function(callback) {
+   var that = this;
+   var result_list = {};
+   var platform;
+   try {
+   this.server.configuratedPlugins.forEach(function (plugin) {
+	  platform = plugin.platform;
+	  if (platform) {
+		  if (typeof(platform.myDevices) == 'function') {
+		  var devices = platform.myDevices();
+		  if (devices) {
+		 	devices.forEach(function (device){
+			    var service = that.channelService(device.type);
+				result_list[device.id] = {"device":device.name,"address":device.id,"name":device.name,"service":service}; 			  
+		  	});
+		  }
+		 }
+	  } 
+   });
+} catch (e) {
+	this.log.error(platform);
+	this.log.error(e.stack)
+}
+   callback(result_list);
+}
+
+AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var deviceList = undefined;
 	var that = this;
 	var template = "index.html";
@@ -423,21 +454,32 @@ AlexaBridge.prototype.handleConfigurationRequest = function(dispatched_request) 
 				return;
 			}
 			break;
+
+			case "device.listvirtual":
+			{
+				this.loadVirtualDevices(function (result){
+				   dispatched_request.dispatchFile(that.plugin.pluginPath , "list.json" ,{"list":JSON.stringify(result)});
+				});
+				return;
+			}
+			break;
 			
 			
 			case "phrase.list":
 			{
 				var hmService = queryObject["service"];
 				var name = queryObject["name"];
-				var service = require ('./service/' + hmService);
-				var hms = new service("",this.client,this.log,this.hm_layer);
-				hms.alexaname = name;
 				var phrases = "";
 				
-				hms.getPhrases(dispatched_request.language).forEach(function (phrase){
-					phrases = phrases + phrase + "<br />";
-				});
-
+				if (this.serviceList().indexOf(hmService)>-1) {
+					var service = require ('./service/' + hmService);
+					var hms = new service("",this.client,this.log,this.hm_layer);
+					hms.alexaname = name;
+				
+					hms.getPhrases(dispatched_request.language).forEach(function (phrase){
+						phrases = phrases + phrase + "<br />";
+					});
+				}
 				dispatched_request.dispatchFile(this.plugin.pluginPath , "list.html" ,{"list":phrases});
 				
 				return;
@@ -470,6 +512,4 @@ AlexaBridge.prototype.handleConfigurationRequest = function(dispatched_request) 
 
 }
 
-module.exports = {
-  AlexaBridge : AlexaBridge
-}
+module.exports = AlexaPlatform;

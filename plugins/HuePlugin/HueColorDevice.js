@@ -30,7 +30,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 			this.reportFaults = this.config.getValueForPluginWithDefault(this.plugin.name,"reportFaults",false);
 		}
 
-		this.log.debug("Setup new HUE Bridged Device %s",serialprefix);
+		this.log.debug("Setup new HUE Bridged Device %s",serialprefix + this.lightId );
 		
 		this.reload();
 		 

@@ -1,5 +1,5 @@
 //
-//  NetAtmoBridge.js
+//  NetAtmoPlatform.js
 //  Homematic Virtual Interface Plugin
 //
 //  Created by Thomas Kluge on 26.11.16.
@@ -13,19 +13,24 @@ var HomematicDevice;
 var netatmo = require('netatmo');
 var NetAtmoDevice = require(__dirname + "/NetAtmoDevice.js").NetAtmoDevice;
 
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var util = require("util");
 
-var NetAtmoBridge = function(plugin,name,server,log) {
-	this.plugin = plugin;
-	this.server = server;
-	this.log = log;
-	this.name = name;
+
+function NetAtmoPlatform(plugin,name,server,log,instance) {
+	NetAtmoPlatform.super_.apply(this,arguments);
 	this.bridge = server.getBridge();
 	this.devices = [];
 	HomematicDevice = server.homematicDevice;
 }
 
+util.inherits(NetAtmoPlatform, HomematicVirtualPlatform);
 
-NetAtmoBridge.prototype.init = function() {
+
+
+NetAtmoPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
@@ -63,7 +68,7 @@ NetAtmoBridge.prototype.init = function() {
 
 }
 
-NetAtmoBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+NetAtmoPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var strDevice = "";
 	var that = this;
 	var devicetemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_device_tmp.html",null);
@@ -77,6 +82,4 @@ NetAtmoBridge.prototype.handleConfigurationRequest = function(dispatched_request
 }
 
 
-module.exports = {
-  NetAtmoBridge : NetAtmoBridge
-}
+module.exports = NetAtmoPlatform;

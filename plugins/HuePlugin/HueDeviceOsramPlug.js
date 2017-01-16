@@ -19,7 +19,7 @@ var hueconf = require("node-hue-api");
 		this.onTime = 0;
 		this.lastLevel = 0;
 
-		this.log.debug("Setup new Osram Plug Bridged Device %s",serialprefix);
+		this.log.debug("Setup new Osram Plug Bridged Device %s",serialprefix + this.lightId );
 
 
 		this.hmDevice = new HomematicDevice();

@@ -1,5 +1,5 @@
 //
-//  HueBridge.js
+//  HuePlatform.js
 //  Homematic Virtual Interface Plugin
 //
 //  Created by Thomas Kluge on 20.11.16.
@@ -13,31 +13,35 @@ var HueApi = require("node-hue-api").HueApi;
 var url = require("url");
 var HueColorDevice = require(__dirname + "/HueColorDevice.js").HueColorDevice;
 var HueDimmableDevice = require(__dirname + "/HueDimmableDevice.js").HueDimmableDevice;
-
 var HueDeviceOsramPlug = require(__dirname + "/HueDeviceOsramPlug.js").HueDeviceOsramPlug;
 var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager;
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
 var HueEffectServer = require(__dirname + "/HueEffectServer.js").HueEffectServer;
 var HueSFXDevice = require(__dirname + "/HueSFXDevice.js").HueSFXDevice;
 
-var HueBridge = function(plugin,name,server,log,instance) {
-	this.plugin = plugin;
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var util = require("util");
+
+
+function HuePlatform(plugin,name,server,log,instance) {
+	HuePlatform.super_.apply(this,arguments);
 	this.mappedDevices = [];
 	this.hue_ipAdress;
 	this.hue_userName;
 	this.hue_api;
-	this.server = server;
-	this.log = log;
 	this.lights = [];
 	this.groups = [];
-	this.name = name;
-	this.instance = (instance) ? instance:"0";
 	this.effectServers={};
 	this.sfxDevice;
 }
 
+util.inherits(HuePlatform, HomematicVirtualPlatform);
 
-HueBridge.prototype.init = function() {
+
+
+HuePlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
@@ -71,8 +75,23 @@ HueBridge.prototype.init = function() {
 }
 }
 
+HuePlatform.prototype.myDevices = function() {
+	// return my Devices here
+	var result = [];
+	
+	this.lights.forEach(function(light){
+		result.push({"id":light["hm_device_name"],"name":light["name"],"type":"HUELIGHT"});
+	});
 
-HueBridge.prototype.locateBridge = function (callback) {
+	this.groups.forEach(function(group){
+		result.push({"id":group["hm_device_name"],"name":group["name"],"type":"HUEGROUP"});
+	});
+
+	return result;	
+}
+
+
+HuePlatform.prototype.locateBridge = function (callback) {
 	var that = this;
 	this.log.info("trying to find your Hue bridge ...");
 	var hue = require("node-hue-api");
@@ -91,7 +110,7 @@ HueBridge.prototype.locateBridge = function (callback) {
 }
 
 
-HueBridge.prototype.checkUsername = function() {
+HuePlatform.prototype.checkUsername = function() {
    var that = this;
    var user = this.configuration.getValueForPlugin(this.name,"hue_username")
    if ((user==undefined) || (user=="")) {
@@ -120,7 +139,7 @@ HueBridge.prototype.checkUsername = function() {
 // Make a connection to the HUE Bridge... if there are no credentials .. try to find a bridge
 
 	
-HueBridge.prototype.queryBridgeAndMapDevices = function() {
+HuePlatform.prototype.queryBridgeAndMapDevices = function() {
 var that = this;
 this.hue_api = new HueApi(this.hue_ipAdress,this.hue_userName);
 
@@ -137,7 +156,7 @@ this.queryScenes();
 setTimeout(function() {that.checkReady();}, 1);
 }
 
-HueBridge.prototype.setupEffectServer = function() {
+HuePlatform.prototype.setupEffectServer = function() {
 	var that = this;
 	this.effectServers = {};
 	var count=0;
@@ -167,7 +186,7 @@ HueBridge.prototype.setupEffectServer = function() {
   	}
 }
 
-HueBridge.prototype.checkReady = function() {
+HuePlatform.prototype.checkReady = function() {
   var that = this;
   if ((this.lightsInitialized) && (this.groupsInitialized) && (this.scenesInitialized)) {
   	 this.plugin.initialized = true;
@@ -179,7 +198,7 @@ HueBridge.prototype.checkReady = function() {
 }
 
 
-HueBridge.prototype.queryLights = function() {
+HuePlatform.prototype.queryLights = function() {
 	var that = this;
 
 	this.hue_api.lights(function(err, lights) {
@@ -195,7 +214,7 @@ HueBridge.prototype.queryLights = function() {
 	    		  
     		 case "on/off plug-in unit": {
     			that.log.debug("Create new Osram Plug with name %s and id %s" , light["name"] ,  light["id"]);
-    			var devName = "OSRPLG" +  that.instance;
+    			var devName = "OSRPLG" + ((that.instance) ? that.instance :"0");
 				var hd = new HueDeviceOsramPlug(that,that.hue_api,light,devName);
 				light["hm_device_name"] = devName + light["id"];
     		  } 
@@ -205,16 +224,16 @@ HueBridge.prototype.queryLights = function() {
     		  case "color light": {
 	    		that.log.debug("Create new Color Light with name %s and id %s " , light["name"] ,  light["id"]);
 	    		// Try to load device
-	    		var devName = "HUE000" + (that.instance)?that.instance:"0";
+	    		var devName = "HUE000" + ((that.instance) ? that.instance : "0");
 				var hd = new HueColorDevice(that,that.hue_api,light,devName);
 				light["hm_device_name"] = devName + light["id"];
 				
-				hd.on("direct_light_event",function (light) {
+				hd.on("direct_light_event",function (alight) {
 					// Call all EffectServer to stop
 					that.log.debug("Some Lights are off Check the Scenes");
 					Object.keys(that.effectServers).forEach(function (name) {
 						var efx = that.effectServers[name];
-						efx.stopSceneWithLight(light);
+						efx.stopSceneWithLight(alight);
 					});
 				});
 				
@@ -225,16 +244,16 @@ HueBridge.prototype.queryLights = function() {
     		  case "dimmable light": {
 	    		that.log.debug("Create new White Light with name %s and id %s" , light["name"] ,  light["id"]);
 	    		// Try to load device
-	    		var devName = "HUE000" +  (that.instance)?that.instance:"0";
+	    		var devName = "HUE000" +  ((that.instance)?that.instance : "0");
 				var hd = new HueDimmableDevice(that,that.hue_api,light,devName);
 				light["hm_device_name"] = devName + light["id"];
 				
-				hd.on("direct_light_event",function (light) {
+				hd.on("direct_light_event",function (alight) {
 					// Call all EffectServer to stop
 					that.log.debug("Some Lights are off Check the Scenes");
 					Object.keys(that.effectServers).forEach(function (name) {
 						var efx = that.effectServers[name];
-						efx.stopSceneWithLight(light);
+						efx.stopSceneWithLight(alight);
 					});
 				});
 				
@@ -246,7 +265,7 @@ HueBridge.prototype.queryLights = function() {
 			  	break;
     		 } 
     		
-    		
+    		console.log(light);
     		
     		that.lights.push(light);
     		that.mappedDevices.push(hd);
@@ -268,7 +287,7 @@ HueBridge.prototype.queryLights = function() {
 }
 
 
-HueBridge.prototype.queryGroups = function() {
+HuePlatform.prototype.queryGroups = function() {
 	var that = this;
 	this.hue_api.groups(function(err, groups) {
 	
@@ -298,7 +317,7 @@ HueBridge.prototype.queryGroups = function() {
 	});
 }
 
-HueBridge.prototype.queryScenes = function() {
+HuePlatform.prototype.queryScenes = function() {
 	var that = this;
 	var scnt = 0;
 	this.hue_api.getScenes(function(err, scenes) {
@@ -323,7 +342,7 @@ HueBridge.prototype.queryScenes = function() {
 	});
 }
 
-HueBridge.prototype.getConfiguredGroups = function() {
+HuePlatform.prototype.getConfiguredGroups = function() {
 	var ps = this.configuration.getPersistValueForPluginWithDefault(this.name,"PublishedGroups",undefined);
 	if (ps != undefined) {
 		try{
@@ -338,16 +357,16 @@ HueBridge.prototype.getConfiguredGroups = function() {
 } 
 
 
-HueBridge.prototype.lightWithId = function(lightId) {
+HuePlatform.prototype.lightWithId = function(lightId) {
 	return this.mappedDevices.filter(function (light) { return light.lightId == lightId}).pop();
 } 
 
-HueBridge.prototype.saveConfiguredGroups = function(publishedgroups) {
+HuePlatform.prototype.saveConfiguredGroups = function(publishedgroups) {
 	var s = JSON.stringify(publishedgroups);
 	this.configuration.setPersistValueForPlugin(this.name,"PublishedGroups",s);
 } 
 
-HueBridge.prototype.refreshAll = function() {
+HuePlatform.prototype.refreshAll = function() {
 	var that = this;
 	this.log.debug("Refreshing Lamp status ...");
 	var refreshrate = this.configuration.getValueForPluginWithDefault(this.plugin.name,"refresh",60)*1000;
@@ -375,7 +394,7 @@ HueBridge.prototype.refreshAll = function() {
 
 } 
 
-HueBridge.prototype.getConfiguredScenes = function() {
+HuePlatform.prototype.getConfiguredScenes = function() {
 	var ps = this.configuration.getPersistValueForPluginWithDefault(this.name,"PublishedScenes",undefined);
 	if (ps != undefined) {
 		try {
@@ -389,7 +408,7 @@ HueBridge.prototype.getConfiguredScenes = function() {
 	return [];	
 } 
 
-HueBridge.prototype.getConfiguredEffectServer = function() {
+HuePlatform.prototype.getConfiguredEffectServer = function() {
 	var ps = this.configuration.getPersistValueForPluginWithDefault(this.name,"EffectServer",undefined);
 	if (ps != undefined) {
 		try {
@@ -403,12 +422,12 @@ HueBridge.prototype.getConfiguredEffectServer = function() {
 	return [];	
 } 
 
-HueBridge.prototype.saveConfiguredScenes = function(publishedscenes) {
+HuePlatform.prototype.saveConfiguredScenes = function(publishedscenes) {
 	var s = JSON.stringify(publishedscenes);
 	this.configuration.setPersistValueForPlugin(this.name,"PublishedScenes",s);
 } 
 
-HueBridge.prototype.saveEffectScenes = function(publishedscenes) {
+HuePlatform.prototype.saveEffectScenes = function(publishedscenes) {
 	var efs = [];
 	var that = this;
 	
@@ -421,7 +440,7 @@ HueBridge.prototype.saveEffectScenes = function(publishedscenes) {
 } 
 
 
-HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var listLights = "";
 	var listGroups = "";
 	var listScenes = "";
@@ -675,6 +694,4 @@ HueBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
 																		  "listEfxS":listEfxS});
 }
 
-module.exports = {
-  HueBridge : HueBridge
-}
+module.exports =  HuePlatform;

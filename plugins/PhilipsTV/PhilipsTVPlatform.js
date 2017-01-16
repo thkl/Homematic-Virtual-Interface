@@ -1,5 +1,5 @@
 //
-//  PhilipsTV.js
+//  PhilipsTVPlatform.js
 //  Homematic Virtual Interface Plugin
 //
 //  Created by Thomas Kluge on 08.01.2017
@@ -14,12 +14,14 @@ var color = require('onecolor');
 
 var HomematicDevice;
 	
-var PhilipsTV = function(plugin,name,server,log,instance) {
-	this.plugin = plugin;
-	this.server = server;
-	this.log = log;
-	this.name = name;
-	this.instance = (instance) ? instance:"0";
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var util = require("util");
+
+
+function PhilipsTVPlatform(plugin,name,server,log,instance) {
+	PhilipsTVPlatform.super_.apply(this,arguments);
 	this.configuration = this.server.configuration;
 	this.lampData = {};
 	this.layers = 0;
@@ -29,11 +31,13 @@ var PhilipsTV = function(plugin,name,server,log,instance) {
 	this.bottomPixels = 0;
 	this.curPix = 0;
 	this.bridge = this.server.getBridge();
-	
 	HomematicDevice = this.server.homematicDevice;
 }
 
-PhilipsTV.prototype.init = function() {
+util.inherits(PhilipsTVPlatform, HomematicVirtualPlatform);
+
+
+PhilipsTVPlatform.prototype.init = function() {
 	this.log.info("Init %s",this.name);
 	this.tv_ip = this.configuration.getValueForPlugin(this.name,"tv_ip");
 	var that = this;	
@@ -163,7 +167,7 @@ PhilipsTV.prototype.init = function() {
 	});
 }
 
-PhilipsTV.prototype.setColor=function() {
+PhilipsTVPlatform.prototype.setColor=function() {
 	var that = this;
 	var co_channel = this.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR","2");
 	var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
@@ -183,7 +187,7 @@ PhilipsTV.prototype.setColor=function() {
 }
 
 
-PhilipsTV.prototype.getTopology = function() {
+PhilipsTVPlatform.prototype.getTopology = function() {
 	this.log.debug("loading topology");
 	var that = this;	
 	var topo = this.configuration.getPersistValueForPlugin(this.name,"topology");
@@ -212,7 +216,7 @@ PhilipsTV.prototype.getTopology = function() {
 	}
 }
 
-PhilipsTV.prototype.parseTopology = function(topology) {
+PhilipsTVPlatform.prototype.parseTopology = function(topology) {
 	
 	this.layers = topology.layers;
 	this.leftPixels = topology.left;
@@ -225,7 +229,7 @@ PhilipsTV.prototype.parseTopology = function(topology) {
 }
 
 
-PhilipsTV.prototype.switchOff = function(delay,callback) {
+PhilipsTVPlatform.prototype.switchOff = function(delay,callback) {
 	
 	var that = this;
 	if (this.curPix > this.pixels) {
@@ -246,7 +250,7 @@ PhilipsTV.prototype.switchOff = function(delay,callback) {
 	
 }
 
-PhilipsTV.prototype.loadCurrentLampData = function(callback) {
+PhilipsTVPlatform.prototype.loadCurrentLampData = function(callback) {
 	var that = this;
 	request('http://' + this.tv_ip + ":1925/" +  this.api_id + "/ambilight/processed", function (error, response, body) {
 	if (!error && response.statusCode == 200) {
@@ -259,7 +263,7 @@ PhilipsTV.prototype.loadCurrentLampData = function(callback) {
 }
 
 
-PhilipsTV.prototype.sendLampData = function(callback) {
+PhilipsTVPlatform.prototype.sendLampData = function(callback) {
 	var that = this;
 	this.log.debug(JSON.stringify(this.lampData));
 	this.sendCommand("ambilight/cached",JSON.stringify(this.lampData),function (error,response){
@@ -267,7 +271,7 @@ PhilipsTV.prototype.sendLampData = function(callback) {
 	});
 }
 
-PhilipsTV.prototype.switchMode = function(newMode,callback) {
+PhilipsTVPlatform.prototype.switchMode = function(newMode,callback) {
 	var that = this;
 
 	var modeRequest = "{\"current\":\""+newMode+"\"}";
@@ -278,7 +282,7 @@ PhilipsTV.prototype.switchMode = function(newMode,callback) {
 
 
 
-PhilipsTV.prototype.switchPixelToColor = function(layer,pixelId,red,green,blue) {
+PhilipsTVPlatform.prototype.switchPixelToColor = function(layer,pixelId,red,green,blue) {
 	if (this.pixels > 0) {
 	  if (pixelId <= this.pixels) {
 		  var side = "left";
@@ -310,7 +314,7 @@ PhilipsTV.prototype.switchPixelToColor = function(layer,pixelId,red,green,blue) 
 }
 
 
-PhilipsTV.prototype.sendCommand = function(path,data,callback) {
+PhilipsTVPlatform.prototype.sendCommand = function(path,data,callback) {
 	var url = 'http://' + this.tv_ip + ':1925/' +  this.api_id + '/' + path;
 	var that = this;
 request(
@@ -320,20 +324,23 @@ request(
     
     }
   , function (error, response, body) {
+	  if (error) {
+		  that.log.error("HTTP ",error);
+		  
+	  } else {
+		  that.log.debug("HTTP Response %s",body);
+	  }
 	  callback(error,body);
     }
   );
 }
 
 
-PhilipsTV.prototype.handleConfigurationRequest = function(dispatched_request) {
+PhilipsTVPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",undefined);
 }
 
 
-module.exports = {
-  PhilipsTV : PhilipsTV
-}
-
+module.exports = PhilipsTVPlatform;
 
 

@@ -7,7 +7,9 @@
 		"DIMMER" : "AlexaHomematicDimmerService",
 		"BLIND"  : "AlexaHomematicDimmerService",
 		"THERMALCONTROL_TRANSMIT" : "AlexaHomematicThermostatService",
-		"CLIMATECONTROL_REGULATOR": "AlexaHomematicThermostatService"
-		
+		"CLIMATECONTROL_REGULATOR": "AlexaHomematicThermostatService",
+		"HUELIGHT" : "AlexaHueService",
+		"HUEGROUP" : "AlexaHueService",
+		"SONOS" : "AlexaSonosService"
 	}
 }

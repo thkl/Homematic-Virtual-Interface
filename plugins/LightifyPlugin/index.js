@@ -1,14 +1,14 @@
-var LightifyBridge = require(__dirname + '/LightifyBridge.js').LightifyBridge;
+var LightifyPlatform = require(__dirname + '/LightifyPlatform');
 
-module.exports = function(server,name,logger) {
+module.exports = function(server,name,logger,instance) {
 	
-	this.bridge = new LightifyBridge(this,name,server,logger,instance);
-	this.bridge.init();
 	this.name = name;
 	this.instance = instance;
+	this.platform = new LightifyPlatform(this,name,server,logger,instance);
+	this.platform.init();
 	
 	this.handleConfigurationRequest = function(dispatched_request) {
-		this.bridge.handleConfigurationRequest(dispatched_request);
+		this.platform.handleConfigurationRequest(dispatched_request);
     };
 }
 

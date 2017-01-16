@@ -1,5 +1,5 @@
 //
-//  LightifyBridge.js
+//  LightifyPlatform.js
 //  Homematic Virtual Interface Plugin
 //
 //  Created by Thomas Kluge on 20.11.16.
@@ -12,20 +12,26 @@
 var lightify = require("node-lightify");
 var url = require("url");
 var LightifyDevice = require("./LightifyDevice.js").LightifyDevice;
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
 
-var LightifyBridge = function(plugin,name,server,log) {
-	this.plugin = plugin;
+
+function LightifyPlatform(plugin,name,server,log,instance) {
+	LightifyPlatform.super_.apply(this,arguments);
 	this.mappedDevices = [];
 	this.api;
-	this.server = server;
-	this.log = log;
 	this.lights = [];
 	this.groups = [];
-	this.name = name;
+	this.alexa_appliances = {};
+	HomematicDevice = server.homematicDevice;
 }
 
+util.inherits(LightifyPlatform, HomematicVirtualPlatform);
 
-LightifyBridge.prototype.init = function() {
+
+
+LightifyPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
@@ -62,11 +68,9 @@ LightifyBridge.prototype.init = function() {
 }
 
 
-LightifyBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+LightifyPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 
 	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listLights":""});
 }
 
-module.exports = {
-  LightifyBridge : LightifyBridge
-}
+module.exports = LightifyPlatform;

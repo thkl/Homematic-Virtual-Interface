@@ -8,6 +8,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	this.log = plugin.log;
 	this.ip = sonosIP;
 	this.port = sonosPort;
+	this.playername = playername;
 	this.configuration = plugin.configuration;
 	this.bridge = plugin.server.getBridge();
 	this.modules = {};

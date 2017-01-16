@@ -1,5 +1,5 @@
 //
-//  LogicalBridge.js
+//  LogicalPlatform.js
 //  Homematic Virtual Interface Core
 //
 //  Created by Thomas Kluge on 30.11.16.
@@ -9,7 +9,13 @@
 
 "use strict";
 
-var xmlrpc = require(__dirname + "/../../lib/homematic-xmlrpc");
+
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+
+
+var xmlrpc = require(appRoot + "/homematic-xmlrpc");
 
 var modules = {
     'fs': require('fs'),
@@ -22,7 +28,7 @@ var modules = {
     'promise':require('promise'),
     'http' : require("http"),
     'moment':require("moment"),
-    'regarequest' : require(__dirname + "/../../lib/HomematicReqaRequest.js")
+    'regarequest' : require(appRoot + "/HomematicReqaRequest.js")
 
 };
 
@@ -39,13 +45,11 @@ var Promise = modules.promise;
 var moment = modules.moment;
 const util = require('util');
 
+
 var _global = {};
 
-var LogicalBridge = function(plugin,name,server,log) {
-	this.plugin = plugin;
-	this.server = server;
-	this.log = log;
-	this.name = name;
+function LogicalPlatform(plugin,name,server,log,instance) {
+	LogicalPlatform.super_.apply(this,arguments);
 	this.interface = "BidCos-RF";
 	this.scripts = {};
     this.subscriptions = [];
@@ -54,8 +58,9 @@ var LogicalBridge = function(plugin,name,server,log) {
 	this.cache = {};
 }
 
+util.inherits(LogicalPlatform, HomematicVirtualPlatform);
 
-LogicalBridge.prototype.init = function() {
+LogicalPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
@@ -149,12 +154,12 @@ LogicalBridge.prototype.init = function() {
 }
 
 
-LogicalBridge.prototype.regaCommand = function(script,callback) {
+LogicalPlatform.prototype.regaCommand = function(script,callback) {
   new regarequest(this.hm_layer,script,callback);
 }
 
 
-LogicalBridge.prototype.doCache = function(adress,datapoint,value) {
+LogicalPlatform.prototype.doCache = function(adress,datapoint,value) {
   var adr = adress + "." + datapoint;
   var el = this.cache[adr];
   if (!el) {
@@ -167,7 +172,7 @@ LogicalBridge.prototype.doCache = function(adress,datapoint,value) {
   this.cache[adr]=el;
 }
 
-LogicalBridge.prototype.reInitScripts = function() {
+LogicalPlatform.prototype.reInitScripts = function() {
 	var that = this;
 	// Kill all and Init 
 	this.scripts = {};
@@ -194,7 +199,7 @@ LogicalBridge.prototype.reInitScripts = function() {
 
 }
 
-LogicalBridge.prototype.loadScriptDir = function(pathName) {
+LogicalPlatform.prototype.loadScriptDir = function(pathName) {
     var that = this;
     
     fs.readdir(pathName, function (err, data) {
@@ -217,7 +222,7 @@ LogicalBridge.prototype.loadScriptDir = function(pathName) {
 }
 
 
-LogicalBridge.prototype.loadScript = function(filename) {
+LogicalPlatform.prototype.loadScript = function(filename) {
 	var that = this;
 	
 	if (this.scripts[filename]) {
@@ -246,7 +251,7 @@ LogicalBridge.prototype.loadScript = function(filename) {
 	});    
 }
 
-LogicalBridge.prototype.createScript = function(source, name) {
+LogicalPlatform.prototype.createScript = function(source, name) {
 
     this.log.debug('compiling %s',name);
     try {
@@ -264,7 +269,7 @@ LogicalBridge.prototype.createScript = function(source, name) {
 }
 
 
-LogicalBridge.prototype.sendValueRPC = function(adress,datapoint,value,callback) {
+LogicalPlatform.prototype.sendValueRPC = function(adress,datapoint,value,callback) {
 	var that = this;
 	this.client.methodCall("setValue",[adress,datapoint,value], function(error, value) {
 		that.doCache(adress,datapoint,value);
@@ -272,7 +277,7 @@ LogicalBridge.prototype.sendValueRPC = function(adress,datapoint,value,callback)
 	});
 }
 
-LogicalBridge.prototype.internal_getState = function(adress,datapoint,callback) {
+LogicalPlatform.prototype.internal_getState = function(adress,datapoint,callback) {
 	var that = this;
 	this.client.methodCall("getValue", [adress,datapoint], function(error, value) {
 		that.doCache(adress,datapoint,value);
@@ -280,11 +285,11 @@ LogicalBridge.prototype.internal_getState = function(adress,datapoint,callback) 
 	});
 }
 
-LogicalBridge.prototype.get_State = function(adress,datapoint,callback) {
+LogicalPlatform.prototype.get_State = function(adress,datapoint,callback) {
   this.internal_getState(adress,datapoint,callback);
 }
 
-LogicalBridge.prototype.get_Value = function(adress,datapoint,callback) {
+LogicalPlatform.prototype.get_Value = function(adress,datapoint,callback) {
 	var adr = adress + "." + datapoint;
 	var dp = this.cache[adr];
 	if (dp) {
@@ -294,17 +299,17 @@ LogicalBridge.prototype.get_Value = function(adress,datapoint,callback) {
 	}
 }
 
-LogicalBridge.prototype.set_Variable = function(name,value,callback) {
+LogicalPlatform.prototype.set_Variable = function(name,value,callback) {
    var script = "var x = dom.GetObject('"+name+"');if (x){x.State("+value+");}";
    this.regaCommand(script,callback);
 }
 
-LogicalBridge.prototype.get_Variable = function(name,callback) {
+LogicalPlatform.prototype.get_Variable = function(name,callback) {
    var script = "var x = dom.GetObject('"+name+"');if (x){WriteLine(x.Variable())	;}";
    this.regaCommand(script,callback);
 }
 
-LogicalBridge.prototype.get_Variables = function(variables,callback) {
+LogicalPlatform.prototype.get_Variables = function(variables,callback) {
    var that = this;
    var script = "object x;";
    variables.forEach(function (variable){
@@ -331,7 +336,7 @@ LogicalBridge.prototype.get_Variables = function(variables,callback) {
 }
 
 
-LogicalBridge.prototype.set_Variables = function(variables,callback) {
+LogicalPlatform.prototype.set_Variables = function(variables,callback) {
    var that = this;
    var script = "object x;";
    Object.keys(variables).forEach(function(key) {
@@ -346,12 +351,12 @@ LogicalBridge.prototype.set_Variables = function(variables,callback) {
 }
 
 
-LogicalBridge.prototype.ccuEvent = function(adress,datapoint,value) {
+LogicalPlatform.prototype.ccuEvent = function(adress,datapoint,value) {
    this.processSubscriptions(adress,datapoint,value );
 }
 
 
-LogicalBridge.prototype.processSubscriptions = function(adress,datapoint,value) {
+LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value) {
   var that = this;
   
   var eventSource = adress+"."+datapoint;
@@ -383,7 +388,7 @@ LogicalBridge.prototype.processSubscriptions = function(adress,datapoint,value) 
   });
 }
 
-LogicalBridge.prototype.calculateSunTimes = function() {
+LogicalPlatform.prototype.calculateSunTimes = function() {
     var now = new Date();
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0, 0);
     var yesterday = new Date(today.getTime() - 86400000); //(24 * 60 * 60 * 1000));
@@ -400,7 +405,7 @@ LogicalBridge.prototype.calculateSunTimes = function() {
 }
 
 
-LogicalBridge.prototype.sunScheduleEvent = function(obj, shift) {
+LogicalPlatform.prototype.sunScheduleEvent = function(obj, shift) {
     // shift = -1 -> yesterday
     // shift = 0 -> today
     // shift = 1 -> tomorrow
@@ -452,7 +457,7 @@ LogicalBridge.prototype.sunScheduleEvent = function(obj, shift) {
 
 
 
-LogicalBridge.prototype.triggerScript = function(script) {
+LogicalPlatform.prototype.triggerScript = function(script) {
   var that = this;
   var found = false;
     
@@ -499,7 +504,7 @@ LogicalBridge.prototype.triggerScript = function(script) {
   this.log.debug("Subscriptions : ",JSON.stringify(this.subscriptions));
 }
 
-LogicalBridge.prototype.runScript = function(script, name) {
+LogicalPlatform.prototype.runScript = function(script, name) {
 
     var scriptDir = path.dirname(path.resolve(name));
 	var that = this;
@@ -962,7 +967,7 @@ LogicalBridge.prototype.runScript = function(script, name) {
 
 }
 
-LogicalBridge.prototype.processLogicalBinding = function(source_adress) {
+LogicalPlatform.prototype.processLogicalBinding = function(source_adress) {
   var channel = this.hm_layer.channelWithAdress(source_adress);
   var that = this;
   if (channel) {
@@ -989,16 +994,16 @@ LogicalBridge.prototype.processLogicalBinding = function(source_adress) {
 
 
 
-LogicalBridge.prototype.getValue = function(adress) {
+LogicalPlatform.prototype.getValue = function(adress) {
    return this.elements[adress];
 }
 
-LogicalBridge.prototype.shutdown = function() {
+LogicalPlatform.prototype.shutdown = function() {
 
 	
 }
 
-LogicalBridge.prototype.deleteScript = function(scriptName) {
+LogicalPlatform.prototype.deleteScript = function(scriptName) {
 try {
 	var l_path = this.configuration.storagePath()+"/scripts/";
 	scriptName = scriptName.replace('..','');
@@ -1010,7 +1015,7 @@ try {
 }
 }
 
-LogicalBridge.prototype.getScript = function(scriptName) {
+LogicalPlatform.prototype.getScript = function(scriptName) {
 try {
 	var l_path = this.configuration.storagePath()+"/scripts/";
 	scriptName = scriptName.replace('..','');
@@ -1022,14 +1027,14 @@ try {
 }
 }
 
-LogicalBridge.prototype.saveScript=function(data,filename) {
+LogicalPlatform.prototype.saveScript=function(data,filename) {
   try {
  	 fs.writeFileSync(filename, data)
  	 this.reInitScripts();
   } catch (e){}
 }
 
-LogicalBridge.prototype.existsScript=function(filename) {
+LogicalPlatform.prototype.existsScript=function(filename) {
   try {
  	 fs.readFileSync(filename);
  	 return true;
@@ -1038,7 +1043,7 @@ LogicalBridge.prototype.existsScript=function(filename) {
   }
 }
 
-LogicalBridge.prototype.validateScript=function(data) {
+LogicalPlatform.prototype.validateScript=function(data) {
 	// Save as tmp 
 	var that = this;
 	try {
@@ -1064,7 +1069,7 @@ LogicalBridge.prototype.validateScript=function(data) {
     }
 }
 
-LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
 	var htmlfile = "index.html";
@@ -1213,6 +1218,4 @@ LogicalBridge.prototype.handleConfigurationRequest = function(dispatched_request
 }
 
 
-module.exports = {
-  LogicalBridge : LogicalBridge
-}
+module.exports = LogicalPlatform;

@@ -1,5 +1,5 @@
 //
-//  HarmonyBridge.js
+//  HarmonyPlatform.js
 //  Homematic Virtual Interface Plugin
 //
 //  Created by Thomas Kluge on 08.12.16.
@@ -15,7 +15,7 @@ var HarmonyHueServer = require(__dirname + '/HarmonyHueServer.js').HarmonyHueSer
 var HarmonyClient = require(__dirname + '/HarmonyClient.js').HarmonyClient;
 
 
-var HarmonyBridge = function(plugin,name,server,log) {
+var HarmonyPlatform = function(plugin,name,server,log) {
 	this.plugin = plugin;
 	this.server = server;
 	this.log = log;
@@ -25,14 +25,14 @@ var HarmonyBridge = function(plugin,name,server,log) {
 }
 
 
-HarmonyBridge.prototype.init = function() {
+HarmonyPlatform.prototype.init = function() {
 	var that = this;
     this.hm_layer = this.server.getBridge();
 	this.harmonyServer = new HarmonyHueServer(this);
 	this.harmonyClient = new HarmonyClient(this);
 }
 
-HarmonyBridge.prototype.getFakeLightWithId = function(lightId) {
+HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
   var result = undefined;
   var flobjects = this.getFakeLights();
   flobjects.forEach(function (flo) {
@@ -43,7 +43,7 @@ HarmonyBridge.prototype.getFakeLightWithId = function(lightId) {
   return result;
 }
 
-HarmonyBridge.prototype.updateFakeLight = function(newflo) {
+HarmonyPlatform.prototype.updateFakeLight = function(newflo) {
   var that = this;
   this.log.debug("Updating Object %s",JSON.stringify(newflo));
   var nobjects = [];
@@ -66,7 +66,7 @@ HarmonyBridge.prototype.updateFakeLight = function(newflo) {
 
 
 
-HarmonyBridge.prototype.addFakeLight = function(flo) {
+HarmonyPlatform.prototype.addFakeLight = function(flo) {
   var flobjects = this.getFakeLights();
   this.log.debug("Add New Light to existing %s",flobjects.length)
   flobjects.push(flo);
@@ -75,7 +75,7 @@ HarmonyBridge.prototype.addFakeLight = function(flo) {
   this.harmonyServer.addFakeLightDevice(flo);
 }
 
-HarmonyBridge.prototype.removeFakeLight = function(lightId) {
+HarmonyPlatform.prototype.removeFakeLight = function(lightId) {
     var flobjects = this.getFakeLights();
 	var flo = undefined;
 	flobjects.forEach(function (tmp) {
@@ -96,7 +96,7 @@ HarmonyBridge.prototype.removeFakeLight = function(lightId) {
 }
 
 
-HarmonyBridge.prototype.getFakeLights = function() {
+HarmonyPlatform.prototype.getFakeLights = function() {
 	var flo = []; // Fake Light Objects
 	var strflo = this.config.getPersistValueForPluginWithDefault(this.name,"fakelights",undefined);
 	
@@ -108,7 +108,7 @@ HarmonyBridge.prototype.getFakeLights = function() {
 	return flo;
 }
 
-HarmonyBridge.prototype.buildFakeLightList = function(dispatched_request,editId) {
+HarmonyPlatform.prototype.buildFakeLightList = function(dispatched_request,editId) {
 
 	var fakeLights = "";
 	var flobjects = this.getFakeLights();
@@ -163,7 +163,7 @@ HarmonyBridge.prototype.buildFakeLightList = function(dispatched_request,editId)
 	return fakeLights;
 }
 
-HarmonyBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var that = this;
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
@@ -273,6 +273,4 @@ HarmonyBridge.prototype.handleConfigurationRequest = function(dispatched_request
 }
 
 
-module.exports = {
-  HarmonyBridge : HarmonyBridge
-}
+module.exports = HarmonyPlatform;

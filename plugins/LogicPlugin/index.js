@@ -6,7 +6,7 @@
 //  Copyright © 2016 kSquare.de. All rights reserved.
 //
 
-var LogicalBridge = require(__dirname + '/LogicalBridge.js').LogicalBridge;
+var LogicalPlatform = require(__dirname + '/LogicalPlatform');
 
 "use strict";
 
@@ -21,11 +21,11 @@ module.exports = function(server,name,logger,instance) {
 	var dependencies = server.configuration.getValueForPlugin(name,"dependencies");
 		
 	if (server.dependenciesInitialized(dependencies) == true) {
-		that.bridge = new LogicalBridge(that,name,server,logger);
-		that.bridge.init();
+		that.platform = new LogicalPlatform(that,name,server,logger);
+		that.platform.init();
 	
 		that.handleConfigurationRequest = function(dispatched_request) {
-			that.bridge.handleConfigurationRequest(dispatched_request);
+			that.platform.handleConfigurationRequest(dispatched_request);
     	};
 		
 	} else {

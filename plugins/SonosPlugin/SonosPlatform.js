@@ -1,5 +1,5 @@
 //
-//  SonosBridge.js
+//  SonosPlatform.js
 //  Homematic Virtual Interface Plugin
 //
 //  Created by Thomas Kluge on 28.11.16.
@@ -16,19 +16,25 @@ var _ = require('underscore')
 var path = require('path');
 var SonosDevice = require(__dirname + "/SonosDevice.js").SonosDevice;
 
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var util = require("util");
 
-var SonosBridge = function(plugin,name,server,log) {
-	this.plugin = plugin;
-	this.server = server;
-	this.log = log;
-	this.name = name;
+
+function SonosPlatform(plugin,name,server,log,instance) {
+	SonosPlatform.super_.apply(this,arguments);
 	this.bridge = server.getBridge();
 	this.devices = [];
 	HomematicDevice = server.homematicDevice;
+
 }
 
+util.inherits(SonosPlatform, HomematicVirtualPlatform);
 
-SonosBridge.prototype.init = function() {
+
+
+SonosPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
@@ -48,7 +54,7 @@ SonosBridge.prototype.init = function() {
 	
 }
 
-SonosBridge.prototype.addZonePlayer = function(host) {
+SonosPlatform.prototype.addZonePlayer = function(host) {
   var that = this;
  
   var zp = new ZonePLayer(host);
@@ -59,7 +65,19 @@ SonosBridge.prototype.addZonePlayer = function(host) {
   });
 }
 
-SonosBridge.prototype.search = function() {
+
+SonosPlatform.prototype.myDevices = function() {
+	// return my Devices here
+	var result = [];
+	
+	this.devices.forEach(function(device){
+		result.push({"id":device["playername"],"name":device["playername"],"type":"SONOS"});
+	});
+
+	return result;	
+}
+
+SonosPlatform.prototype.search = function() {
 	var devices = []
 	var that = this;
 	
@@ -104,7 +122,7 @@ SonosBridge.prototype.search = function() {
 
 
 
-SonosBridge.prototype.getZones = function (deviceList) {
+SonosPlatform.prototype.getZones = function (deviceList) {
   var zones = []
   var that = this;
   deviceList.forEach(function (device) {
@@ -115,7 +133,7 @@ SonosBridge.prototype.getZones = function (deviceList) {
   return zones
 }
 
-SonosBridge.prototype.getZoneDevices = function(zone, deviceList) {
+SonosPlatform.prototype.getZoneDevices = function(zone, deviceList) {
   var zoneDevices = []
   deviceList.forEach(function (device) {
     if (device.CurrentZoneName === zone) {
@@ -125,7 +143,7 @@ SonosBridge.prototype.getZoneDevices = function(zone, deviceList) {
   return zoneDevices
 }
 
-SonosBridge.prototype.getZoneCoordinator = function(zone, deviceList) {
+SonosPlatform.prototype.getZoneCoordinator = function(zone, deviceList) {
   var coordinator
   deviceList.forEach(function (device) {
     if (device.CurrentZoneName === zone && device.coordinator === 'true') {
@@ -137,11 +155,9 @@ SonosBridge.prototype.getZoneCoordinator = function(zone, deviceList) {
 
 
 
-SonosBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+SonosPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",undefined);
 }
 
 
-module.exports = {
-  SonosBridge : SonosBridge
-}
+module.exports = SonosPlatform;

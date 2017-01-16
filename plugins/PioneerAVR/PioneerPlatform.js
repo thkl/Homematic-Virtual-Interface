@@ -13,19 +13,22 @@ var avr = require(__dirname + '/pioneer-avr.js');
 var PioneerRemote = require(__dirname + '/PioneerRemote.js').Pioneer_Remote;
 var path = require('path');
 var url = require("url");
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var util = require("util");
 
-var PioneerBridge = function(plugin,name,server,log) {
-	this.plugin = plugin;
-	this.server = server;
-	this.log = log;
-	this.name = name;
-	this.bridge = server.getBridge();
+
+function PioneerPlatform(plugin,name,server,log,instance) {
+	PioneerPlatform.super_.apply(this,arguments);
 	this.receiver;
 	this.mappedDevices= [];
 }
 
+util.inherits(PioneerPlatform, HomematicVirtualPlatform);
 
-PioneerBridge.prototype.init = function() {
+
+PioneerPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     var numOfRemotes = this.configuration.getPersistValueForPluginWithDefault(this.name,"numOfRemotes",1);	
@@ -42,14 +45,14 @@ PioneerBridge.prototype.init = function() {
 	setTimeout(function() {that.reconnect()},1000);
 }
 
-PioneerBridge.prototype.clean = function() {
+PioneerPlatform.prototype.clean = function() {
 	this.mappedDevices.forEach(function (remote){
 		remote.removeFromHMLayer();
 	});
 	this.mappedDevices= [];
 }
 
-PioneerBridge.prototype.reconnect = function(command) {
+PioneerPlatform.prototype.reconnect = function(command) {
 	var that = this;
 	var hop = this.configuration.getValueForPlugin(this.name,"options");
 	if (hop != undefined) {
@@ -73,7 +76,7 @@ PioneerBridge.prototype.reconnect = function(command) {
     }
 }
 
-PioneerBridge.prototype.sendCommand = function(command) {
+PioneerPlatform.prototype.sendCommand = function(command) {
  var that = this;
  try {
 	this.log.debug("Sending Command %s",command);
@@ -81,7 +84,7 @@ PioneerBridge.prototype.sendCommand = function(command) {
   } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
-PioneerBridge.prototype.setVolume = function(newVolume) {
+PioneerPlatform.prototype.setVolume = function(newVolume) {
  var that = this;
  try {
 	this.log.debug("Sending NewVolume %s",newVolume);
@@ -92,7 +95,7 @@ PioneerBridge.prototype.setVolume = function(newVolume) {
 
 
 
-PioneerBridge.prototype.handleConfigurationRequest = function(dispatched_request) {
+PioneerPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
 	
@@ -119,6 +122,4 @@ PioneerBridge.prototype.handleConfigurationRequest = function(dispatched_request
 }
 
 
-module.exports = {
-  PioneerBridge : PioneerBridge
-}
+module.exports = PioneerPlatform;
