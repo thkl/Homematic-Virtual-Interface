@@ -21,7 +21,7 @@ var HueSFXDevice = require(__dirname + "/HueSFXDevice.js").HueSFXDevice;
 
 var path = require('path');
 var appRoot = path.dirname(require.main.filename);
-if (appRoot.endsWith("bin")) {appRoot =  appRoot+"../lib";}
+if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
 var util = require("util");
