@@ -16,7 +16,7 @@ AlexaSonosService.prototype.getType = function() {
 }
 
 AlexaSonosService.prototype.getActions = function() {
-	return ["turnOn","turnOff"];
+	return ["turnOn","turnOff","setPercentage"];
 }
 
 
@@ -39,7 +39,6 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 					} 
 					
 					callback("Alexa.ConnectedHome.Control","TurnOnConfirmation");
-					sw_channel.updateValue("PRESS_SHORT",false,false,false);
 				} else {
 					callback("Alexa.ConnectedHome.Control","NoSuchTargetError");
 				}
@@ -60,12 +59,32 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 						sw_channel.emit('channel_value_change', parameter);
 					} 
 					callback("Alexa.ConnectedHome.Control","TurnOffConfirmation");
-					sw_channel.updateValue("PRESS_SHORT",false,false,false);
 				} else {
 					callback("Alexa.ConnectedHome.Control","NoSuchTargetError");
 				}
 		}
 		break;
+		
+		
+		case "SetPercentageRequest": {
+			var newValue = event.payload.percentageState.value;
+			// Max 40% to avoid loud noice
+			if (newValue > 40) {
+				newValue = 40;
+			}
+			var deviceAdress = event.payload.appliance.applianceId;
+			var device = this.hm_layer.deviceWithAdress(deviceAdress);
+			if (device) {
+					var sw_channel = device.getChannelWithTypeAndIndex("KEY","19");
+					sw_channel.setValue("TARGET_VOLUME",newValue);
+					callback("Alexa.ConnectedHome.Control","SetPercentageConfirmation");
+			} else {
+					callback("Alexa.ConnectedHome.Control","NoSuchTargetError");
+			}
+		}
+		break;
+
+
 		
 		default:{
 			callback("Alexa.ConnectedHome.Control","NoSuchTargetError");
