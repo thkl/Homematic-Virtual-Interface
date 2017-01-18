@@ -68,14 +68,23 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 		
 		case "SetPercentageRequest": {
 			var newValue = event.payload.percentageState.value;
-			// Max 40% to avoid loud noice
-			if (newValue > 40) {
-				newValue = 40;
-			}
+			
 			var deviceAdress = event.payload.appliance.applianceId;
 			var device = this.hm_layer.deviceWithAdress(deviceAdress);
 			if (device) {
 					var sw_channel = device.getChannelWithTypeAndIndex("KEY","19");
+					// First Fetch 19|MAX_VOLUME -> Max Volume to Set by Alexa
+					var max = sw_channel.getParamsetValue("MASTER","MAX_VOLUME");
+					
+					var i_max = parseInt(max);
+					if (i_max == 0) {
+						i_max = 20;
+					}
+					
+					if (newValue > i_max) {
+						newValue = i_max;
+					}
+					
 					sw_channel.setValue("TARGET_VOLUME",newValue);
 					callback("Alexa.ConnectedHome.Control","SetPercentageConfirmation");
 			} else {
