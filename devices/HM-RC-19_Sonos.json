@@ -98,14 +98,15 @@
 	      {
           "name" : "MASTER",
           "id" : "",
-          "parameter" : [{"name":"AES_ACTIVE","operations":3,"tab_order":2,"max":"","min":"","type":"BOOL","flags":3}]
+          "parameter" : [{"name":"AES_ACTIVE","operations":3,"tab_order":2,"max":"","min":"","type":"BOOL","flags":3},
+          				{"name": "MAX_VOLUME","flags": 1,"vdefault":20,"min":0,"max":100,"unit":"","operations": 3,"tab_order": 0,"type": "INTEGER"}]
 		  },
 		  
 	      {
           "name" : "VALUES",
           "id" : "",
           "parameter" : [
-          	{"name": "TARGET_VOLUME","vdefault": "","flags": 1,"max": "","min": "","operations": 7,"control":"NONE","unit":"","tab_order": 0,"type": "STRING"},
+          	{"name": "TARGET_VOLUME","vdefault": "","flags": 1,"max": 100,"min": 0,"operations": 7,"control":"NONE","unit":"","tab_order": 0,"type": "STRING"},
           	{"name": "CURRENT_TRACK","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 1,"type": "STRING"},
           	{"name": "NEXT_TRACK","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 2,"type": "STRING"},
           	{"name": "PLAYLIST","vdefault": "","flags": 1,"max": "","min": "","operations": 7,"control":"NONE","unit":"","tab_order": 3,"type": "STRING"},
