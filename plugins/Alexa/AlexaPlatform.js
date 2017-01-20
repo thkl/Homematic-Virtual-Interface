@@ -57,9 +57,11 @@ AlexaPlatform.prototype.init = function() {
         reconnectionDelayMax: 10000
     });
 
+
+
 	socket.on('connect', function () {
         that.log.info('Connection changed: CONNECTED');
-        socket.send(JSON.stringify({"key":that.api_key}));
+		socket.emit('authentication', {username: that.api_key, password: that.api_key});
     });
 
     socket.on('disconnect', function () {
