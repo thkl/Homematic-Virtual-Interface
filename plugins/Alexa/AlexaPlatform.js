@@ -30,7 +30,7 @@ AlexaPlatform.prototype.init = function() {
 	this.configuration = this.server.configuration;
 	this.myLogFile = this.configuration.storagePath() + "/alexa.log";
 	this.api_key =  this.configuration.getValueForPlugin(this.name,"api_key");
-	fs.writeFileSync(this.myLogFile, new Date() + "[INFO] Alexa Plugin launched .. .\r\n");
+	fs.writeFileSync(this.myLogFile, "[INFO] Alexa Plugin launched .. .\r\n");
 
 	if (this.api_key == undefined) {
 		this.log.error("Missing api_key ... you can get one from https://console.ksquare.de/alexa");
@@ -71,7 +71,7 @@ AlexaPlatform.prototype.init = function() {
         console.log('error: ' + error);
     });
     
-    socket.on('alexa', function (data) {
+    socket.on(that.api_key, function (data) {
 		try {
 		var alx_message = JSON.parse(data);
 		if (alx_message) {
