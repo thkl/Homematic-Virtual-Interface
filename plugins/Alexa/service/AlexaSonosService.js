@@ -67,7 +67,7 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 		
 		
 		case "SetPercentageRequest": {
-			var newValue = event.payload.appliance.percentageState.value;
+			var newValue = event.payload.percentageState.value;
 			
 			var deviceAdress = event.payload.appliance.applianceId;
 			var device = this.hm_layer.deviceWithAdress(deviceAdress);
