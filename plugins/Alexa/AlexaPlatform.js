@@ -30,6 +30,7 @@ AlexaPlatform.prototype.init = function() {
 	this.configuration = this.server.configuration;
 	this.myLogFile = this.configuration.storagePath() + "/alexa.log";
 	this.api_key =  this.configuration.getValueForPlugin(this.name,"api_key");
+	this.authenticated = false;
 	fs.writeFileSync(this.myLogFile, "[INFO] Alexa Plugin launched .. .\r\n");
 
 	if (this.api_key == undefined) {
@@ -61,16 +62,19 @@ AlexaPlatform.prototype.init = function() {
 
 	socket.on('connect', function () {
         that.log.info('Connection changed: CONNECTED');
+	    that.authenticated = false;
         socket.emit('authentication', {token: that.api_key});
 	});
     
     socket.on('authenticated', function() {
+	    that.authenticated = true;
 	    that.log.info('Connection changed: AUTHENTICATED');
 	});
 
 
     socket.on('disconnect', function () {
-        that.log.info('Connection changed: DISCONNECTED');
+ 	    that.authenticated = false;
+       that.log.info('Connection changed: DISCONNECTED');
     });
 
     socket.on('error', function (error){
@@ -81,7 +85,7 @@ AlexaPlatform.prototype.init = function() {
     socket.on(that.api_key, function (data) {
 		try {
 		var alx_message = JSON.parse(data);
-		if (alx_message) {
+		if ((alx_message) && (that.authenticated == true)) {
 			that.log.info("Message : %s",JSON.stringify(alx_message));
 			
 			switch (alx_message.header.name) {
