@@ -27,7 +27,7 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 	switch (event.header.name) {
 
 		case "TurnOnRequest" : {
-				var deviceAdress = event.payload.applianceId;
+				var deviceAdress = event.payload.appliance.applianceId;
 				var device = this.hm_layer.deviceWithAdress(deviceAdress);
 				if (device) {
 					var sw_channel = device.getChannelWithTypeAndIndex("KEY","1");
@@ -47,7 +47,7 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 
 
 		case "TurnOffRequest" : {
-				var deviceAdress = event.payload.applianceId;
+				var deviceAdress = event.payload.appliance.applianceId;
 				var device = this.hm_layer.deviceWithAdress(deviceAdress);
 				if (device) {
 					var sw_channel = device.getChannelWithTypeAndIndex("KEY","2");
@@ -67,9 +67,9 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 		
 		
 		case "SetPercentageRequest": {
-			var newValue = event.payload.percentageState.value;
+			var newValue = event.payload.appliance.percentageState.value;
 			
-			var deviceAdress = event.payload.applianceId;
+			var deviceAdress = event.payload.appliance.applianceId;
 			var device = this.hm_layer.deviceWithAdress(deviceAdress);
 			if (device) {
 					var sw_channel = device.getChannelWithTypeAndIndex("KEY","19");

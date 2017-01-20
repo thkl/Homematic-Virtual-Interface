@@ -115,7 +115,7 @@ AlexaPlatform.prototype.init = function() {
 				
 				default:
 				{
-					var ap_id = alx_message.payload.applianceId;
+					var ap_id = alx_message.payload.appliance.applianceId;
 					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Message '+ ap_id + ' ' +  alx_message.header.name + '\r\n');
 					if (ap_id) {
 						var ap_obj = that.alexa_appliances[ap_id];

@@ -26,7 +26,7 @@ AlexaHueService.prototype.getActions = function() {
 AlexaHueService.prototype.handleEvent = function(event,callback) {
 	
 	var that = this;
-	var deviceAdress = event.payload.applianceId;
+	var deviceAdress = event.payload.appliance.applianceId;
 
 	var device = this.hm_layer.deviceWithAdress(deviceAdress);
 		if (device) {
@@ -48,14 +48,14 @@ AlexaHueService.prototype.handleEvent = function(event,callback) {
 		break;
 		
 			case "SetPercentageRequest": {
-				var newValue = event.payload.percentageState.value;
+				var newValue = event.payload.appliance.percentageState.value;
 				this.setChannelValue(di_channel,newValue/100);
 				callback("Alexa.ConnectedHome.Control","SetPercentageConfirmation");
 			}
 		break;
 
 			case "IncrementPercentageRequest": {
-				var newValue = event.payload.deltaPercentage.value;
+				var newValue = event.payload.appliance.deltaPercentage.value;
 				var level = di_channel.getValue("LEVEL");
 				var newLevel = (level * 100) + newValue;
 				this.setChannelValue(di_channel,newValue/100);
@@ -65,7 +65,7 @@ AlexaHueService.prototype.handleEvent = function(event,callback) {
 		break;
 		
 		case "DecrementPercentageRequest": {
-			var newValue = event.payload.deltaPercentage.value;
+			var newValue = event.payload.appliance.deltaPercentage.value;
 				var level = di_channel.getValue("LEVEL");
 				var newLevel = (level * 100) - newValue;
 				this.setChannelValue(di_channel,newValue/100);
