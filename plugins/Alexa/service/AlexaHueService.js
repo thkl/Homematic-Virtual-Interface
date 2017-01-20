@@ -26,7 +26,7 @@ AlexaHueService.prototype.getActions = function() {
 AlexaHueService.prototype.handleEvent = function(event,callback) {
 	
 	var that = this;
-	var deviceAdress = event.payload.appliance.applianceId;
+	var deviceAdress = event.payload.applianceId;
 
 	var device = this.hm_layer.deviceWithAdress(deviceAdress);
 		if (device) {
