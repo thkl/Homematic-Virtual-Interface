@@ -61,8 +61,10 @@ AlexaPlatform.prototype.init = function() {
 
 	socket.on('connect', function () {
         that.log.info('Connection changed: CONNECTED');
-		socket.emit('authentication', {username: that.api_key, password: that.api_key});
-    });
+        socket.on('connect', function(){
+			socket.emit('authentication', {token: that.api_key});
+		});
+	});
     
     socket.on('authenticated', function() {
 	    that.log.info('Connection changed: AUTHENTICATED');
