@@ -76,7 +76,7 @@ AlexaPlatform.prototype.init = function() {
 		var alx_message = JSON.parse(data);
 		if (alx_message) {
 			that.log.info("Message : %s",JSON.stringify(alx_message));
-			
+			var resultKey = "result_" + that.api_key;
 			switch (alx_message.header.name) {
 			
 				case "DiscoverAppliancesRequest" : {
@@ -85,7 +85,8 @@ AlexaPlatform.prototype.init = function() {
 
 					var result = that.generateResponse("Alexa.ConnectedHome.Discovery","DiscoverAppliancesResponse", {"discoveredAppliances":that.get_appliances()});
 					that.log.info(result);
-					socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
+					
+					socket.send(JSON.stringify({"key":that.api_key,resultKey :result}), function (data) {
 						console.log(data); // data will be 'woot'
 					});
 				}
@@ -95,7 +96,7 @@ AlexaPlatform.prototype.init = function() {
 					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Ping Event\r\n');
 					var result = that.generateResponse("Alexa.ConnectedHome.System","HealthCheckResponse", {"description":"Iam alive","isHealthy":true});
 					that.log.info(result);
-					socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
+					socket.send(JSON.stringify({"key":that.api_key,resultKey :result}), function (data) {
 						console.log(data); // data will be 'woot'
 					});
 				}
@@ -113,7 +114,7 @@ AlexaPlatform.prototype.init = function() {
 							if (hms) {
 								hms.handleEvent(alx_message,function(responseNameSpace,responseName,response_payload){
 									var result = that.generateResponse(responseNameSpace,responseName, response_payload);
-									socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {});
+									socket.send(JSON.stringify({"key":that.api_key,resultKey :result}), function (data) {});
 								});
 							}
 					} else {
