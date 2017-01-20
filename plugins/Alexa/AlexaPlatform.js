@@ -50,7 +50,7 @@ AlexaPlatform.prototype.init = function() {
     
     this.reloadApplicances();
 	
-	this.log.info("Cloud Login with Api Key %s",this.api_key);
+	this.log.info("Cloud Login with Api Key XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX");
 		
 	var socket = require('socket.io-client')('https://console.ksquare.de:3000',{
         rejectUnauthorized: false,
