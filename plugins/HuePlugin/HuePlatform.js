@@ -18,12 +18,12 @@ var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
 var HueEffectServer = require(__dirname + "/HueEffectServer.js").HueEffectServer;
 var HueSFXDevice = require(__dirname + "/HueSFXDevice.js").HueSFXDevice;
-
 var path = require('path');
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+
 var util = require("util");
 
 
@@ -37,6 +37,7 @@ function HuePlatform(plugin,name,server,log,instance) {
 	this.groups = [];
 	this.effectServers={};
 	this.sfxDevice;
+	this.authorized;
 }
 
 util.inherits(HuePlatform, HomematicVirtualPlatform);
@@ -47,6 +48,7 @@ HuePlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
+	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 	
 	this.log.info("Init %s",this.name);
 	var ip = this.configuration.getValueForPlugin(this.name,"hue_bridge_ip");
@@ -54,8 +56,10 @@ HuePlatform.prototype.init = function() {
 	if ((ip!=undefined) && (ip!="")) {
 	    this.hue_ipAdress = ip;
 		this.log.info("Hue Bridge Init at %s with instance %s",this.hue_ipAdress , this.instance);
-
+	this.authorized = false;
+	
 	if (this.checkUsername()==true) {
+		this.authorized = true;
 	    this.queryBridgeAndMapDevices()
     }
 
@@ -122,9 +126,11 @@ HuePlatform.prototype.checkUsername = function() {
           // try and help explain this particular error
           
           if (err && err.message == "link button not pressed") {
+		  	that.authorized = false;
             that.log.warn("Please press the link button on your Philips Hue bridge within 30 seconds.");
             setTimeout(function() {that.checkUsername();}, 10000);
           } else {
+	        that.authorized = true;
 	        that.configuration.setValueForPlugin(that.name,"hue_username",user); 
             that.log.info("saved your user to config.json");
             that.hue_userName = user;
@@ -448,6 +454,11 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 	var listScenes = "";
 	var listEfxS = "";
 	
+	this.localization.setLanguage(dispatched_request);
+	
+	var message = this.localization.localize("No Message from your Hue Plugin. Yet !");
+	
+	
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
 	
@@ -461,6 +472,16 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 	if (publishedgroups == undefined) {
 		publishedgroups = [];
 	}
+	
+	
+	if (!this.hue_ipAdress) {
+		message = this.localization.localize("The plugin is searching for your bridge ....");
+	} else {
+	
+		if (this.authorized==false) {
+			message = this.localization.localize("Currently the plugin is not able to connect to the bridge. Please press the big button on your bridge to authorized the plugin.");
+		}
+	} 
 	
 	var refresh = this.configuration.getValueForPluginWithDefault(this.name,"refresh",60); 
 	
@@ -693,7 +714,8 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 																		"listLights":listLights,
 																		"listGroups":listGroups,
 																		"listScenes":listScenes,
-																		  "listEfxS":listEfxS});
+																		  "listEfxS":listEfxS,
+																		   "message":message});
 }
 
 module.exports =  HuePlatform;
