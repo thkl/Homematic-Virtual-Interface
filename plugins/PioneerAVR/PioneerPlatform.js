@@ -73,7 +73,6 @@ PioneerPlatform.prototype.reconnect = function(command) {
         	that.log.debug("Error Reconnecting in 60 seconds");
 			setTimeout(function() {that.reconnect()},60000);
         });
-
     }
 }
 
