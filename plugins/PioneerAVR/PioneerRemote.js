@@ -60,10 +60,10 @@ Pioneer_Remote.prototype.init = function(remoteName,index,HomematicDevice) {
 						that.sendCommand("VD\r");
 						break;
 					case "5":
-						that.sendCommand("MO\r");
+						that.sendCommand("MF\r");
 						break;
 					case "6":
-						that.sendCommand("MF\r");
+						that.sendCommand("MO\r");
 						break;
 					case "7":
 					case "8":
