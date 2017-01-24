@@ -172,6 +172,9 @@ VSX.prototype.listeningMode = function(mode) {
     this.client.write("MF\r");
 };
 
+VSX.prototype.closeConnection = function() {
+    this.client.destroy();
+};
 
 function handleConnection(self, socket) {
     if (TRACE) {

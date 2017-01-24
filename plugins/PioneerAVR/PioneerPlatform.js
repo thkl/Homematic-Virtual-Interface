@@ -76,11 +76,25 @@ PioneerPlatform.prototype.reconnect = function(command) {
     }
 }
 
+PioneerPlatform.prototype.reInit = function() {
+ var that = this;
+ try {
+	 this.receiver.closeConnection();
+	 setTimeout(function() {that.reconnect()},1000);
+  } catch (err) {that.log.error("Error while reinitialzing %s",err)}
+}
+
+
 PioneerPlatform.prototype.sendCommand = function(command) {
  var that = this;
  try {
-	this.log.debug("Sending Command %s",command);
-	this.receiver.sendCommand(command);
+	if (command.toLowerCase().indexOf("force_reinit")>-1) {
+		this.log.debug("try force quit and reinit");
+		this.reInit();
+	} else {
+		this.log.debug("Sending Command (%s )",command);
+		this.receiver.sendCommand(command);
+	}
   } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
