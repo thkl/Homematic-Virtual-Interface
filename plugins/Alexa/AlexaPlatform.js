@@ -51,8 +51,10 @@ AlexaPlatform.prototype.init = function() {
     this.reloadApplicances();
 	
 	this.log.info("Cloud Login with Api Key XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX");
-		
-	var socket = require('socket.io-client')('https://console.ksquare.de:3000',{
+	
+	fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Connecting to Cloud Service\r\n');
+
+	this.socket = require('socket.io-client')('https://console.ksquare.de:3000',{
         rejectUnauthorized: false,
         reconnectionDelay:    5000,
         reconnectionDelayMax: 10000
@@ -60,29 +62,29 @@ AlexaPlatform.prototype.init = function() {
 
 
 
-	socket.on('connect', function () {
+	this.socket.on('connect', function () {
         that.log.info('Connection changed: CONNECTED');
 	    that.authenticated = false;
-        socket.emit('authentication', {token: that.api_key});
+        that.socket.emit('authentication', {token: that.api_key});
 	});
     
-    socket.on('authenticated', function() {
+    this.socket.on('authenticated', function() {
 	    that.authenticated = true;
 	    that.log.info('Connection changed: AUTHENTICATED');
 	});
 
 
-    socket.on('disconnect', function () {
+    this.socket.on('disconnect', function () {
  	    that.authenticated = false;
        that.log.info('Connection changed: DISCONNECTED');
     });
 
-    socket.on('error', function (error){
+    this.socket.on('error', function (error){
         that.log.error('Connection error: ' + error);
         console.log('error: ' + error);
     });
     
-    socket.on(that.api_key, function (data) {
+    this.socket.on(that.api_key, function (data) {
 		try {
 		var alx_message = JSON.parse(data);
 		if ((alx_message) && (that.authenticated == true)) {
@@ -96,7 +98,7 @@ AlexaPlatform.prototype.init = function() {
 
 					var result = that.generateResponse("Alexa.ConnectedHome.Discovery","DiscoverAppliancesResponse", {"discoveredAppliances":that.get_appliances()});
 					that.log.info(result);
-					socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
+					that.socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
 						console.log(data); // data will be 'woot'
 					});
 				}
@@ -106,7 +108,7 @@ AlexaPlatform.prototype.init = function() {
 					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Ping Event\r\n');
 					var result = that.generateResponse("Alexa.ConnectedHome.System","HealthCheckResponse", {"description":"Iam alive","isHealthy":true});
 					that.log.info(result);
-					socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
+					that.socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
 						console.log(data); // data will be 'woot'
 					});
 				}
@@ -124,7 +126,7 @@ AlexaPlatform.prototype.init = function() {
 							if (hms) {
 								hms.handleEvent(alx_message,function(responseNameSpace,responseName,response_payload){
 									var result = that.generateResponse(responseNameSpace,responseName, response_payload);
-									socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {});
+									that.socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {});
 								});
 							}
 					} else {
@@ -140,9 +142,9 @@ AlexaPlatform.prototype.init = function() {
 		}
 		} catch (e) {
 			that.log.error("Event Error",e,e.stack);
-			socket.send(JSON.stringify({"key":that.api_key,"result":"error"}), function (data) {
-						console.log(data); // data will be 'woot'
-					});
+			that.socket.send(JSON.stringify({"key":that.api_key,"result":"error"}), function (data) {
+				console.log(data); // data will be 'woot'
+			});
 
 		}
 		
@@ -153,7 +155,23 @@ AlexaPlatform.prototype.init = function() {
 	
 	this.plugin.initialized = true;
 	this.log.info("initialization completed %s",this.plugin.initialized);
+
+	setTimeout(function() {
+		that.reconnect()
+	} , 1000);
+	
 }
+
+AlexaPlatform.prototype.reconnect = function() {
+	var that = this;
+	fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Reconnecting to Cloud Service\r\n');
+	this.socket.disconnect();
+	this.socket.connect(); 
+	setTimeout(function() {
+		that.reconnect()
+	} , 3600000);
+}
+
 
 AlexaPlatform.prototype.reloadApplicances = function() {
 	this.alexa_appliances = {};
