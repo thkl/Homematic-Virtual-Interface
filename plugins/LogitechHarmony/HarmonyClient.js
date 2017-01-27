@@ -31,23 +31,56 @@ HarmonyClient.prototype.init = function() {
   var that = this;
   HomematicDevice = this.server.homematicDevice;
   this.hmDevice = new HomematicDevice();
-  this.hmDevice.initWithType("HM-RC-19_Harmony", "HarmonyActivities");
-  this.bridge.addDevice(this.hmDevice);
+  var serial = "HarmonyActivities";
+  var data = this.bridge.deviceDataWithSerial(serial);
+  if (data!=undefined) {
+		this.hmDevice.initWithStoredData(data);
+  }
+
+  if (this.hmDevice.initialized == false) {
+  	this.hmDevice.initWithType("HM-RC-19_Harmony", serial);
+  	this.bridge.addDevice(this.hmDevice);
+  }
+  
+  else {
+	this.bridge.addDevice(this.hmDevice,false);
+  }
+  
   var adx = 1;  
+  
   harmony(this.hubIP).then(function(harmonyClient) {
 	  harmonyClient.getActivities().then(function(activities) {
 		activities.forEach(function (activity){
 			var ac = {"id":activity.id,"label":activity.label,"adress":adx};
-			
+			var ch = that.getChannelForActivity(activity.id)
+			if (ch) {
+				that.log.debug("Channel found : %s with Index %s",ch,ch.index);
+				ac["chid"] = ch.index;
+			} else {
+				var chnext = that.getNextFreeChannelForActivity();
+				if (chnext) {
+					chnext.setParamsetValue("MASTER","CMD_PRESS_SHORT",activity.id);
+					chnext.setParamsetValue("MASTER","CMD_PRESS_LONG",activity.label);
+					ac["chid"] = ch.chnext;
+				} else {
+					that.log.warn("Can not found any free channel on remote. thats bad");
+				}
+			}
 			that.activities.push(ac);
 			adx = adx + 1;
 		});
 		that.log.debug("Activities : %",JSON.stringify(that.activities));
 	  }).finally(function () {
-	  that.log.debug("Closing");
+   	    that.log.debug("Closing");
         harmonyClient.end()
+        that.bridge.saveDevice(that.hmDevice);
+        
+        // Clean
+        that.log.debug("Cleaning");
+        that.cleanUp();
+        
   }).catch(function (e) {
-    that.log.error(e);
+    that.log.error(e.stack);
   });
   });
   
@@ -56,13 +89,18 @@ HarmonyClient.prototype.init = function() {
 		var newValue = parameter.newValue;
 		var channel = that.hmDevice.getChannel(parameter.channel);
 		if (parameter.name == "PRESS_SHORT") {
-			
+					
+			var acID = channel.getParamsetValueWithDefault("MASTER","CMD_PRESS_SHORT","");		
+			/*		
 			var selectedActivity = that.activities
                 .filter(function (activity) { return activity.adress == channel.index}).pop()
 			if (selectedActivity != undefined) {
-			  that.startActivity(selectedActivity.id);
+				*/
+				
+			if (acID) {
+			  that.startActivity(acID);
 			} else {
-				that.log.debug("No Activity With Index %s found",channel.index);
+				that.log.debug("No Activity With ID %s found",acID);
 			}
 		
 	    }
@@ -70,6 +108,51 @@ HarmonyClient.prototype.init = function() {
 	
  this.getCurrentActivity();
 }
+
+HarmonyClient.prototype.getChannelForActivity = function(acId) {
+	return this.hmDevice.channels.filter(function (channel) { 
+		var cmd = channel.getParamsetValueWithDefault("MASTER","CMD_PRESS_SHORT","");
+		return cmd == acId;		
+	}).pop();
+}
+
+HarmonyClient.prototype.getNextFreeChannelForActivity = function() {
+	var that = this;
+	var result = undefined;
+	this.hmDevice.channels.some(function (channel) { 
+		if ((channel.index != "0")  && (result == undefined)) {
+			var cmd = channel.getParamsetValueWithDefault("MASTER","CMD_PRESS_SHORT","");
+			if ((cmd !=undefined) && ( cmd.length==0 )) {
+				that.log.info("next free found",channel.index);
+				result = channel;
+			}
+		}
+	});
+	return result;
+}
+
+HarmonyClient.prototype.cleanUp = function() {
+	var that = this;
+	this.hmDevice.channels.some(function (channel) { 
+		if (channel.index != "0") {
+			var cmd = channel.getParamsetValueWithDefault("MASTER","CMD_PRESS_SHORT","");
+			if ((cmd !=undefined) && ( cmd.length > 0 )) {
+				// Check if we are still have this activity id
+				if (that.activityWithId(cmd)==undefined) {
+					channel.setParamsetValue("MASTER","CMD_PRESS_SHORT","");
+					channel.setParamsetValue("MASTER","CMD_PRESS_LONG","");
+				}
+			}
+		}
+	});
+	return result;
+}
+
+
+HarmonyClient.prototype.activityWithId = function(a_id) {
+	return this.activities.filter(function (activity) { return activity.id == a_id}).pop();
+}
+
 
 HarmonyClient.prototype.getCurrentActivity = function() {
  var that = this;

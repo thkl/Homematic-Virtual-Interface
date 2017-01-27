@@ -267,7 +267,7 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 	
 	var activityList = "";
 	this.harmonyClient.getActivities().forEach(function (activity){
-		activityList = activityList +  dispatched_request.fillTemplate(lighttemplatereal,{"lamp_name":activity.label,"lamp_index":activity.adress});
+		activityList = activityList +  dispatched_request.fillTemplate(lighttemplatereal,{"lamp_name":activity.label,"lamp_index":activity.chid});
 	});
 	
 	
