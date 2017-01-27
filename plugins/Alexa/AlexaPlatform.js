@@ -92,6 +92,7 @@ AlexaPlatform.prototype.init = function() {
 			var myTime = new Date().getTime();
 			var delta = timestamp-myTime;
 			if ((delta < (0-that.maxdelta)) || (delta>that.maxdelta)) {
+				fs.appendFileSync(that.myLogFile,new Date() + '[WARN] Drop Message. Timestamp is out of range.\r\n');
 				that.log.warn("Drop Message because timestamp is out of range %s. Please take care of your clock !!.",that.maxdelta);
 				return;
 			}
