@@ -61,7 +61,7 @@ HarmonyClient.prototype.init = function() {
 				if (chnext) {
 					chnext.setParamsetValue("MASTER","CMD_PRESS_SHORT",activity.id);
 					chnext.setParamsetValue("MASTER","CMD_PRESS_LONG",activity.label);
-					ac["chid"] = ch.chnext;
+					ac["chid"] = chnext.index;
 				} else {
 					that.log.warn("Can not found any free channel on remote. thats bad");
 				}
