@@ -30,6 +30,7 @@ AlexaPlatform.prototype.init = function() {
 	this.configuration = this.server.configuration;
 	this.myLogFile = this.configuration.storagePath() + "/alexa.log";
 	this.api_key =  this.configuration.getValueForPlugin(this.name,"api_key");
+	this.maxdelta =  this.configuration.getValueForPluginWithDefault(this.name,"max_delta",10000);
 	this.authenticated = false;
 	fs.writeFileSync(this.myLogFile, "[INFO] Alexa Plugin launched .. .\r\n");
 
@@ -84,11 +85,17 @@ AlexaPlatform.prototype.init = function() {
         console.log('error: ' + error);
     });
     
-    this.socket.on(that.api_key, function (data) {
+    this.socket.on(that.api_key, function (data,timestamp) {
 		try {
 		var alx_message = JSON.parse(data);
-		if ((alx_message) && (that.authenticated == true)) {
-			that.log.info("Message : %s",JSON.stringify(alx_message));
+		if ((alx_message) && (that.authenticated == true) && (timestamp)) {
+			var myTime = new Date().getTime();
+			var delta = timestamp-myTime;
+			if ((delta < (0-that.maxdelta)) || (delta>that.maxdelta)) {
+				that.log.warn("Drop Message because timestamp is out of range %s. Please take care of your clock !!.",that.maxdelta);
+				return;
+			}
+			that.log.info("Message : %s at %s Delta %s",JSON.stringify(alx_message),timestamp,delta);
 			
 			switch (alx_message.header.name) {
 			
