@@ -105,7 +105,8 @@
           "name" : "VALUES",
           "id" : "",
           "parameter" : [
-          	{"name": "CURRENT_ACTIVITY","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 1,"type": "STRING"}
+          	{"name": "CURRENT_ACTIVITY","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 1,"type": "STRING"},
+          	{"name": "COMMAND","vdefault": "","flags": 1,"max": "","min": "","operations": 7,"control":"NONE","unit":"","tab_order": 2,"type": "STRING"}
           ]
 		 }
       ]
