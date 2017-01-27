@@ -145,7 +145,6 @@ HarmonyClient.prototype.cleanUp = function() {
 			}
 		}
 	});
-	return result;
 }
 
 
