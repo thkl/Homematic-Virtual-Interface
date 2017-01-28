@@ -172,7 +172,7 @@ HuePlatform.prototype.setupEffectServer = function() {
 	efs.forEach(function (definition){
 		var name = definition["name"];
 		var lights = definition["lights"];
-		var efserver = new HueEffectServer(name);
+		var efserver = new HueEffectServer(that,name);
 		
 		lights.forEach(function (lightid){
 			that.log.debug("Try adding light with ID %s",lightid)
@@ -551,7 +551,7 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 			{
 				var servername = queryObject["efxs.newname"];
 				if (servername) {
-					var efs = new HueEffectServer(servername);
+					var efs = new HueEffectServer(this,servername);
 					this.effectServers[servername] = efs;
 					this.saveEffectScenes();
 				} else {

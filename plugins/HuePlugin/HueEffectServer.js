@@ -14,9 +14,12 @@ var path = require('path');
 var Logger = require(__dirname + '/../../lib/Log.js').Logger;
 var logger =  Logger.withPrefix("HueEffectServer");
 
-var HueEffectServer = function (name) {
+var HueEffectServer = function (platform,name) {
 	this.name = name;
 	this.lights = [];
+	this.platform = platform;
+	logger.debug("Platform : %s Server %s" , platform,name);
+	this.configuration = platform.server.configuration;
 }
 
 HueEffectServer.prototype.addLight = function(light) {
@@ -56,11 +59,19 @@ HueEffectServer.prototype.stopScene = function(playStopFrame) {
 
 HueEffectServer.prototype.listScenes = function() {
   var sceneDir = __dirname +"/scenes/";
+  var privateSceneDir = this.configuration.storagePath()  + "/scenes/";
   var that = this;
   var list = [];
   try {  
   var data = fs.readdirSync(sceneDir);
   data.sort().forEach(function (file) {
+      if (file.match(/\.(json)$/)) {
+       list.push(file.replace(/\.[^/.]+$/, ""));
+	  }
+  });
+
+  data = fs.readdirSync(privateSceneDir);
+  	data.sort().forEach(function (file) {
       if (file.match(/\.(json)$/)) {
        list.push(file.replace(/\.[^/.]+$/, ""));
 	  }
@@ -85,14 +96,32 @@ HueEffectServer.prototype.persinstentData = function() {
   return {"name":this.name,"lights":lightIDs};
 }
 
+HueEffectServer.prototype.sceneData = function(sceneName) {
+	var sceneFile = __dirname +"/scenes/"+sceneName + ".json";
+	logger.info("try to load scene : %s",sceneFile);
+    if (fs.existsSync(sceneFile)) {		
+    	return fs.readFileSync(sceneFile);
+	}
+	
+	var privateSceneDir = this.configuration.storagePath()  + "/scenes/";
+	sceneFile = privateSceneDir + sceneName + ".json";
+	logger.info("try to load scene : %s",sceneFile);
+    
+    if (fs.existsSync(sceneFile)) {		
+    	return fs.readFileSync(sceneFile);
+	}
+	
+	return undefined;
+}
+
+
 HueEffectServer.prototype.runScene = function(sceneName) {
    	try {
 	   	this.stopScene(false);
 		this.interrupt = false;
 		this.isRunning = true;
-		var sceneFile = __dirname +"/scenes/"+sceneName + ".json";
-		logger.info("try to load scene : %s",sceneFile);
-    	var buffer = fs.readFileSync(sceneFile);
+		var buffer = this.sceneData(sceneName);
+		if (buffer) {
     	var scene_settings = JSON.parse(buffer.toString());
     	if (scene_settings) {
     	  logger.debug(JSON.stringify(scene_settings));
@@ -111,6 +140,10 @@ HueEffectServer.prototype.runScene = function(sceneName) {
 
     	  }
     	}
+    } else {
+	    logger.error("Scene not found %s",sceneName);
+    }
+
 	} catch (e) {
 		logger.warn("Error while reading scene", e);
 	}
