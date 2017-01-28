@@ -138,6 +138,7 @@ AlexaPlatform.prototype.init = function() {
 								});
 							}
 					} else {
+						fs.appendFileSync(that.myLogFile,new Date() + '[WARN] Appliance ' + ap_id + ' was not found or is not alaxa enabled\r\n');
 						that.log.warn("Appliance %s was not found or is not alaxa enabled",ap_id);
 					}
 					} else {
