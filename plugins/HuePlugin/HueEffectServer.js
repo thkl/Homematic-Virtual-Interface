@@ -116,6 +116,7 @@ HueEffectServer.prototype.sceneData = function(sceneName) {
 
 
 HueEffectServer.prototype.runScene = function(sceneName) {
+   	var that = this;
    	try {
 	   	this.stopScene(false);
 		this.interrupt = false;
@@ -137,7 +138,6 @@ HueEffectServer.prototype.runScene = function(sceneName) {
 	    	  if (mode=="fx") {
 		    	  this.runFXScene(scene_settings.loop,frames,0);
 	    	  }
-
     	  }
     	}
     } else {
@@ -147,6 +147,10 @@ HueEffectServer.prototype.runScene = function(sceneName) {
 	} catch (e) {
 		logger.warn("Error while reading scene", e);
 	}
+	// Wait 2 seconds and refresh
+	setTimeout(function(){
+	  	that.platform.refreshAll();
+	}, 2000);
 }
 
 
