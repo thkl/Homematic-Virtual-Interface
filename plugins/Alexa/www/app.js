@@ -19,6 +19,23 @@ function loadHMDevices() {
 });
 }
 
+function loadCCUPrograms() {
+	$("#devicelist").empty();
+	
+	$.getJSON( "?do=device.listprograms", function( data ) {
+	var items = [];
+		devicelist = data;
+		$.each( data, function( key, val ) {
+			items.push( "<li id='" + key + "'><a href='#' onClick=\"select_device('"+key+"')\">" + val.device + " / " + val.name + "</a></li>" );
+  	});
+ 
+  	var list = $( "<ul/>", {
+    	"class": "my-new-list",
+		html: items.join( "" )
+  	});
+  	$("#devicelist").append($("<div>",{"class":"ph"}).append(list));
+});
+}
 
 
 function loadVirtDevices() {

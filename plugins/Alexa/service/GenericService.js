@@ -10,6 +10,10 @@
 "use strict";
 
 var fs = require('fs');
+var path = require('path');
+var appRoot = path.dirname(require.main.filename);
+if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
+var regarequest = require(appRoot + "/HomematicReqaRequest.js");
 
 
 function GenericAlexaHomematicService (homematicDevice,rpcClient,log,hmlayer) {
@@ -29,6 +33,10 @@ GenericAlexaHomematicService.prototype =  {
 	getType : function(){return undefined},
 		
 	handleEvent: function(event,callback) {},
+
+	sendRega : function(script,callback) {
+		new regarequest(this.hm_layer,script,callback);
+	},
 
 	getPhrases: function(lng){
 		var that = this;

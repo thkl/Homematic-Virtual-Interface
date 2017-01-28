@@ -414,9 +414,29 @@ AlexaPlatform.prototype.loadHMDevices = function(callback) {
 	    
 	    callback(result_list);
     });
-    
 }
 
+AlexaPlatform.prototype.loadCCUProgramms = function(callback) {
+    var that = this;
+    var result_list = {};
+    var script = "string pid;boolean df = true;Write(\'{\"programs\":[\');foreach(pid, dom.GetObject(ID_PROGRAMS).EnumUsedIDs()){var prg = dom.GetObject(pid);if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"name\": \"\' # prg.Name() # \'\"}\');}Write(\"]}\");\";"
+    
+    new regaRequest(this.server.getBridge(),script,function(result){
+	    
+	    try {
+		    if (result) {
+		    var jobj = JSON.parse(result);
+		    jobj.programs.forEach(function (program){
+				result_list[program.name] = {"device":program.name,"address":program.name,"name":program.name,"service":"AlexaHomematicProgramService"};   
+			});
+			}  
+	    } catch (e) {
+		    console.log(e.stack);
+	    }
+	    
+	    callback(result_list);
+    });
+}
 
 AlexaPlatform.prototype.loadVirtualDevices = function(callback) {
    var that = this;
@@ -502,7 +522,16 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 				return;
 			}
 			break;
-			
+
+			case "device.listprograms":
+			{
+				this.loadCCUProgramms(function (result){
+				   dispatched_request.dispatchFile(that.plugin.pluginPath , "list.json" ,{"list":JSON.stringify(result)});
+				});
+				return;
+			}
+			break;
+
 			
 			case "phrase.list":
 			{

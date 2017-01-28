@@ -1,5 +1,6 @@
 {
-	"handler":["AlexaHomematicDimmerService","AlexaLogicService","AlexaHomematicSwitchService","AlexaSonosService","AlexaHomematicThermostatService","AlexaHueService"],
+	"handler":["AlexaHomematicDimmerService","AlexaLogicService","AlexaHomematicSwitchService","AlexaSonosService","AlexaHomematicThermostatService","AlexaHueService",
+	"AlexaHomematicProgramService"],
 	
 	"hm_device_settings" : {
 		
