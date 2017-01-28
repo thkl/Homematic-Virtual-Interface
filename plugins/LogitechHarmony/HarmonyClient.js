@@ -119,41 +119,67 @@ HarmonyClient.prototype.init = function() {
 	    
 	    if (parameter.name == "COMMAND") {
 		    that.log.debug("Harmony Command %s",parameter.newValue);
-			var cmds = parameter.newValue.split(".");
-			if (cmds.length==2) {
-				var deviceName = cmds[0];
-				var actionName = cmds[1];
-				var device = that.getHarmonyDeviceWithLabel(deviceName);
-				if (device) {
-					that.log.debug("Device found trying to find command %s",actionName);
-					that.sendAction(device,actionName);
-				} else {
-					that.log.error("Device %s not found",deviceName);
-				}
-			}
+		    that.sendAction(parameter.newValue);
 		}
 	});
 	
  this.getCurrentActivity();
 }
 
+HarmonyClient.prototype.sendAction = function(actionName) {
+	var that = this;
+	var cmds = actionName.split(".");
+	if (cmds.length==3) {
+		var deviceName = cmds[0];
+		var actionGroup = cmds[1];
+		var actionName = cmds[2];
+		var device = that.getHarmonyDeviceWithLabel(deviceName);
+		if ((device) && (actionGroup) && (actionName)) {
+			that.log.debug("Device found trying to find command %s %s",actionGroup,actionName);
+			that.do_sendAction(device,actionGroup,actionName);
+		} else {
+			that.log.error("Device %s ActionGroup %s or Action %s not found",deviceName,actionGroup,actionName);
+		}
+	}
+}
+
+
 HarmonyClient.prototype.getHarmonyDeviceWithLabel = function(label) {
 	return this.harmonyDevices.filter(function (device) { return device.label == label}).pop();
 }
 
-HarmonyClient.prototype.getHarmonyAction = function(commands,name) {
-	return commands.filter(function (action) { return action.name == name}).pop();
+HarmonyClient.prototype.getHarmonyAction = function(commands,group,name) {
+	var o_group =  commands.filter(function (action_group) { return action_group.name == group}).pop();
+	this.log.debug(o_group.function);
+	if (o_group.function) {
+		return o_group.function.filter(function (action) { return action.name == name}).pop();
+	} else {
+		return undefined;
+	}
 }
 
+HarmonyClient.prototype.listActions = function() {
+  var result = [];
+  this.harmonyDevices.some(function (device){
+	  device.controlGroup.some(function (action_group){
+		  action_group["function"].some(function (action) {
+		  	result.push(device.label + "." + action_group.name + "." + action.name); 
+		  });
+	  });
+  });
+  return result;
+}
 
-HarmonyClient.prototype.sendAction = function(device,actionName) {
+HarmonyClient.prototype.do_sendAction = function(device,actionGroup,actionName) {
 	var that = this;
-	var action = this.getHarmonyAction(device.controlGroup,actionName);
+	var action = this.getHarmonyAction(device.controlGroup,actionGroup,actionName);
 	if (action) {
 		that.log.debug("Device and Action are valid send them to the hub");
 		harmony(this.hubIP).then(function(harmonyClient) {
-			that.log.debug("Login perfomed go ahead with %s",action.function[0].action);
-			var encodedAction = action.function[0].action.replace(/\:/g, '::');
+			
+			
+			that.log.debug("Login perfomed go ahead with %s",action.action);
+			var encodedAction = action.action.replace(/\:/g, '::');
 			that.log.debug("Send Action %s",encodedAction);
 			return harmonyClient.send('holdAction', 'action=' + encodedAction + ':status=press')
 		

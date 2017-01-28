@@ -165,6 +165,17 @@ HarmonyPlatform.prototype.buildFakeLightList = function(dispatched_request,editI
 	return fakeLights;
 }
 
+HarmonyPlatform.prototype.listHarmonyCommands = function(dispatched_request) {
+	var result = this.harmonyClient.listActions();
+	var list = "";
+	var atmp = dispatched_request.getTemplate(this.plugin.pluginPath , "list_tmp_action.html",null);
+
+	result.some(function (action){
+		list = list + dispatched_request.fillTemplate(atmp,{"action":action});
+	});
+	return list;
+}
+
 HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var that = this;
 	var requesturl = dispatched_request.request.url;
@@ -260,6 +271,28 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 			fakeLights = this.buildFakeLightList(dispatched_request,undefined);	
 		}
 		break;	
+
+		case "list.commands":
+		{
+			
+			var list = this.listHarmonyCommands(dispatched_request);
+			dispatched_request.dispatchFile(this.plugin.pluginPath , "list_actions.html",
+																	{"actions":list});
+			return;
+
+		}
+		break;
+		
+		case "send.command":
+		{
+			var cmdName = queryObject["action"];
+			if (cmdName) {this.harmonyClient.sendAction(cmdName);}
+			var list = this.listHarmonyCommands(dispatched_request);
+			dispatched_request.dispatchFile(this.plugin.pluginPath , "list_actions.html",
+																	{"actions":list});
+			return;
+		}
+		break;
 
 		default:
 		break;
