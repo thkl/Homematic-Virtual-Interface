@@ -353,6 +353,18 @@ LogicalPlatform.prototype.set_Variables = function(variables,callback) {
 }
 
 
+LogicalPlatform.prototype.executeCCUProgram = function(programName,callback) {
+   var that = this;
+   var script = "var x=dom.GetObject('" + programName + "');if (x){x.ProgramExecute();}"
+   this.regaCommand(script,function (result){
+	   that.log.debug("Launched %s",programName);
+	   callback(result);
+   });
+}
+
+
+
+
 LogicalPlatform.prototype.ccuEvent = function(adress,datapoint,value) {
    this.processSubscriptions(adress,datapoint,value );
 }
@@ -716,6 +728,14 @@ LogicalPlatform.prototype.runScript = function(script, name) {
 		regaCommand : function Sandbox_regaCommand(command) {
 	        return new Promise(function (resolve,reject) {
 				that.regaCommand(command,function(resp){
+					resolve(resp);
+				});
+	        });
+        },
+
+		executeCCUProgram : function Sandbox_executeCCUProgram(programName) {
+	        return new Promise(function (resolve,reject) {
+				that.executeCCUProgram(programName,function(resp){
 					resolve(resp);
 				});
 	        });

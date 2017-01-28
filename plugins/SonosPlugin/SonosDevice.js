@@ -108,10 +108,8 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 				   var url = channel.getParamsetValueWithDefault("MASTER","CMD_PRESS_LONG","");
 				   that.sonos.flush(function (err, flushed) {that.sonos.addSpotifyPlaylist(url,function (err, playing) {that.sonos.play(function (err, playing) {})})});
 				break;
-				
-				
-				default:
-				{
+
+				default: {
 					switch (channel.index) {
 						case "1": 
 							that.sonos.play(function (err, playing) {})

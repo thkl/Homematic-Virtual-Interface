@@ -102,8 +102,10 @@
 	<li><b>getState(Datapoint).then(function (value) {})</b> Will fetch a value for the datapoint an call the function later. Fetches value direct from the interface.</li>
 	<li><b>setValue(Datapoint,newValue)</b> Will set a new Value to the given Datapoint.</li>
 	<li><b>getVariables([Name1,Name2,Namen]).then(function (variables) {})</b> Will fetch the values for given variables from CCU and call the function later its done.</li>
+	<li><b>executeCCUProgram(program).then(function () {})</b> Will launch the named programm at your ccu</li>
 	<li><b>setVariables({"Name1":Value1,"Name2":value2,"NameN":vnalue})</b> Will set new Variable Values</li>
 	<li><b>schedule('m h d M Y', {"name":"SchedulerName"}, function () {})</b> Will schedule a function for the given time. Syntax is like unix cron</li>
+	
 </ul>
 </div>
 	
