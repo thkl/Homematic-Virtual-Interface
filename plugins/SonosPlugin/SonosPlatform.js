@@ -157,7 +157,16 @@ SonosPlatform.prototype.getZoneCoordinator = function(zone, deviceList) {
 
 
 SonosPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",undefined);
+	
+	var listDevices = "";
+	var devtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_device_tmp.html",null);
+
+	this.myDevices().some(function (device){
+		listDevices = listDevices +  dispatched_request.fillTemplate(devtemplate,{"device_name":device["name"],"device_hmdevice":""});
+	});
+	
+	
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listDevices":listDevices});
 }
 
 
