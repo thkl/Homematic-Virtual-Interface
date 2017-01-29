@@ -1115,20 +1115,10 @@ LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 		  case "showlog": {
 			  htmlfile = "log.html"
 			  var logContent;
-			  var backwardsStream = require('fs-backwards-stream')
-			  var s = backwardsStream(this.myLogFile);
-			  var data = '';
-			  	s.on('data',function(buf){
-		  			data += buf.toString()
-  			  	});
-
-			  	s.on('end',function(){
-			  		editorData["content"]=data;
-		  			dispatched_request.dispatchFile(that.plugin.pluginPath , htmlfile ,{"editor":editorData});
-
-  			  	});
-  			  	
-  			  	return;
+			  var data = fs.readFileSync(this.myLogFile);
+			  editorData["content"]=data;
+			  dispatched_request.dispatchFile(that.plugin.pluginPath , htmlfile ,{"editor":editorData});
+			  return;
 
 		  }
 		  
