@@ -15,10 +15,10 @@ var url = require("url");
 var fs = require("fs");
 var regaRequest = require(appRoot + "/HomematicReqaRequest.js");
 
-
 function AlexaPlatform(plugin,name,server,log,instance) {
 	AlexaPlatform.super_.apply(this,arguments);
 	this.alexa_appliances = {};
+	this.hasSettings = true;
 	HomematicDevice = server.homematicDevice;
 }
 
@@ -72,6 +72,12 @@ AlexaPlatform.prototype.init = function() {
     this.socket.on('authenticated', function() {
 	    that.authenticated = true;
 	    that.log.info('Connection changed: AUTHENTICATED');
+	    fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Authentication Passed\r\n');
+	});
+
+    this.socket.on('unauthorized', function() {
+	    that.authenticated = false;
+	    fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Authentication failure. Please check your API Key\r\n');
 	});
 
 
@@ -165,18 +171,42 @@ AlexaPlatform.prototype.init = function() {
 	this.plugin.initialized = true;
 	this.log.info("initialization completed %s",this.plugin.initialized);
 
-	setTimeout(function() {
+	this.reconnectTimer = setTimeout(function() {
 		that.reconnect()
 	} , 1000);
 	
 }
 
+
+AlexaPlatform.prototype.showSettings = function() {
+	var result = [];
+	result.push({"control":"text","name":"api_key","label":"Cloud Api Key","value":this.api_key});
+	return result;
+}
+
+AlexaPlatform.prototype.saveSettings = function(settings) {
+	var that = this
+	var api_key = settings.api_key;
+	if (api_key) {
+		this.api_key = api_key;
+		this.configuration.setValueForPlugin(this.name,"api_key",api_key); 
+		clearTimeout(this.reconnectTimer);
+		this.reconnect();
+	}
+}
+
 AlexaPlatform.prototype.reconnect = function() {
 	var that = this;
-	fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Reconnecting to Cloud Service\r\n');
-	this.socket.disconnect();
-	this.socket.connect(); 
-	setTimeout(function() {
+	if (this.api_key != undefined) {
+		fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Reconnecting to Cloud Service\r\n');
+		var last = this.api_key.slice(-4);
+		fs.appendFileSync(that.myLogFile,new Date() + '[INFO] unsing API-Key : XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX' + last + '\r\n');
+		this.socket.disconnect();
+		this.socket.connect(); 
+	} else {
+		fs.appendFileSync(that.myLogFile,new Date() + '[WARN] No API Key found. Get one at https://console.ksquare.de/alexa \r\n');
+	}
+	this.reconnectTimer = setTimeout(function() {
 		that.reconnect()
 	} , 3600000);
 }

@@ -52,16 +52,6 @@
               <li class="active">
                 <a href="/">Home</a>
               </li>
-              $plugins$
-              
-              <li class="tq">Mehr</li>
-              <li >
-                <a href="/index/?installmode">Install Mode</a>
-              </li>
-              			  <li >
-                <a href="/index/?checkupdate">Auf Update pr&uuml;fen $haz_update$</a>
-              </li>
-
             </ul>
             <hr class="rw aky">
           </div>
@@ -71,7 +61,7 @@
         <div class="apa">
   <div class="apb">
     <h6 class="apd">Homematic Virtual Interface</h6>
-    <h2 class="apc">&Uuml;bersicht</h2>
+    <h2 class="apc">Einstellungen $plugin.name$</h2>
     
   </div>
 </div>
@@ -79,20 +69,22 @@
 <hr class="aky">
 <div class="by">
   <h4 class="ty">
-    Info
+    Einstellungen
   </h4>
-   <div class="ph">$consumer$ aktive Verbindungen ($consumer_detail$)</div>
-   <div class="ph">$message$ <a href="javascript:clean()">Alle Verbindungen entfernen</a></div>
+  <form action="/settings/?plugin=$plugin.name$&op=save" method="post">
+	  $editor$
+	  
+	  
+	   <div class="ph">
+          <span class="dh">
+          <input type="submit" name="submit" value="Speichern" />
+		  <input type="button" value="Abbrechen" onclick="window.location.href='/'" />
+          </span>
+          
 </div>
-
-<div class="by">
-  <h4 class="ty">
-    Aktive Plugins
-  </h4>
-  $pluginSettings$
+  </form>
  </div>
-
-
+ 
       </div>
     </div>
   </div>
@@ -103,7 +95,7 @@
 <script type="text/javascript">
 	    
 	    function clean() {
-		    var answer = confirm("Dies wird alle Sitzungstokens entfernen. Die CCU muss dann neu starte. Sicher ?")
+		    var answer = confirm("This will remove all saved session tokens. You have to reboot your ccu to reconnect. Sure ??")
 			if (answer){
 				window.location.href = "/index/?cleanup"
 			}

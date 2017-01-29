@@ -38,6 +38,7 @@ function HuePlatform(plugin,name,server,log,instance) {
 	this.effectServers={};
 	this.sfxDevice;
 	this.authorized;
+	this.hasSettings = true;
 }
 
 util.inherits(HuePlatform, HomematicVirtualPlatform);
@@ -95,6 +96,26 @@ HuePlatform.prototype.myDevices = function() {
 
 	return result;	
 }
+
+
+HuePlatform.prototype.showSettings = function() {
+	var result = [];
+	var user = this.configuration.getValueForPlugin(this.name,"hue_username")
+	result.push({"control":"text","name":"hue_bridge_ip","label":"Bridge-IP","value":this.hue_ipAdress});
+	result.push({"control":"text","name":"hue_username","label":"Hue User","value":user});
+	return result;
+}
+
+HuePlatform.prototype.saveSettings = function(settings) {
+	var that = this
+	var hue_bridge_ip = settings.hue_bridge_ip;
+	var hue_username = settings.hue_username;
+	if ((hue_bridge_ip) && (hue_username)) {
+		this.hue_ipAdress = hue_bridge_ip;
+		this.configuration.setValueForPlugin(this.name,"hue_bridge_ip",hue_bridge_ip); 
+	}
+}
+
 
 
 HuePlatform.prototype.locateBridge = function (callback) {
