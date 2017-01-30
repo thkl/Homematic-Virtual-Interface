@@ -8,7 +8,7 @@ function loadHMDevices() {
 	var items = [];
 		devicelist = data;
 		$.each( data, function( key, val ) {
-			items.push( "<li id='" + key + "'><a href='#' onClick=\"select_device('"+key+"')\">" + val.device + " / " + val.name + "</a></li>" );
+			items.push( "<li id='" + key + "'><a href='#' onClick=\"select_item('"+key+"',false)\">" + val.device + " / " + val.name + "</a></li>" );
   	});
  
   	var list = $( "<ul/>", {
@@ -26,7 +26,7 @@ function loadCCUPrograms() {
 	var items = [];
 		devicelist = data;
 		$.each( data, function( key, val ) {
-			items.push( "<li id='" + key + "'><a href='#' onClick=\"select_device('"+key+"')\">" + val.device + " / " + val.name + "</a></li>" );
+			items.push( "<li id='" + key + "'><a href='#' onClick=\"select_item('"+key+"',true)\">" + val.device + " / " + val.name + "</a></li>" );
   	});
  
   	var list = $( "<ul/>", {
@@ -46,7 +46,7 @@ function loadVirtDevices() {
 	var items = [];
 		devicelist = data;
 		$.each( data, function( key, val ) {
-			items.push( "<li id='" + key + "'><a href='#' onClick=\"select_device('"+key+"')\">" + val.device + " / " + val.name + "</a></li>" );
+			items.push( "<li id='" + key + "'><a href='#' onClick=\"select_item('"+key+"',false)\">" + val.device + " / " + val.name + "</a></li>" );
   	});
  
   	var list = $( "<ul/>", {
@@ -59,12 +59,15 @@ function loadVirtDevices() {
 
 
 
-function select_device(key) {
-
+function select_item(key,program) {
 	var device = devicelist[key];
 	if (device) {
 		console.log("Found device %s",device.name);
-		document.getElementById("appliance.device_2").innerHTML = device.address	
+		if (program==true) {
+			document.getElementById("appliance.device_2").innerHTML = device.name	
+		} else {
+			document.getElementById("appliance.device_2").innerHTML = device.address	
+		}
 		document.getElementById("appliance.device").value = device.address;
 		document.getElementById("appliance.name").value = device.name;
 		
@@ -74,9 +77,7 @@ function select_device(key) {
 		$.ajax({url: "?do=phrase.list&name="+device.name+"&service="+device.service,context: document.body}).done(function(result) {
 			document.getElementById("phrase_list").innerHTML=result;	
   		});
-		
 	} else {
 		console.log("No Device found for",key);
 	}
-    
 }

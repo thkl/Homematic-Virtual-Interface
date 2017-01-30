@@ -98,7 +98,7 @@ HuePlatform.prototype.myDevices = function() {
 }
 
 
-HuePlatform.prototype.showSettings = function() {
+HuePlatform.prototype.showSettings = function(dispatched_request) {
 	var result = [];
 	var user = this.configuration.getValueForPlugin(this.name,"hue_username")
 	result.push({"control":"text","name":"hue_bridge_ip","label":"Bridge-IP","value":this.hue_ipAdress});

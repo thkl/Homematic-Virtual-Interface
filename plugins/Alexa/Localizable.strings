@@ -1,0 +1,9 @@
+{"strings": {
+	"de-de": {
+		"Cloud Api Key":"Cloud Api Key",
+		"CCU Variable to Enable Alexa (optional)":"CCU Variable um Alexa einzuschalten (optional)",
+		"Please setup as a boolean variable. All alexa events will be ignored if this variable is set to false (0)":"Erstelle eine Variable vom Typ Logikwert. Solange diese Variable falsch (0) ist werden alle Alexa Events ignoriert."
+
+		}
+	}
+}

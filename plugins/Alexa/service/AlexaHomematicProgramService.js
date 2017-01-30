@@ -27,9 +27,11 @@ AlexaHomematicProgramService.prototype.handleEvent = function(event,callback) {
 
 		case "TurnOnRequest" : {
 			console.log(this.homematicDevice);
-			this.sendRega("var x = dom.GetObject('" +  this.homematicDevice + "');if (x) {x.ProgramExecute();}",function (result) {
-				callback("Alexa.ConnectedHome.Control","TurnOnConfirmation");
-			})
+			if (this.homematicDevice.indexOf("")===0) {
+				this.sendRega("var x = dom.GetObject('" +  this.homematicDevice.slice(2) + "');if (x) {x.ProgramExecute();}",function (result) {
+					callback("Alexa.ConnectedHome.Control","TurnOnConfirmation");
+				});
+			}
 		}
 		break;
 

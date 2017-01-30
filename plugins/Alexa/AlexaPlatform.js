@@ -31,7 +31,10 @@ AlexaPlatform.prototype.init = function() {
 	this.myLogFile = this.configuration.storagePath() + "/alexa.log";
 	this.api_key =  this.configuration.getValueForPlugin(this.name,"api_key");
 	this.maxdelta =  this.configuration.getValueForPluginWithDefault(this.name,"max_delta",10000);
+	this.ccu_varname = this.configuration.getValueForPluginWithDefault(this.name,"ccu_varname","");
 	this.authenticated = false;
+	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
+
 	fs.writeFileSync(this.myLogFile, "[INFO] Alexa Plugin launched .. .\r\n");
 
 	if (this.api_key == undefined) {
@@ -131,25 +134,24 @@ AlexaPlatform.prototype.init = function() {
 				
 				default:
 				{
-					var ap_id = alx_message.payload.appliance.applianceId;
-					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Message '+ ap_id + ' ' +  alx_message.header.name + '\r\n');
-					if (ap_id) {
-						var ap_obj = that.alexa_appliances[ap_id];
-						if (ap_obj) {
-							var hms = ap_obj.service;
-							if (hms) {
-								hms.handleEvent(alx_message,function(responseNameSpace,responseName,response_payload){
-									var result = that.generateResponse(responseNameSpace,responseName, response_payload);
-									that.socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {});
-								});
+					if ((that.ccu_varname) && (that.ccu_varname.length>0)) {
+						// Check if the enable Variable is enabled :-)
+						that.log.debug("Checking enabler %s",that.ccu_varname);
+						new regaRequest(that.hm_layer,"var x = dom.GetObject('"+that.ccu_varname+"');if (x) {Write(x.Variable());}",function (result) {
+
+							if (result=="1") {
+								that.processAlexaMessage(alx_message);
+							} else {
+								// Send Failure back to alexa
+								var result = that.generateResponse("Alexa.ConnectedHome.Control","NoSuchTargetError", null);
+								that.socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {});
 							}
+						});
+
 					} else {
-						fs.appendFileSync(that.myLogFile,new Date() + '[WARN] Appliance ' + ap_id + ' was not found or is not alaxa enabled\r\n');
-						that.log.warn("Appliance %s was not found or is not alaxa enabled",ap_id);
+						that.processAlexaMessage(alx_message);
 					}
-					} else {
-						that.log.debug("missed appliance id");
-					}
+					
 				}
 				break;
 			}	
@@ -177,16 +179,55 @@ AlexaPlatform.prototype.init = function() {
 	
 }
 
+AlexaPlatform.prototype.processAlexaMessage = function(alx_message) {
+	var that = this;
+	var ap_id = alx_message.payload.appliance.applianceId;
+	fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Message '+ ap_id + ' ' +  alx_message.header.name + '\r\n');
+	if (ap_id) {
+		var ap_obj = that.alexa_appliances[ap_id];
+		if (ap_obj) {
+			var hms = ap_obj.service;
+			if (hms) {
+				hms.handleEvent(alx_message,function(responseNameSpace,responseName,response_payload){
+				var result = that.generateResponse(responseNameSpace,responseName, response_payload);
+					that.socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {});
+				});
+			}
+		} else {
+			fs.appendFileSync(that.myLogFile,new Date() + '[WARN] Appliance ' + ap_id + ' was not found or is not alaxa enabled\r\n');
+			that.log.warn("Appliance %s was not found or is not alaxa enabled",ap_id);
+		}
+	} else {
+		that.log.debug("missed appliance id");
+	}
+}
 
-AlexaPlatform.prototype.showSettings = function() {
+AlexaPlatform.prototype.showSettings = function(dispatched_request) {
+	this.localization.setLanguage(dispatched_request);
 	var result = [];
-	result.push({"control":"text","name":"api_key","label":"Cloud Api Key","value":this.api_key});
+	result.push({"control":"text","name":"api_key","label":this.localization.localize("Cloud Api Key"),"value":this.api_key,"size":50});
+	result.push({"control":"text",
+					"name":"ccu_varname",
+				   "label":this.localization.localize("CCU Variable to Enable Alexa (optional)"),
+				   "value":this.ccu_varname,
+		     "description":this.localization.localize("Please setup as a boolean variable. All alexa events will be ignored if this variable is set to false (0)")
+	});
 	return result;
 }
 
 AlexaPlatform.prototype.saveSettings = function(settings) {
 	var that = this
 	var api_key = settings.api_key;
+	var ccu_varname = settings.ccu_varname;
+
+	if  (ccu_varname) {
+		this.ccu_varname = ccu_varname;
+		this.configuration.setValueForPlugin(this.name,"ccu_varname",ccu_varname); 
+	} else {
+		this.ccu_varname = "";
+		this.configuration.setValueForPlugin(this.name,"ccu_varname",""); 
+	}
+
 	if (api_key) {
 		this.api_key = api_key;
 		this.configuration.setValueForPlugin(this.name,"api_key",api_key); 
@@ -200,7 +241,7 @@ AlexaPlatform.prototype.reconnect = function() {
 	if (this.api_key != undefined) {
 		fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Reconnecting to Cloud Service\r\n');
 		var last = this.api_key.slice(-4);
-		fs.appendFileSync(that.myLogFile,new Date() + '[INFO] unsing API-Key : XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX' + last + '\r\n');
+		fs.appendFileSync(that.myLogFile,new Date() + '[INFO] using API-Key : XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX' + last + '\r\n');
 		this.socket.disconnect();
 		this.socket.connect(); 
 	} else {
@@ -374,11 +415,17 @@ AlexaPlatform.prototype.generateEditForm = function(dispatched_request) {
 			str_service = str_service + "<option>"+service+"</option>";	
 		}
 	});
+	
+	var appdevice = appliance.id;
+	if (appliance.id.indexOf("P:"===0)) {
+		appdevice = appliance.name;
+	}
 								
-	formData = dispatched_request.fillTemplate(appliance_template,{"appliance.device":appliance.id,
-  																				  "appliance.name":appliance.name,
-  																				  "appliance.service":str_service,
-  																				  "appliance.phrases":phrases});
+	formData = dispatched_request.fillTemplate(appliance_template,{"appliance.device":appdevice,
+																	   "appliance.id":appliance.id,
+  														    		 "appliance.name":appliance.name,
+  																  "appliance.service":str_service,
+  																  "appliance.phrases":phrases});
   																				  
   	return formData;
 }
@@ -450,7 +497,7 @@ AlexaPlatform.prototype.loadHMDevices = function(callback) {
 AlexaPlatform.prototype.loadCCUProgramms = function(callback) {
     var that = this;
     var result_list = {};
-    var script = "string pid;boolean df = true;Write(\'{\"programs\":[\');foreach(pid, dom.GetObject(ID_PROGRAMS).EnumUsedIDs()){var prg = dom.GetObject(pid);if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"name\": \"\' # prg.Name() # \'\"}\');}Write(\"]}\");\";"
+    var script = "string pid;boolean df = true;Write(\'{\"programs\":[\');foreach(pid, dom.GetObject(ID_PROGRAMS).EnumUsedIDs()){var prg = dom.GetObject(pid);if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # pid # \'\",\"name\": \"\' # prg.Name() # \'\"}\');}Write(\"]}\");\";"
     
     new regaRequest(this.server.getBridge(),script,function(result){
 	    
@@ -458,7 +505,7 @@ AlexaPlatform.prototype.loadCCUProgramms = function(callback) {
 		    if (result) {
 		    var jobj = JSON.parse(result);
 		    jobj.programs.forEach(function (program){
-				result_list[program.name] = {"device":program.name,"address":program.name,"name":program.name,"service":"AlexaHomematicProgramService"};   
+				result_list["P:" + program.id] = {"device":program.name,"address":"P:" + program.id,"name":program.name,"service":"AlexaHomematicProgramService"};   
 			});
 			}  
 	    } catch (e) {
@@ -613,9 +660,14 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 
 		Object.keys(this.alexa_appliances).forEach(function (key) {
 		var appliance = that.alexa_appliances[key];
-		deviceList = deviceList + dispatched_request.fillTemplate(appliance_template,{"appliance.device":appliance.id,
-  																					  "appliance.name":appliance.name,
-																					  "appliance.service":appliance.service_name});
+		var appdevice = appliance.id;
+		if (appliance.id.indexOf("P:"===0)) {
+			appdevice = appliance.name;
+		}
+		deviceList = deviceList + dispatched_request.fillTemplate(appliance_template,{"appliance.id":appliance.id,
+																				  "appliance.device":appdevice,
+  																			   	    "appliance.name":appliance.name,
+																			     "appliance.service":appliance.service_name});
 		});
 
 	}
