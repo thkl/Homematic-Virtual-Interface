@@ -179,6 +179,12 @@ AlexaPlatform.prototype.init = function() {
 	
 }
 
+
+AlexaPlatform.prototype.shutdown = function() {
+	this.log.debug("Alexa Plugin Shutdown");
+	this.socket.disconnect();
+}
+
 AlexaPlatform.prototype.processAlexaMessage = function(alx_message) {
 	var that = this;
 	var ap_id = alx_message.payload.appliance.applianceId;

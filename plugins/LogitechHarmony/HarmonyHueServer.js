@@ -136,7 +136,6 @@ bus.on('transport:incoming-message', function (message, remote) {
 };
 
 
-
 HarmonyHueServer.prototype.initFakeLights = function() {
   if (this.initFake==true) {
 		return;
@@ -256,8 +255,10 @@ HarmonyHueServer.prototype.getIPAddress = function() {
 
 HarmonyHueServer.prototype.shutdown = function() {
 	this.log.info("HarmonyHueServer Server Shutdown");
-	this.bus.stop(function (error) {});
+	try {		
 	this.server.close();
+	this.bus.stop(function (error) {});
+    } catch (e) {}
 }
 
 HarmonyHueServer.prototype.handleRequest = function(dispatched_request) {

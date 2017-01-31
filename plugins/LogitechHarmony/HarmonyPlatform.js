@@ -45,6 +45,12 @@ HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
   return result;
 }
 
+HarmonyPlatform.prototype.shutdown = function() {
+	this.log.debug("Harmony Plugin Shutdown");
+	this.harmonyServer.shutdown();
+}
+
+
 HarmonyPlatform.prototype.updateFakeLight = function(newflo) {
   var that = this;
   this.log.debug("Updating Object %s",JSON.stringify(newflo));

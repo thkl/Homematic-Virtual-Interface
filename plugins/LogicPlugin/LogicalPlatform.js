@@ -155,6 +155,17 @@ LogicalPlatform.prototype.init = function() {
 	this.reInitScripts();
 }
 
+LogicalPlatform.prototype.shutdown = function() {
+	this.log.debug("Logic Plugin Shutdown");
+	Object.keys(scheduler.scheduledJobs).forEach(function(job){
+	   scheduler.cancelJob(job); 
+    });
+    this.client.methodCall("init", ["http://" + localIP + ":" + port , null ], function(error, value) {
+      that.log.debug("CCU Event listener removed (Yes we are good citicens) Error : (%s)",JSON.stringify(value) , error);
+    });
+    
+}
+
 
 LogicalPlatform.prototype.regaCommand = function(script,callback) {
   new regarequest(this.hm_layer,script,callback);

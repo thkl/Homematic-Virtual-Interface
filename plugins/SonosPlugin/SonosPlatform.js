@@ -55,6 +55,14 @@ SonosPlatform.prototype.init = function() {
 	
 }
 
+SonosPlatform.prototype.shutdown = function() {
+	this.log.debug("Sonos Plugin Shutdown");
+	this.devices.some(function (device){
+		device.shutdown();
+	})
+}
+
+
 SonosPlatform.prototype.addZonePlayer = function(host) {
   var that = this;
  

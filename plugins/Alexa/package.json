@@ -20,7 +20,6 @@
   
   "dependencies": {
     "socket.io-client": "^1.5.0",
-    "uuid":"latest",
-    "socketio-auth":"0.1.0"
+    "uuid":"latest"
   }
 }

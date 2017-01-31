@@ -16,18 +16,18 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 
     // Add Event Handler
     
-    var x = this.sonos.getEventListener();
-	x.listen(function (err) {
+    this.player = this.sonos.getEventListener();
+	this.player.listen(function (err) {
 
-		x.addService('/MediaRenderer/AVTransport/Event', function (error, sid) {
+		that.player.addService('/MediaRenderer/AVTransport/Event', function (error, sid) {
 			that.log.debug('Successfully subscribed, with subscription id', sid)
   		});
 
-  		x.addService('/MediaRenderer/RenderingControl/Event', function (error, sid) {
+  		that.player.addService('/MediaRenderer/RenderingControl/Event', function (error, sid) {
 			that.log.debug('Successfully subscribed, with subscription id', sid)
   		});
 
-  		x.on('serviceEvent', function (endpoint, sid, event) {
+  		that.player.on('serviceEvent', function (endpoint, sid, event) {
 	  		
 	  		if (event.name == "RenderingControlEvent") {
 				if (event.volume.Master) {
@@ -164,6 +164,13 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 		    
 	    }
 	});
+}
+
+SonosDevice.prototype.shutdown = function() {
+  try {	
+   this.player.removeService('/MediaRenderer/AVTransport/Event', function (error, sid) {});
+   this.player.removeService('/MediaRenderer/RenderingControl/Event', function (error, sid) {});
+  } catch (e) {}
 }
 
 SonosDevice.prototype.functionForChannel=function(type,channel) {
