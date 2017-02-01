@@ -3,7 +3,10 @@
 
 var path = require('path');
 var appRoot = path.dirname(require.main.filename);
+var fs = require("fs");
+
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
+if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
 
@@ -12,7 +15,6 @@ var xmlrpc = require(appRoot + "/homematic-xmlrpc");
 var uuid = require('uuid');
 var HomematicDevice;
 var url = require("url");
-var fs = require("fs");
 var regaRequest = require(appRoot + "/HomematicReqaRequest.js");
 
 function AlexaPlatform(plugin,name,server,log,instance) {

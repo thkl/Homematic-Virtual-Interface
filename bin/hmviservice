@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+
+//
+// This executable sets up the environment and runs the Homematic Virtual Interface Core as a Service.
+//
+
+'use strict';
+
+process.title = 'homematic_virtual_interface';
+
+// Find the lib
+var path = require('path');
+var fs = require('fs');
+var lib = path.join(path.dirname(fs.realpathSync(__filename)), '../lib/');
+
+var daemon = require("daemonize2").setup({
+    main: lib + "index.js",
+    name: "HMVirtual",
+    pidfile: "hmvi.pid"
+});
+
+var fs = require('fs');
+
+switch (process.argv[2]) {
+
+    case "start":
+        daemon.start();
+        break;
+
+    case "stop":
+        daemon.stop();
+        break;
+
+    case "kill":
+        daemon.kill();
+        break;
+
+    case "restart":
+        daemon.stop(function(err) {
+            daemon.start();
+        });
+        break;
+
+    case "status":
+        var pid = daemon.status();
+        if (pid)
+            console.log("Daemon running. PID: " + pid);
+        else
+            console.log("Daemon is not running.");
+        break;
+
+    default:
+        console.log("Usage: [start|stop|kill|restart|status]");
+}

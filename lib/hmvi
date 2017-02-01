@@ -11,8 +11,13 @@
 
 
 dir="/home/pi/Homematic-Virtual-Interface"
-cmd="bin/hmvi"
+cmd="bin/hmviservice"
 user="pi"
+
+sudo -u "$user" $dir/$cmd $1
+exit 0
+
+#this is old stuff since we used the daemonizer now
 
 name=`basename $0`
 pid_file="/var/run/$name.pid"
@@ -35,9 +40,9 @@ case "$1" in
         echo "Starting $name"
         cd "$dir"
         if [ -z "$user" ]; then
-            sudo $cmd >> "$stdout_log" 2>> "$stderr_log" &
+            sudo $cmd $1 >> "$stdout_log" 2>> "$stderr_log" &
         else
-            sudo -u "$user" $cmd >> "$stdout_log" 2>> "$stderr_log" &
+            sudo -u "$user" $cmd $1 >> "$stdout_log" 2>> "$stderr_log" &
         fi
         echo $! > "$pid_file"
         if ! is_running; then
