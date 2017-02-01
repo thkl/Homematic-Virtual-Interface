@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -10,13 +13,14 @@
 
     <title>
       
-        Homematic Virtual Interface Core
+        Homematic Virtual Layer Service
       
     </title>
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
-    <link href="/assets/css/toolkit-inverse.css" rel="stylesheet">
-    <link href="/assets/css/application.css" rel="stylesheet">
+    <link href="../assets/css/bootstrap.css" rel="stylesheet">
+    <link href="../assets/css/toolkit-inverse.css" rel="stylesheet">
+    <link href="../assets/css/application.css" rel="stylesheet">
 
     <style>
       /* note: this is a hack for ios iframe for bootstrap themes shopify page */
@@ -46,15 +50,9 @@
           <div class="collapse and" id="nav-toggleable-sm">
             <ul class="nav of nav-stacked">
               <li class="tq">Plugins</li>
-              <li class="active">
+              <li>
                 <a href="/">Home</a>
               </li>
-              $plugins$
-              
-              <li class="tq">Mehr</li>
-              <li ><a href="/service.html">Service Mode</a></li>
-              </li>
-
             </ul>
             <hr class="rw aky">
           </div>
@@ -63,52 +61,50 @@
       <div class="hc aps">
         <div class="apa">
   <div class="apb">
-    <h6 class="apd">Homematic Virtual Interface</h6>
-    <h2 class="apc">&Uuml;bersicht</h2>
-    
+    <h6 class="apd">Homematic Virtual Layer</h6>
+    <h2 class="apc">Service</h2>
   </div>
 </div>
 
 <hr class="aky">
-<div class="by">
-  <h4 class="ty">
-    Info
-  </h4>
-   <div class="ph">$consumer$ aktive Verbindungen ($consumer_detail$)</div>
-   <div class="ph">$message$ <a href="javascript:clean()">Alle Verbindungen entfernen</a></div>
+
+<div class="by row">
+   <span class="ph row"> 
+   	<h4 class="col-md-12">Service</h4>
+   </span>
+
+   <a class="ph row" href="#">
+          <span class="dh col-md-3">Install Mode einschalten</span>
+          <span class="dh col-md-6"><input type="button" value="Install Mode" onclick="window.location.href='/index/?installmode'"/></span>  
+   </a>
+
+   <a class="ph row" href="#">
+          <span class="dh col-md-3">Update</span>
+          <span class="dh col-md-6"><input type="button" value="Auf Update prüfen" onclick="window.location.href='/index/?checkupdate'"/></span>  
+   </a>
+
+   <a class="ph row" href="#">
+	  <form action="/remove/" method="get"> 
+	   
+          <span class="dh col-md-3">Gerät aus der CCU entfernen:</span>
+
+          <span class="dh col-md-6"><input name = "adr" /></span>
+		  <span class="dh col-md-3"><input type="submit" value="Löschen"/></span>  
+      </form>
+   </a>
 </div>
 
-<div class="by">
-  <h4 class="ty">
-    Aktive Plugins
-  </h4>
-  $pluginSettings$
- </div>
 
-
-      </div>
+</div>
+  </div>
     </div>
   </div>
 
 </div>
 
 
-<script type="text/javascript">
-	    
-	    function clean() {
-		    var answer = confirm("Dies wird alle Sitzungstokens entfernen. Die CCU muss dann neu starte. Sicher ?")
-			if (answer){
-				window.location.href = "/index/?cleanup"
-			}
-	    }
-	    
-    </script>
-
-
     <script src="/assets/js/jquery.min.js"></script>
     <script src="/assets/js/bootstrap.min.js" type="text/javascript"></script>
-
-
   </body>
 </html>
 
