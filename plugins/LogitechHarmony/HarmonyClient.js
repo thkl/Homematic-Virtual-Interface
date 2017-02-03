@@ -170,6 +170,22 @@ HarmonyClient.prototype.listActions = function() {
   return result;
 }
 
+HarmonyClient.prototype.myDevices = function() {
+	// return my Devices here
+	var result = [];
+	
+	this.hmDevice.channels.forEach(function(channel){
+		
+		var name = channel.getParamsetValue("MASTER","CMD_PRESS_LONG");
+		if ((name!=undefined) && (name.length>0)) {
+			result.push({"id":channel.adress,"name":name,"type":"HARMONY"});
+		}		
+	});
+
+	return result;	
+}
+
+
 HarmonyClient.prototype.do_sendAction = function(device,actionGroup,actionName) {
 	var that = this;
 	var action = this.getHarmonyAction(device.controlGroup,actionGroup,actionName);

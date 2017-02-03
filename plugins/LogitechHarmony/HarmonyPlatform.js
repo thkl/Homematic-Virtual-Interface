@@ -74,6 +74,9 @@ HarmonyPlatform.prototype.updateFakeLight = function(newflo) {
   this.config.setPersistValueForPlugin(this.name,"fakelights",JSON.stringify(nobjects));
 }
 
+HarmonyPlatform.prototype.myDevices = function() {
+	return this.harmonyClient.myDevices();
+}
 
 
 HarmonyPlatform.prototype.addFakeLight = function(flo) {
