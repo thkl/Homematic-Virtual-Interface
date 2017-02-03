@@ -1,6 +1,6 @@
 {
 	"handler":["AlexaHomematicDimmerService","AlexaLogicService","AlexaHomematicSwitchService","AlexaSonosService","AlexaHomematicThermostatService","AlexaHueService",
-	"AlexaHomematicProgramService","AlexaHarmonyService"],
+	"AlexaHomematicProgramService","AlexaHarmonyDeviceService","AlexaHarmonyActivityService"],
 	
 	"hm_device_settings" : {
 		
@@ -12,6 +12,7 @@
 		"HUELIGHT" : "AlexaHueService",
 		"HUEGROUP" : "AlexaHueService",
 		"SONOS" : "AlexaSonosService",
-		"HARMONY" : "AlexaHarmonyService"
+		"HARMONY" : "AlexaHarmonyActivityService",
+		"HARMONYDEVICE" : "AlexaHarmonyDeviceService"
 	}
 }

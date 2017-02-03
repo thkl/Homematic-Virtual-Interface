@@ -87,14 +87,18 @@ HuePlatform.prototype.myDevices = function() {
 	// return my Devices here
 	var result = [];
 	
+	result.push({"id":"sep-hued","name":"--------- Hue Lights ---------","type":"seperator"});
+
 	this.lights.forEach(function(light){
 		result.push({"id":light["hm_device_name"],"name":light["name"],"type":"HUELIGHT"});
 	});
-
-	this.groups.forEach(function(group){
-		result.push({"id":group["hm_device_name"],"name":group["name"],"type":"HUEGROUP"});
-	});
-
+	
+	if (this.groups.length>0) {
+		result.push({"id":"sep-hueg","name":"--------- Hue Groups ---------","type":"seperator"});
+		this.groups.forEach(function(group){
+			result.push({"id":group["hm_device_name"],"name":group["name"],"type":"HUEGROUP"});
+		});
+	}
 	return result;	
 }
 

@@ -21,6 +21,7 @@ function AlexaPlatform(plugin,name,server,log,instance) {
 	AlexaPlatform.super_.apply(this,arguments);
 	this.alexa_appliances = {};
 	this.hasSettings = true;
+	this.server = server;
 	HomematicDevice = server.homematicDevice;
 }
 
@@ -313,6 +314,7 @@ AlexaPlatform.prototype.add_appliance = function(id,name,hmService,virtual) {
   var service = require ('./service/' + hmService);
   var hms = new service(id,this.client,this.log,this.hm_layer);
   hms.alexaname = name;
+  hms.server = this.server;
 
   var al_ap = {"applianceId":id,
 	  "manufacturerName":"ksquare.de",
@@ -536,8 +538,8 @@ AlexaPlatform.prototype.loadVirtualDevices = function(callback) {
 		  var devices = platform.myDevices();
 		  if (devices) {
 		 	devices.forEach(function (device){
-			    var service = that.channelService(device.type);
-				result_list[device.id] = {"device":device.name,"address":device.id,"name":device.name,"service":service}; 			  
+			 	var service = that.channelService(device.type);
+				result_list[device.id] = {"device":device.name,"address":(service) ? device.id:"","name":device.name,"service":(service)?service:""}; 			  
 		  	});
 		  }
 		 }

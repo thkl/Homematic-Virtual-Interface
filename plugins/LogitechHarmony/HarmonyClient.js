@@ -12,6 +12,7 @@
 
 var harmony = require('harmonyhubjs-client');
 var HomematicDevice;
+const util = require('util');
 
 var HarmonyClient = function (plugin) {
 	this.name = plugin.name;
@@ -173,7 +174,10 @@ HarmonyClient.prototype.listActions = function() {
 HarmonyClient.prototype.myDevices = function() {
 	// return my Devices here
 	var result = [];
-	
+	var that = this;
+
+	result.push({"id":"sep-ha","name":"--------- Harmony Activities ---------","type":"seperator"});
+
 	this.hmDevice.channels.forEach(function(channel){
 		
 		var name = channel.getParamsetValue("MASTER","CMD_PRESS_LONG");
@@ -181,6 +185,18 @@ HarmonyClient.prototype.myDevices = function() {
 			result.push({"id":channel.adress,"name":name,"type":"HARMONY"});
 		}		
 	});
+
+	result.push({"id":"sep-hd","name":"--------- Harmony Devices ---------","type":"seperator"});
+	this.harmonyDevices.some(function (device){
+	  device.controlGroup.some(function (action_group){
+		  action_group["function"].some(function (action) {
+			var ac = JSON.parse(action.action);
+			that.log.debug("EC " , action.action.replace(/\:/g, '::'));
+			var encodedAction = that.name+":" + ac["type"]+":"+ac["deviceId"] +":"+ac["command"];
+			result.push({"id":encodedAction,"name":device.label + "." + action_group.name + "." + action.name,"device":"","type":"HARMONYDEVICE"}); 
+		  });
+	  });
+  	});
 
 	return result;	
 }
@@ -213,6 +229,27 @@ HarmonyClient.prototype.do_sendAction = function(device,actionGroup,actionName) 
 		that.log.debug("Action %s not found available actions are %s",actionName,actions);
 	}
 }
+
+HarmonyClient.prototype.do_sendRawAction = function(rawAction) {
+	var that = this;
+	var cmds = rawAction.split(":");
+	if (cmds.length==4) {
+   			// Action is plugin:type:deviceid:command
+			// will transformed into {"command"::"OK","type"::"IRCommand","deviceId"::"40208180"}
+		var encodedAction = util.format('{"command"::"%s","type"::"%s","deviceId"::"%s"}', cmds[3],cmds[1],cmds[2]);
+
+		harmony(this.hubIP).then(function(harmonyClient) {
+			that.log.debug("Send Action %s",encodedAction);
+			return harmonyClient.send('holdAction', 'action=' + encodedAction + ':status=press')
+		.finally(function () {
+        	harmonyClient.end();
+			}).catch(function (e) {
+				that.log.error(e.stack);
+  			})
+  		});
+	}
+}
+
 
 
 HarmonyClient.prototype.getChannelForActivity = function(acId) {

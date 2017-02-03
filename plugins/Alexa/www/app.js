@@ -61,7 +61,7 @@ function loadVirtDevices() {
 
 function select_item(key,program) {
 	var device = devicelist[key];
-	if (device) {
+	if ((device) && (device.service.length>0)) {
 		console.log("Found device %s",device.name);
 		if (program==true) {
 			document.getElementById("appliance.device_2").innerHTML = device.name	

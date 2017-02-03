@@ -80,7 +80,8 @@ SonosPlatform.prototype.addZonePlayer = function(host) {
 SonosPlatform.prototype.myDevices = function() {
 	// return my Devices here
 	var result = [];
-	
+	result.push({"id":"sep-son","name":"--------- Sonos Devices ---------","type":"seperator"});
+
 	this.devices.forEach(function(device){
 		result.push({"id":device["playername"],"name":device["playername"],"type":"SONOS"});
 	});

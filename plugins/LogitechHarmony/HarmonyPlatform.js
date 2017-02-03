@@ -79,6 +79,10 @@ HarmonyPlatform.prototype.myDevices = function() {
 }
 
 
+HarmonyPlatform.prototype.sendClientAction = function(actionname) {
+	return this.harmonyClient.do_sendRawAction(actionname);
+}
+
 HarmonyPlatform.prototype.addFakeLight = function(flo) {
   var flobjects = this.getFakeLights();
   this.log.debug("Add New Light to existing %s",flobjects.length)
