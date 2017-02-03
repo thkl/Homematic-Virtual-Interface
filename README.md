@@ -2,6 +2,9 @@
 this is a virtual Interface for Homematic CCU.
 You may add serval plugins to connect other devices to your CCU
 
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EF3ZNY8CJMQZJ"><img style="padding:0;" width=74 height=21  src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Donate!" / border="0"></a>
+
+
 
 This is work in progress.
 
