@@ -311,36 +311,43 @@ AlexaPlatform.prototype.get_appliances = function() {
 
 AlexaPlatform.prototype.add_appliance = function(id,name,hmService,virtual) {
 
-  var service = require ('./service/' + hmService);
-  var hms = new service(id,this.client,this.log,this.hm_layer);
-  hms.alexaname = name;
-  hms.server = this.server;
+  try {
+	  var service = require ('./service/' + hmService);
+	  var hms = new service(id,this.client,this.log,this.hm_layer);
+	  hms.alexaname = name;
+	  hms.server = this.server;
 
-  var al_ap = {"applianceId":id,
-	  "manufacturerName":"ksquare.de",
-	  "modelName" : "Homematic Actor",
-	  "version": "1",
-	  "friendlyName": name,
-	  "friendlyDescription": hms.getType() ,
-	  "isReachable": true,
-	  "additionalApplianceDetails": {
-          "fullApplianceId": uuid.v1()
+	  var al_ap = {"applianceId":id,
+	  	"manufacturerName":"ksquare.de",
+	  	"modelName" : "Homematic Actor",
+	  	"version": "1",
+	  	"friendlyName": name,
+	  	"friendlyDescription": hms.getType() ,
+	  	"isReachable": true,
+	  	"additionalApplianceDetails": {
+        	  "fullApplianceId": uuid.v1()
       }
   }
   
   al_ap["actions"] = hms.getActions();
   this.alexa_appliances[id] = {"alexa":al_ap,"service":hms,"id":id,"name":name,"service_name":hmService,"isVirtual":virtual || false};
   return hms;
+  } catch (error) {
+	this.log.error("Service %s not found",hmService);
+	return undefined;
+  }
 }
 
 
 AlexaPlatform.prototype.add_virtual_appliance = function(id,name,hmService) {
-	var hmDevice = new HomematicDevice();
-	hmDevice.initWithType("HM-LC-Sw1-Pl", id );
-	this.hm_layer.addDevice(hmDevice,false,true); // Hide device from CCU
-	
 	var hms = this.add_appliance(id,name,hmService,true);
-	hms.virtual_device = hmDevice;
+	
+	if (hms) {
+		var hmDevice = new HomematicDevice();
+		hmDevice.initWithType("HM-LC-Sw1-Pl", id );
+		this.hm_layer.addDevice(hmDevice,false,true); // Hide device from CCU
+		hms.virtual_device = hmDevice;
+	}
 }
 
 AlexaPlatform.prototype.save_appliances = function(callback) {
