@@ -37,7 +37,7 @@ AlexaHarmonyDeviceService.prototype.handleEvent = function(event,callback) {
 					   var splugin = this.server.pluginWithName(pluginName);
 					   if (splugin!=undefined) {
 							splugin.platform.sendClientAction(command);
-							callback("Alexa.ConnectedHome.Control","TurnOnConfirmation");
+							callback("Alexa.ConnectedHome.Control",(event.header.name=="TurnOnRequest") ? "TurnOnConfirmation" : "TurnOffConfirmation");
 							return;
 						} 
 					}
