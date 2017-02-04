@@ -14,8 +14,10 @@ var path = require('path');
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
 if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
+appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var logicLogger = require(appRoot + "/logger.js")("LogicLogger");
 
 
 var xmlrpc = require(appRoot + "/homematic-xmlrpc");
@@ -70,9 +72,8 @@ LogicalPlatform.prototype.init = function() {
 	this.log.info("Init %s",this.name);
 	var port = this.configuration.getValueForPluginWithDefault(this.name,"bridge_port",7002);
 	var localIP = this.hm_layer.getIPAddress();
-	this.myLogFile = this.configuration.storagePath() + "/hmvi_script.log";
 	
-	fs.writeFileSync(this.myLogFile, "[INFO] Logical Bridge is starting\r\n");
+	logicLogger.info("Logical Bridge is starting");
 	
 	this.server = xmlrpc.createServer({
       host: localIP,
@@ -593,7 +594,7 @@ LogicalPlatform.prototype.runScript = function(script, name) {
                 var args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 that.log.debug.apply(that.log, args);
-                fs.appendFileSync(that.myLogFile,new Date() + '[DEBUG] ' + args+"\r\n");
+                logicLogger.debug(args.toString());
             },
             /**
              * Log an info message
@@ -605,7 +606,7 @@ LogicalPlatform.prototype.runScript = function(script, name) {
                 var args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 that.log.info.apply(that.log, args);
-                fs.appendFileSync(that.myLogFile,new Date() + '[INFO] ' + args+"\r\n");
+                logicLogger.info(args.toString());
             },
             /**
              * Log a warning message
@@ -617,7 +618,7 @@ LogicalPlatform.prototype.runScript = function(script, name) {
                 var args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 that.log.warn.apply(that.log, args);
-                fs.appendFileSync(that.myLogFile,new Date() + '[WARN] ' + args+"\r\n");
+                logicLogger.warn(args.toString());
             },
             /**
              * Log an error message
@@ -629,7 +630,7 @@ LogicalPlatform.prototype.runScript = function(script, name) {
                 var args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 that.log.error.apply(that.log, args);
-                fs.appendFileSync(that.myLogFile,new Date()+  '[ERROR] ' + args+"\r\n");
+                logicLogger.error(args.toString());
             }
         },
         
@@ -1126,10 +1127,27 @@ LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 
 		  case "showlog": {
 			  htmlfile = "log.html"
-			  var logContent;
-			  var data = fs.readFileSync(this.myLogFile);
-			  editorData["content"]=data;
-			  dispatched_request.dispatchFile(that.plugin.pluginPath , htmlfile ,{"editor":editorData});
+			  
+			  var options = {
+					start:  0,
+					rows: 9999999,
+					order:  'desc',
+					fields: ['message','label','level','timestamp']
+				};
+				
+				logicLogger.query(options, function (err, result) {
+					var str = "";
+					result.dailyRotateFile.some(function (msg){
+						if (msg.label==="LogicLogger") {
+							
+							str = str + msg.timestamp  + "  [" + msg.level + "] - " + msg.message + "\n";
+						}
+					})
+					
+					editorData["content"]=str;
+					dispatched_request.dispatchFile(that.plugin.pluginPath , htmlfile ,{"editor":editorData});
+ 			  	});
+			  
 			  return;
 
 		  }

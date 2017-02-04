@@ -7,8 +7,10 @@ var fs = require("fs");
 
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
 if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
+appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var alexaLogger = require(appRoot + "/logger.js")("AlexaEvent");
 
 var util = require("util");
 var xmlrpc = require(appRoot + "/homematic-xmlrpc");
@@ -31,14 +33,13 @@ util.inherits(AlexaPlatform, HomematicVirtualPlatform);
 AlexaPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
-	this.myLogFile = this.configuration.storagePath() + "/alexa.log";
 	this.api_key =  this.configuration.getValueForPlugin(this.name,"api_key");
 	this.maxdelta =  this.configuration.getValueForPluginWithDefault(this.name,"max_delta",10000);
 	this.ccu_varname = this.configuration.getValueForPluginWithDefault(this.name,"ccu_varname","");
 	this.authenticated = false;
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 
-	fs.writeFileSync(this.myLogFile, "[INFO] Alexa Plugin launched .. .\r\n");
+	alexaLogger.info("Alexa Plugin launched ..");
 
 	if (this.api_key == undefined) {
 		this.log.error("Missing api_key ... you can get one from https://console.ksquare.de/alexa");
@@ -58,8 +59,8 @@ AlexaPlatform.prototype.init = function() {
     this.reloadApplicances();
 	
 	this.log.info("Cloud Login with Api Key XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX");
-	
-	fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Connecting to Cloud Service\r\n');
+	alexaLogger.info("Connecting to Cloud Service");
+
 
 	this.socket = require('socket.io-client')('https://console.ksquare.de:3000',{
         rejectUnauthorized: false,
@@ -78,18 +79,18 @@ AlexaPlatform.prototype.init = function() {
     this.socket.on('authenticated', function() {
 	    that.authenticated = true;
 	    that.log.info('Connection changed: AUTHENTICATED');
-	    fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Authentication Passed\r\n');
+	    alexaLogger.info("Authentication Passed");
 	});
 
     this.socket.on('unauthorized', function() {
 	    that.authenticated = false;
-	    fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Authentication failure. Please check your API Key\r\n');
+	    alexaLogger.info("Authentication failure. Please check your API Key");
 	});
 
 
     this.socket.on('disconnect', function () {
  	    that.authenticated = false;
-       that.log.info('Connection changed: DISCONNECTED');
+        that.log.info('Connection changed: DISCONNECTED');
     });
 
     this.socket.on('error', function (error){
@@ -104,7 +105,7 @@ AlexaPlatform.prototype.init = function() {
 			var myTime = new Date().getTime();
 			var delta = timestamp-myTime;
 			if ((delta < (0-that.maxdelta)) || (delta>that.maxdelta)) {
-				fs.appendFileSync(that.myLogFile,new Date() + '[WARN] Drop Message. Timestamp is out of range.\r\n');
+				alexaLogger.info("Drop Message. Timestamp is out of range.");
 				that.log.warn("Drop Message because timestamp is out of range %s. Please take care of your clock !!.",that.maxdelta);
 				return;
 			}
@@ -114,7 +115,7 @@ AlexaPlatform.prototype.init = function() {
 			
 				case "DiscoverAppliancesRequest" : {
 					that.log.info("Discover Request");
-					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Discovery Event\r\n');
+					alexaLogger.info("Alexa Discovery Event");
 
 					var result = that.generateResponse("Alexa.ConnectedHome.Discovery","DiscoverAppliancesResponse", {"discoveredAppliances":that.get_appliances()});
 					that.log.info(result);
@@ -125,7 +126,7 @@ AlexaPlatform.prototype.init = function() {
 				break;
 				
 				case "HealthCheckRequest" : {
-					fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Ping Event\r\n');
+					alexaLogger.info("Alexa Ping Event");
 					var result = that.generateResponse("Alexa.ConnectedHome.System","HealthCheckResponse", {"description":"Iam alive","isHealthy":true});
 					that.log.info(result);
 					that.socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {
@@ -191,7 +192,7 @@ AlexaPlatform.prototype.shutdown = function() {
 AlexaPlatform.prototype.processAlexaMessage = function(alx_message) {
 	var that = this;
 	var ap_id = alx_message.payload.appliance.applianceId;
-	fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Alexa Message '+ ap_id + ' ' +  alx_message.header.name + '\r\n');
+	alexaLogger.info("Alexa Message "+ ap_id + " " +  alx_message.header.name);
 	if (ap_id) {
 		var ap_obj = that.alexa_appliances[ap_id];
 		if (ap_obj) {
@@ -203,7 +204,7 @@ AlexaPlatform.prototype.processAlexaMessage = function(alx_message) {
 				});
 			}
 		} else {
-			fs.appendFileSync(that.myLogFile,new Date() + '[WARN] Appliance ' + ap_id + ' was not found or is not alaxa enabled\r\n');
+			alexaLogger.info("Appliance " + ap_id + " was not found or is not alaxa enabled");
 			that.log.warn("Appliance %s was not found or is not alaxa enabled",ap_id);
 		}
 	} else {
@@ -248,13 +249,13 @@ AlexaPlatform.prototype.saveSettings = function(settings) {
 AlexaPlatform.prototype.reconnect = function() {
 	var that = this;
 	if (this.api_key != undefined) {
-		fs.appendFileSync(that.myLogFile,new Date() + '[INFO] Reconnecting to Cloud Service\r\n');
+		alexaLogger.info("Reconnecting to Cloud Service");
 		var last = this.api_key.slice(-4);
-		fs.appendFileSync(that.myLogFile,new Date() + '[INFO] using API-Key : XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX' + last + '\r\n');
+		alexaLogger.info("using API-Key : XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX" + last);
 		this.socket.disconnect();
 		this.socket.connect(); 
 	} else {
-		fs.appendFileSync(that.myLogFile,new Date() + '[WARN] No API Key found. Get one at https://console.ksquare.de/alexa \r\n');
+		alexaLogger.info("No API Key found. Get one at https://console.ksquare.de/alexa \r\n");
 	}
 	this.reconnectTimer = setTimeout(function() {
 		that.reconnect()
@@ -656,10 +657,23 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 			break;
 			
 			case "showlog": {
-
-			  fs.readFile(this.myLogFile, 'utf8', function(err, data) {
-	 			dispatched_request.dispatchFile(that.plugin.pluginPath , "log.html" ,{"logData":data});
- 			  });
+				
+				var options = {
+					start:  0,
+					rows: 9999999,
+					order:  'desc',
+					fields: ['message','label','level','timestamp']
+				};
+				
+				alexaLogger.query(options, function (err, result) {
+					var str = "";
+					result.dailyRotateFile.some(function (msg){
+						if (msg.label==="AlexaEvent") {
+							str = str + msg.timestamp  + "  [" + msg.level + "] - " + msg.message + "\n";
+						}
+					})
+	 				dispatched_request.dispatchFile(that.plugin.pluginPath , "log.html" ,{"logData":str});
+ 			  	});
 
 			  return;		  
 			}

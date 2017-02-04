@@ -11,8 +11,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var Logger = require(__dirname + '/../../lib/Log.js').Logger;
-var logger =  Logger.withPrefix("HueEffectServer");
+var logger = require(__dirname + "/../../lib/logger.js")("HueEffectServer");
 
 var HueEffectServer = function (platform,name) {
 	this.name = name;

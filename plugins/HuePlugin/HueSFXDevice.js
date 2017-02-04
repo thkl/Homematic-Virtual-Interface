@@ -1,8 +1,6 @@
 "use strict";
 var HomematicDevice;
-var Logger = require(__dirname + '/../../lib/Log.js').Logger;
-var logger =  Logger.withPrefix("HueSFXDevice");
-
+var logger = require(__dirname + "/../../lib/logger.js")("HueSFXDevice");
 
 var HueSFXDevice = function(plugin) {
 	this.plugin = plugin;
