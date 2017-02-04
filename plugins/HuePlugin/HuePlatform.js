@@ -86,7 +86,7 @@ HuePlatform.prototype.init = function() {
 HuePlatform.prototype.myDevices = function() {
 	// return my Devices here
 	var result = [];
-	
+	var that = this;
 	result.push({"id":"sep-hued","name":"--------- Hue Lights ---------","type":"seperator"});
 
 	this.lights.forEach(function(light){
@@ -99,6 +99,15 @@ HuePlatform.prototype.myDevices = function() {
 			result.push({"id":group["hm_device_name"],"name":group["name"],"type":"HUEGROUP"});
 		});
 	}
+	
+	if (this.sceneManager.getMappedScenes().length>0) {
+		result.push({"id":"sep-hues","name":"--------- Hue Scenes ---------","type":"seperator"});
+		this.sceneManager.getMappedScenes().forEach(function(scene){
+			var encodedAction = that.name+":" + scene.id;
+			result.push({"id":encodedAction,"name":scene.name,"type":"HUESCENE"});
+		});
+	}
+	
 	return result;	
 }
 
@@ -122,6 +131,9 @@ HuePlatform.prototype.saveSettings = function(settings) {
 }
 
 
+HuePlatform.prototype.runScene = function(sceneID) {
+	this.hue_api.activateScene(sceneID,function(err, result) {});
+}
 
 HuePlatform.prototype.locateBridge = function (callback) {
 	var that = this;
