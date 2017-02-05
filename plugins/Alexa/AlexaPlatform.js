@@ -10,7 +10,7 @@ if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../..
 appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
-var alexaLogger = require(appRoot + "/logger.js")("AlexaEvent");
+var alexaLogger = require(appRoot + "/logger.js").logger("AlexaEvent");
 
 var util = require("util");
 var xmlrpc = require(appRoot + "/homematic-xmlrpc");
