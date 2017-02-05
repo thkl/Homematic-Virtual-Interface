@@ -1,7 +1,6 @@
-<a class="ph" href="#">
-	<span class="dy dh">
-	<input type="button" value="Edit" onclick="window.location.href='?do=edit&file=$item$'"/>
-	<input type="button" value="Delete" onclick="deleteScript('$item$')"/>
-	</span>
-          $item$
-</a>
+ <a class="ph row" href="#">
+          <span class="dh col-md-3">$script.name$</span>
+          <span class="dh col-md-7">$script.desc$</span>
+          <span class="dh col-md-1"><input type="button" value="Edit" onclick="window.location.href='?do=edit&file=$script.filename$'"/></span>
+		  <span class="dh col-md-1"><input type="button" value="Delete" onclick="deleteScript('$item$')"/></span>  
+ </a>

@@ -17,7 +17,7 @@ if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../..
 appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
-var logicLogger = require(appRoot + "/logger.js")("LogicLogger");
+var logicLogger = require(appRoot + "/logger.js").logger("LogicLogger");
 
 
 var xmlrpc = require(appRoot + "/homematic-xmlrpc");
@@ -257,7 +257,9 @@ LogicalPlatform.prototype.loadScript = function(filename) {
 	        
 	        if (filename.match(/\.js$/)) {
                 // Javascript
-                that.scripts[filename] = that.createScript(src, filename);
+                that.scripts[filename] = {};
+                that.scripts[filename].file = filename;
+                that.scripts[filename].script = that.createScript(src, filename);
             }
             if (that.scripts[filename]) {
                 that.runScript(that.scripts[filename], filename);
@@ -531,8 +533,8 @@ LogicalPlatform.prototype.triggerScript = function(script) {
   this.log.debug("Subscriptions : ",JSON.stringify(this.subscriptions));
 }
 
-LogicalPlatform.prototype.runScript = function(script, name) {
-
+LogicalPlatform.prototype.runScript = function(script_object, name) {
+	var script = script_object.script;
     var scriptDir = path.dirname(path.resolve(name));
 	var that = this;
 	
@@ -730,12 +732,12 @@ LogicalPlatform.prototype.runScript = function(script, name) {
 	        }	);
         },
         
-        setName : function Sandbox_setName(namOfScript) {
-	        
+        setName : function Sandbox_setName(nameOfScript) {
+	        script_object.name = nameOfScript;
         },
         
         setDescription : function Sandbox_setDescription(description) {
-	        
+	        script_object.description = description;
         },
 
 		regaCommand : function Sandbox_regaCommand(command) {
@@ -1252,8 +1254,17 @@ LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 	  strSchedulers = strSchedulers + dispatched_request.fillTemplate(itemtemplate,{"item":job});
 	});	
 	
-	Object.keys(this.scripts).forEach(function(script){
-	  strScripts = strScripts + dispatched_request.fillTemplate(scripttemplate,{"item":path.basename(script)});
+	that.log.debug(this.scripts);
+	Object.keys(this.scripts).forEach(function(key){
+		var script_object = that.scripts[key];
+		that.log.debug(script_object);
+		var data = {
+			"script.filename":path.basename(script_object.file),
+			"script.desc":script_object.description || "",
+			"script.name":script_object.name || path.basename(script_object.file)
+			};
+			
+	  strScripts = strScripts + dispatched_request.fillTemplate(scripttemplate,data);
 	});
 	
 	dispatched_request.dispatchFile(this.plugin.pluginPath , htmlfile ,{"scripts":strScripts,"schedules":strSchedulers,"editor":editorData});
