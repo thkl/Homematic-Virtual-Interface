@@ -1254,10 +1254,20 @@ LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 	  strSchedulers = strSchedulers + dispatched_request.fillTemplate(itemtemplate,{"item":job});
 	});	
 	
-	that.log.debug(this.scripts);
-	Object.keys(this.scripts).forEach(function(key){
+	that.log.debug(Object.keys(this.scripts));
+	
+	var sorted = Object.keys(this.scripts).sort(function(a,b){
+		var a = that.scripts[a].name || path.basename(a);
+		var b = that.scripts[b].name || path.basename(b);
+		if (a < b) return -1;
+		if (a > b) return 1;
+		return 0;
+	});	
+	
+	that.log.debug(sorted);
+	
+	sorted.forEach(function(key){
 		var script_object = that.scripts[key];
-		that.log.debug(script_object);
 		var data = {
 			"script.filename":path.basename(script_object.file),
 			"script.desc":script_object.description || "",
