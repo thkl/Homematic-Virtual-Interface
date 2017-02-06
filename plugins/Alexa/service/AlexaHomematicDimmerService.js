@@ -32,7 +32,7 @@ AlexaHomematicDimmerService.prototype.handleEvent = function(event,callback) {
 	if (this.server) { 
 	  var configuration = this.server.configuration;
 	  if (configuration) {
-		  rmp = this.configuration.getValueForPluginWithDefault(this.name,"ramp_time",0);
+		  rmp = configuration.getValueForPluginWithDefault(this.name,"ramp_time",0);
 	  }
 	}
 
