@@ -38,6 +38,7 @@ AlexaPlatform.prototype.init = function() {
 	this.ccu_varname = this.configuration.getValueForPluginWithDefault(this.name,"ccu_varname","");
 	this.authenticated = false;
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
+	this.ramp_time  = this.configuration.getValueForPluginWithDefault(this.name,"ramp_time",0);
 
 	alexaLogger.info("Alexa Plugin launched ..");
 
@@ -222,6 +223,14 @@ AlexaPlatform.prototype.showSettings = function(dispatched_request) {
 				   "value":this.ccu_varname,
 		     "description":this.localization.localize("Please setup as a boolean variable. All alexa events will be ignored if this variable is set to false (0)")
 	});
+
+	result.push({"control":"text",
+					"name":"ramp_time",
+				   "label":this.localization.localize("Dimmer Ramp Time (s)"),
+				   "value":this.ramp_time || 0,
+		     "description":this.localization.localize("Use this to set a default ramp time for all dimmers.")
+	});
+
 	return result;
 }
 
@@ -229,6 +238,7 @@ AlexaPlatform.prototype.saveSettings = function(settings) {
 	var that = this
 	var api_key = settings.api_key;
 	var ccu_varname = settings.ccu_varname;
+	var ramp_time = settings.ramp_time;
 
 	if  (ccu_varname) {
 		this.ccu_varname = ccu_varname;
@@ -243,6 +253,11 @@ AlexaPlatform.prototype.saveSettings = function(settings) {
 		this.configuration.setValueForPlugin(this.name,"api_key",api_key); 
 		clearTimeout(this.reconnectTimer);
 		this.reconnect();
+	}
+	
+	if (ramp_time) {
+		this.ramp_time = ramp_time;
+		this.configuration.setValueForPlugin(this.name,"ramp_time",ramp_time); 
 	}
 }
 
