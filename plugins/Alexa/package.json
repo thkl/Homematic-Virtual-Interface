@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-huedevice",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Virtual Alexa Bridge",
   "license": "ISC",
   "keywords": [
