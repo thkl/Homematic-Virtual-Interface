@@ -1,7 +1,7 @@
 {"strings": {
 	"de-de": {
 		"The plugin is searching for your bridge ....":"Das Plugin sucht nach der Bridge",
-		"No Message from your Hue Plugin. Yet !":"Keine Meldungen vom Hue Plugin. Bis jetzt.",
+		"No Message from your Hue Plugin. Yet ! Last Update : ":"Keine Meldungen vom Hue Plugin. Bis jetzt. Letztes Update : ",
 		"Currently the plugin is not able to connect to the bridge. Please press the big button on your bridge to authorized the plugin.":"Das Plugin kann sich nicht mit der Hue Bridge verbinden. Dr&uuml;cke den gro&szlig;en Button auf der Bridge um den Zugriff zu genehmigen"
 
 		}

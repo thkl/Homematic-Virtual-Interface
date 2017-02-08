@@ -41,6 +41,7 @@ function HuePlatform(plugin,name,server,log,instance) {
 	this.sfxDevice;
 	this.authorized;
 	this.hasSettings = true;
+	this.lastUpdate = undefined;
 }
 
 util.inherits(HuePlatform, HomematicVirtualPlatform);
@@ -431,6 +432,7 @@ HuePlatform.prototype.refreshAll = function() {
 			  hue_light.refreshWithData(light);
 		  }
 		});
+		that.lastUpdate = new Date();
 		}
 	});
 	
@@ -495,8 +497,8 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 	
 	this.localization.setLanguage(dispatched_request);
 	
-	var message = this.localization.localize("No Message from your Hue Plugin. Yet !");
-	
+	var message = this.localization.localize("No Message from your Hue Plugin. Yet ! Last Update : ");
+	message = message + this.lastUpdate;
 	
 	var requesturl = dispatched_request.request.url;
 	var queryObject = url.parse(requesturl,true).query;
