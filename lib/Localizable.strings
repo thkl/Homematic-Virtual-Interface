@@ -5,7 +5,8 @@
 		"There is an update available.":"Es gibt ein Udate",
 		"All connections removed. Please restart your CCU.":"Alle Verbindugen entfernt. Bitte starte die CCU neu.",
 		"Last Message ":"Letze Meldung ",
-		"unknow CCU ip":"Unbekannte CCU IP"
+		"unknow CCU ip":"Unbekannte CCU IP",
+		"It seems that your ccu does not know anything about the Homematic-Virtual-Layer. If you are sure about the CCU-IP, and the correct settings in your CCU InterfacesList.xml, a CCU reboot may help.":"Es scheint, das die CCU nichts vom Homematic-Virtual-Layer weiss. Wenn Du sicher bist, das die IP richtig ist und die Einstellungen in der InterfacesList.xml der CCU stimmen, dann kann ein CCU Neustart f&uuml;r Abhilfe sorgen."
 	}
   }
 }

@@ -4,27 +4,27 @@ var GenericAlexaHomematicService = require('./GenericService.js').GenericAlexaHo
 var util = require("util");
 
 
-function AlexaHomematicDimmerService(homematicDevice,log,hmlayer) {
-    AlexaHomematicDimmerService.super_.apply(this,arguments);
-	this.ccuInterface = "BidCos-RF";
+function AlexaHomematicWiredDimmerService(homematicDevice,log,hmlayer) {
+    AlexaHomematicWiredDimmerService.super_.apply(this,arguments);
+	this.ccuInterface = "BidCos-Wired";
 }
 
-util.inherits(AlexaHomematicDimmerService, GenericAlexaHomematicService);
+util.inherits(AlexaHomematicWiredDimmerService, GenericAlexaHomematicService);
 
 
 
-AlexaHomematicDimmerService.prototype.getType = function() {
+AlexaHomematicWiredDimmerService.prototype.getType = function() {
 	return "Dimmer";
 }
 
 
-AlexaHomematicDimmerService.prototype.getActions = function() {
+AlexaHomematicWiredDimmerService.prototype.getActions = function() {
 	return ["turnOn","turnOff","setPercentage","incrementPercentage","decrementPercentage"];
 }
 
 
 
-AlexaHomematicDimmerService.prototype.handleEvent = function(event,callback) {
+AlexaHomematicWiredDimmerService.prototype.handleEvent = function(event,callback) {
 	
 	
 	console.log("Event %s",JSON.stringify(event));
@@ -101,4 +101,4 @@ AlexaHomematicDimmerService.prototype.handleEvent = function(event,callback) {
 
 }
 
-module.exports = AlexaHomematicDimmerService; 
+module.exports = AlexaHomematicWiredDimmerService; 

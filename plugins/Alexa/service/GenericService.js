@@ -18,18 +18,17 @@ if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../..
 var regarequest = require(appRoot + "/HomematicReqaRequest.js");
 
 
-function GenericAlexaHomematicService (homematicDevice,rpcClient,log,hmlayer) {
+function GenericAlexaHomematicService (homematicDevice,log,hmlayer) {
 	this.homematicDevice = homematicDevice;
-	this.rpcClient = rpcClient;
 	this.log = log;
 	this.hm_layer = hmlayer; 
 	this.alexaname = "unknow";
+	this.ccuInterface = undefined;
 }
 
 
 GenericAlexaHomematicService.prototype =  {
-	
-	
+		
 	getActions: function(){return undefined},	
 		
 	getType : function(){return undefined},
@@ -67,22 +66,24 @@ GenericAlexaHomematicService.prototype =  {
 
 
 	setState: function(adress,datapoint,value,callback) {
+		if (this.rpcClient) {
 		this.rpcClient.methodCall("setValue",[adress,datapoint,value], function(error, value) {
 			if (callback) {
 				callback(value);
 			}
 		});
-	
+		}
 	},
     
     
     getState: function(adress,datapoint,callback) {
+	    if (this.rpcClient) {
 		this.rpcClient.methodCall("getValue",[adress,datapoint], function(error, value) {
 			if (callback) {
 				callback(error,value);
 			}
 		});
-	
+		}
 	}
 	
 }

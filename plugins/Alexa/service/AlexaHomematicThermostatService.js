@@ -4,8 +4,9 @@ var GenericAlexaHomematicService = require('./GenericService.js').GenericAlexaHo
 var util = require("util");
 
 
-function AlexaHomematicThermostatService(plugin,homematicDevice,rpcClient,log,hmlayer) {
+function AlexaHomematicThermostatService(homematicDevice,log,hmlayer) {
     AlexaHomematicThermostatService.super_.apply(this,arguments);
+	this.ccuInterface = "BidCos-RF";
 }
 
 util.inherits(AlexaHomematicThermostatService, GenericAlexaHomematicService);

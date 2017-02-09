@@ -1,19 +1,33 @@
 {
-	"handler":["AlexaHomematicDimmerService","AlexaLogicService","AlexaHomematicSwitchService","AlexaSonosService","AlexaHomematicThermostatService","AlexaHueService",
-	"AlexaHomematicProgramService","AlexaHarmonyDeviceService","AlexaHarmonyActivityService","AlexaHueSceneService"],
+	"handler":[
+	"AlexaHomematicDimmerService",
+	"AlexaHomematicSwitchService",
+	"AlexaHomematicThermostatService",
+	"AlexaHomematicWiredSwitchService",
+	"AlexaHomematicWiredDimmerService",
+	"AlexaLogicService",
+	"AlexaSonosService",
+	"AlexaHueService",
+	"AlexaHomematicProgramService",
+	"AlexaHarmonyDeviceService",
+	"AlexaHarmonyActivityService",
+	"AlexaHueSceneService"
+	],
 	
 	"hm_device_settings" : {
-		
-		"SWITCH" : "AlexaHomematicSwitchService",
-		"DIMMER" : "AlexaHomematicDimmerService",
-		"BLIND"  : "AlexaHomematicDimmerService",
-		"THERMALCONTROL_TRANSMIT" : "AlexaHomematicThermostatService",
-		"CLIMATECONTROL_REGULATOR": "AlexaHomematicThermostatService",
+		"BidCos-RF.SWITCH" : "AlexaHomematicSwitchService",
+		"BidCos-RF.DIMMER" : "AlexaHomematicDimmerService",
+		"BidCos-RF.BLIND"  : "AlexaHomematicDimmerService",
+		"BidCos-RF.THERMALCONTROL_TRANSMIT" : "AlexaHomematicThermostatService",
+		"BidCos-RF.CLIMATECONTROL_REGULATOR": "AlexaHomematicThermostatService",
 		"HUELIGHT" : "AlexaHueService",
 		"HUEGROUP" : "AlexaHueService",
 		"HUESCENE" : "AlexaHueSceneService",
 		"SONOS" : "AlexaSonosService",
 		"HARMONY" : "AlexaHarmonyActivityService",
-		"HARMONYDEVICE" : "AlexaHarmonyDeviceService"
+		"HARMONYDEVICE" : "AlexaHarmonyDeviceService",
+		"BidCos-Wired.SWITCH" : "AlexaHomematicWiredSwitchService",
+		"BidCos-Wired.DIMMER" : "AlexaHomematicWiredDimmerService",
+		"BidCos-Wired.BLIND"  : "AlexaHomematicWiredDimmerService"
 	}
 }

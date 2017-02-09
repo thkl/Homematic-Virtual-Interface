@@ -4,24 +4,24 @@ var GenericAlexaHomematicService = require('./GenericService.js').GenericAlexaHo
 var util = require("util");
 
 
-function AlexaHomematicSwitchService(homematicDevice,log,hmlayer) {
-    AlexaHomematicSwitchService.super_.apply(this,arguments);
-	this.ccuInterface = "BidCos-RF";
+function AlexaHomematicWiredSwitchService(homematicDevice,log,hmlayer) {
+    AlexaHomematicWiredSwitchService.super_.apply(this,arguments);
+	this.ccuInterface = "BidCos-Wired";
 }
 
-util.inherits(AlexaHomematicSwitchService, GenericAlexaHomematicService);
+util.inherits(AlexaHomematicWiredSwitchService, GenericAlexaHomematicService);
 
-AlexaHomematicSwitchService.prototype.getType = function() {
+AlexaHomematicWiredSwitchService.prototype.getType = function() {
 	return "Licht Aktor";
 }
 
-AlexaHomematicSwitchService.prototype.getActions = function() {
+AlexaHomematicWiredSwitchService.prototype.getActions = function() {
 	return ["turnOn","turnOff"];
 }
 
 
 
-AlexaHomematicSwitchService.prototype.handleEvent = function(event,callback) {
+AlexaHomematicWiredSwitchService.prototype.handleEvent = function(event,callback) {
 	
 		
 	switch (event.header.name) {
@@ -51,4 +51,4 @@ AlexaHomematicSwitchService.prototype.handleEvent = function(event,callback) {
 
 
 
-module.exports = AlexaHomematicSwitchService; 
+module.exports = AlexaHomematicWiredSwitchService; 

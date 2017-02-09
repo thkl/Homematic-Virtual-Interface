@@ -4,7 +4,7 @@ var GenericAlexaHomematicService = require('./GenericService.js').GenericAlexaHo
 var util = require("util");
 
 
-function AlexaHarmonyActivityService(homematicDevice,rpcClient,log,hmlayer) {
+function AlexaHarmonyActivityService(homematicDevice,log,hmlayer) {
     AlexaHarmonyActivityService.super_.apply(this,arguments);
 
 }
