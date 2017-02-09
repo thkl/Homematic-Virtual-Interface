@@ -547,11 +547,11 @@ AlexaPlatform.prototype.loadHMDevices = function(callback) {
     var ifSelector = "(oInterface.Name() == 'BidCos-RF')";
     
     if (this.wired_client) {
-	    ifSelector = ifSelector + " ||Ê(oInterface.Name() == 'BidCos-Wired')"
+	    ifSelector = ifSelector + " || (oInterface.Name() == 'BidCos-Wired')"
     }
 
     if (this.hmip_client) {
-	    ifSelector = ifSelector + " ||Ê(oInterface.Name() == 'HmIP-RF')"
+	    ifSelector = ifSelector + " || (oInterface.Name() == 'HmIP-RF')"
     }
     
     
