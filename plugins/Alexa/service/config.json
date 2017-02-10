@@ -11,7 +11,10 @@
 	"AlexaHomematicProgramService",
 	"AlexaHarmonyDeviceService",
 	"AlexaHarmonyActivityService",
-	"AlexaHueSceneService"
+	"AlexaHueSceneService",
+	"AlexaHomematicHMIPSwitchService",
+	"AlexaHomematicHMIPDimmerService",
+	"AlexaHomematicHMIPThermostatService"
 	],
 	
 	"hm_device_settings" : {
@@ -28,6 +31,9 @@
 		"HARMONYDEVICE" : "AlexaHarmonyDeviceService",
 		"BidCos-Wired.SWITCH" : "AlexaHomematicWiredSwitchService",
 		"BidCos-Wired.DIMMER" : "AlexaHomematicWiredDimmerService",
-		"BidCos-Wired.BLIND"  : "AlexaHomematicWiredDimmerService"
+		"BidCos-Wired.BLIND"  : "AlexaHomematicWiredDimmerService",
+		"HmIP-RF.SWITCH_VIRTUAL_RECEIVER" : "AlexaHomematicHMIPSwitchService",
+		"HmIP-RF.DIMMER_VIRTUAL_RECEIVER":"AlexaHomematicHMIPDimmerService",
+		"HmIP-RF.HEATING_CLIMATECONTROL_TRANSCEIVER":"AlexaHomematicHMIPThermostatService"
 	}
 }
