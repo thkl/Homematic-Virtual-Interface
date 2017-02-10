@@ -2,8 +2,13 @@
 	"de-de": {
 		"Cloud Api Key":"Cloud Api Key",
 		"CCU Variable to Enable Alexa (optional)":"CCU Variable um Alexa einzuschalten (optional)",
-		"Please setup as a boolean variable. All alexa events will be ignored if this variable is set to false (0)":"Erstelle eine Variable vom Typ Logikwert. Solange diese Variable falsch (0) ist werden alle Alexa Events ignoriert."
-
+		"Please setup as a boolean variable. All alexa events will be ignored if this variable is set to false (0)":"Erstelle eine Variable vom Typ Logikwert. Solange diese Variable falsch (0) ist werden alle Alexa Events ignoriert.",
+		"Enable HM IP Usage":"HMIP Benutzung aktivieren",
+		"Use this to enable Alexa with HMIp-Devices. Please restart until after you change this setting.":"Hiermit kannst Du HMIp Ger&auml;te mit Alexa steuern. Bitte mach einen Restart wenn Du diese Einstellung ge&auml;ndert hast.",
+		"Enable HM Wired Usage":"HMWired Benutzung aktivieren.",
+		"Use this to enable Alexa with HMWired-Devices. Please restart until after you change this setting.":"Aktiviere diese Einstellung wenn Du HMWired Ger&auml;te mit Alexa steuern m&ouml;chtest.Bitte mach einen Restart wenn Du diese Einstellung ge&auml;ndert hast.",
+		"Dimmer Ramp Time (s)":"Rampenzeit f&uuml;r Dimmer (s)",
+		"Use this to set a default ramp time for all dimmers.":"Hier kannst Du die Vorgabe f&uuml;r die Rampenzeit beim Dimmen einstellen."
 		}
 	}
 }

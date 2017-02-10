@@ -250,6 +250,20 @@ AlexaPlatform.prototype.showSettings = function(dispatched_request) {
 		     "description":this.localization.localize("Use this to set a default ramp time for all dimmers.")
 	});
 
+	result.push({"control":"option",
+					"name":"enable_hmip",
+				   "label":this.localization.localize("Enable HM IP Usage"),
+				   "value":(this.hmip_client) ? true : false,
+		     "description":this.localization.localize("Use this to enable Alexa with HMIp-Devices. Please restart until after you change this setting.")
+	});
+
+	result.push({"control":"option",
+					"name":"enable_wired",
+				   "label":this.localization.localize("Enable HM Wired Usage"),
+				   "value":(this.wired_client) ? true : false,
+		     "description":this.localization.localize("Use this to enable Alexa with HMWired-Devices. Please restart until after you change this setting.")
+	});
+	
 	return result;
 }
 
@@ -277,6 +291,20 @@ AlexaPlatform.prototype.saveSettings = function(settings) {
 	if (ramp_time) {
 		this.ramp_time = ramp_time;
 		this.configuration.setValueForPlugin(this.name,"ramp_time",ramp_time); 
+	}
+	
+	if (settings.enable_hmip) {
+		this.configuration.setValueForPlugin(this.name,"enable_hmip",true); 
+		
+	} else {
+		this.configuration.setValueForPlugin(this.name,"enable_hmip",false); 
+	}
+
+
+	if (settings.enable_wired) {
+		this.configuration.setValueForPlugin(this.name,"enable_wired",true); 
+	} else {
+		this.configuration.setValueForPlugin(this.name,"enable_wired",false); 
 	}
 }
 
