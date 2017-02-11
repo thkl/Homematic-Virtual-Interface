@@ -20,7 +20,7 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 		this.log.debug("Initialize NetAtmo Device with id %s",this.naId);
 
 		this.hmInside = new HomematicDevice();
-		this.hmInside.initWithType("HM-WDS40-TH-I-2", serialprefix + "1");
+		this.hmInside.initWithType("HM-WDS40-TH-I-2_NA", serialprefix + "1");
 		this.hmInside.firmware = naDevice["firmware"];
 		this.hmInside.serialNumber = this.naId;
 		this.bridge.addDevice(this.hmInside);
@@ -42,7 +42,7 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 			var mid = module["_id"];
 			if (module["type"] == "NAModule1") {
 				var hmModule = new HomematicDevice();
-				hmModule.initWithType("HM-WDS10-TH-O", serialprefix + mi);
+				hmModule.initWithType("HM-WDS10-TH-O_NA", serialprefix + mi);
 				hmModule.firmware = naDevice["firmware"];
 				hmModule.serialNumber = mid;
 				that.bridge.addDevice(hmModule);
@@ -74,8 +74,14 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			var inside_channel = that.hmInside.getChannelWithTypeAndIndex("WEATHER","1");
 			
 			if (inside_channel != undefined) {
-				 inside_channel.updateValue("TEMPERATURE",lastMeasure[0][0],true);
-				 inside_channel.updateValue("HUMIDITY",lastMeasure[0][1],true);
+				var temp = lastMeasure[0][0];
+				var hum = lastMeasure[0][1];
+				inside_channel.updateValue("TEMPERATURE",temp,true);
+				inside_channel.updateValue("HUMIDITY",hum,true);
+				var dew_point = that.dew_point(temp, hum);
+			  	inside_channel.updateValue("DEW_POINT",dew_point,true);
+			  	var absolute_humidity = that.absolute_humidity(temp, hum);
+			  	inside_channel.updateValue("ABS_HUMIDITY",absolute_humidity,true);
 			}
 			
 			var coChannel = that.hmCarbonDioxide.getChannelWithTypeAndIndex("SENSOR_FOR_CARBON_DIOXIDE","1");
@@ -112,8 +118,14 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			  			var hmDevice = that.modules[module];
 			  			var channel = hmDevice.getChannelWithTypeAndIndex("WEATHER","1");
 			  			if (channel != undefined) {
-			  				channel.updateValue("TEMPERATURE",lastMeasure[0][0],true);
-			  				channel.updateValue("HUMIDITY",lastMeasure[0][1],true);
+				  			var temp = lastMeasure[0][0];
+				  			var hum = lastMeasure[0][1];
+			  				channel.updateValue("TEMPERATURE",temp,true);
+			  				channel.updateValue("HUMIDITY",hum,true);
+			  				var dew_point = that.dew_point(temp, hum);
+			  				channel.updateValue("DEW_POINT",dew_point,true);
+			  				var absolute_humidity = that.absolute_humidity(temp, hum);
+			  				channel.updateValue("ABS_HUMIDITY",absolute_humidity,true);
 						}
 					}
 					}
@@ -126,6 +138,66 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 		 }, 120000);
 }
 
+// calculations from https://www.wetterochs.de/wetter/feuchte.html
+NetAtmoDevice.prototype.saturation_vapor_pressure =  function(temperature)
+{
+	var a, b;
+	if(temperature >= 0)
+	{
+		a = 7.5;
+		b = 237.3;
+	}
+	else
+	{
+		a = 7.6;
+		b = 240.7;
+	}
+
+	var saturation_vapor_pressure = 6.1078 * Math.exp(((a*temperature)/(b+temperature))/Math.LOG10E);
+
+	return saturation_vapor_pressure;
+}
+
+NetAtmoDevice.prototype.vapor_pressure =   function (temperature, relative_humidity)
+{
+	var saturation_vapor_pressure = this.saturation_vapor_pressure(temperature);
+	var vapor_pressure = relative_humidity/100 * saturation_vapor_pressure;
+	return vapor_pressure;
+}
+
+
+NetAtmoDevice.prototype.dew_point =  function (temperature, relative_humidity)
+{
+	var vapor_pressure = this.vapor_pressure(temperature, relative_humidity);
+	var a, b;
+
+	if(temperature >= 0)
+	{
+		a = 7.5;
+		b = 237.3;
+	}
+	else
+	{
+		a = 7.6;
+		b = 240.7;
+	}
+	var c = Math.log(vapor_pressure/6.1078) * Math.LOG10E;
+	var dew_point = (b * c) / (a - c);
+	return dew_point;
+}
+
+NetAtmoDevice.prototype.absolute_humidity = function (temperature, relative_humidity) {
+	var mw = 18.016;
+	var r_star = 8314.3;
+	var vapor_pressure = 100 * this.vapor_pressure(temperature, relative_humidity);
+	var absolute_humidity = 1000 * mw/r_star * vapor_pressure/this.CelsiusToKelvin(temperature);
+	return absolute_humidity;
+}
+
+NetAtmoDevice.prototype.CelsiusToKelvin = function (temperature)
+{
+	return temperature + 273.15;
+}
 
 module.exports = {
 	  NetAtmoDevice : NetAtmoDevice

@@ -63,7 +63,7 @@ var that = this;
 api.getStationsData(function(err, devices) {
 	devices.forEach(function (device) {
 		that.log.debug("Create new NetAtmo Device " + device["station_name"]);
-		that.nadevice = new NetAtmoDevice(that,api,device,"NAT0000" + i);
+		that.nadevice = new NetAtmoDevice(that,api,device,"NAT00" + i);
 		that.devices.push(that.nadevice);
 		i = i+1;
 	});

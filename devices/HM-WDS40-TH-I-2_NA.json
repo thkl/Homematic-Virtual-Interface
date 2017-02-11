@@ -1,0 +1,172 @@
+{
+	"channels": [
+		{
+			"adress": "0",
+			"direction": 2,
+			"flags": 3,
+			"paramsets": [
+				{
+					"id": "maint_ch_master",
+					"name": "MASTER",
+					"parameter": [
+					]
+				},
+				{
+					"id": "maint_ch_values",
+					"name": "VALUES",
+					"parameter": [
+						{
+							"flags": 9,
+							"name": "UNREACH",
+							"operations": 5,
+							"tab_order": 0,
+							"type": "BOOL"
+						},
+						{
+							"flags": 24,
+							"name": "STICKY_UNREACH",
+							"operations": 7,
+							"tab_order": 1,
+							"type": "BOOL"
+						},
+						{
+							"flags": 9,
+							"name": "CONFIG_PENDING",
+							"operations": 5,
+							"tab_order": 2,
+							"type": "BOOL"
+						},
+						{
+							"flags": 9,
+							"name": "LOWBAT",
+							"operations": 5,
+							"tab_order": 3,
+							"type": "BOOL"
+						},
+						{
+							"flags": 1,
+							"name": "RSSI_DEVICE",
+							"operations": 5,
+							"tab_order": 4,
+							"type": "INTEGER"
+						},
+						{
+							"flags": 1,
+							"name": "RSSI_PEER",
+							"operations": 5,
+							"tab_order": 5,
+							"type": "INTEGER"
+						},
+						{
+							"flags": 0,
+							"max": 127,
+							"min": 0,
+							"name": "AES_KEY",
+							"operations": 1,
+							"tab_order": 6,
+							"type": "INTEGER"
+						}
+					]
+				}
+			],
+			"type": "MAINTENANCE"
+		},
+		{
+			"adress": "1",
+			"direction": 2,
+			"flags": 1,
+			"paramsets": [
+				{
+					"id": "wds40_th_ch_master",
+					"name": "MASTER",
+					"parameter": [
+						{
+							"flags": 3,
+							"name": "AES_ACTIVE",
+							"tab_order": 0,
+							"type": "BOOL",
+							"vdefault": 0
+						}
+					]
+				},
+				{
+					"id": "wds40_th_ch_values",
+					"name": "VALUES",
+					"parameter": [
+						{
+							"flags": 1,
+							"max": 80,
+							"min": -40,
+							"name": "TEMPERATURE",
+							"operations": 5,
+							"tab_order": 0,
+							"type": "FLOAT",
+							"unit": "°C"
+						},
+						{
+							"flags": 1,
+							"max": 99,
+							"min": 0,
+							"name": "HUMIDITY",
+							"operations": 5,
+							"tab_order": 1,
+							"type": "INTEGER",
+							"unit": "%"
+						},
+						{
+							"flags": 1,
+							"max": 80,
+							"min": -40,
+							"name": "DEW_POINT",
+							"operations": 5,
+							"tab_order": 2,
+							"type": "FLOAT",
+							"unit": "°C"
+						},
+						{
+							"flags": 1,
+							"max": 99,
+							"min": 0,
+							"name": "ABS_HUMIDITY",
+							"operations": 5,
+							"tab_order": 3,
+							"type": "FLOAT",
+							"unit": "g/m³"
+						}
+					]
+				},
+				{
+					"id": "wds40_th_ch_link",
+					"name": "LINK",
+					"parameter": [
+					]
+				}
+			],
+			"type": "WEATHER"
+		}
+	],
+	"paramsets": [
+		{
+			"id": "wds40_th_dev_master",
+			"name": "MASTER",
+			"parameter": [
+				{
+					"flags": 1,
+					"name": "BURST_RX",
+					"tab_order": 0,
+					"type": "BOOL",
+					"vdefault": 0
+				},
+				{
+					"flags": 1,
+					"name": "LOCAL_RESET_DISABLE",
+					"tab_order": 1,
+					"type": "BOOL",
+					"vdefault": 0
+				}
+			]
+		}
+	],
+	"type": "HM-WDS40-TH-I-2",
+	"version": 41
+}
