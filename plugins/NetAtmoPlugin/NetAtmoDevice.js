@@ -30,6 +30,7 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 		this.hmCarbonDioxide.firmware = naDevice["firmware"];
 		this.hmCarbonDioxide.serialNumber = this.naId + "_C";
 		this.bridge.addDevice(this.hmCarbonDioxide);
+		this.hm_device_name = "HM-WDS40-TH-I-2 "+ serialprefix + "1 / HM-CC-SCD " + serialprefix + "2";
 
 		var mi = 3;
 
@@ -46,6 +47,7 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 				hmModule.serialNumber = mid;
 				that.bridge.addDevice(hmModule);
 				that.modules[mid] = hmModule;
+				that.hm_device_name = that .hm_device_name  + " / HM-WDS10-TH-O " + serialprefix + mi; 
 			}
 			
 			mi = mi + 1;
@@ -54,7 +56,6 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 		this.refreshDevice();
 	}
 	this.name = naDevice["station_name"];
-	this.hm_device_name = naDevice["hm_device_name"];
 }
 
 

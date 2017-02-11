@@ -30,7 +30,6 @@ function SonosPlatform(plugin,name,server,log,instance) {
 	SonosPlatform.super_.apply(this,arguments);
 	this.bridge = server.getBridge();
 	this.devices = [];
-	this.hasSettings = true;
 	HomematicDevice = server.homematicDevice;
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 }

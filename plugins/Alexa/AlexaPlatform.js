@@ -22,7 +22,6 @@ var regaRequest = require(appRoot + "/HomematicReqaRequest.js");
 function AlexaPlatform(plugin,name,server,log,instance) {
 	AlexaPlatform.super_.apply(this,arguments);
 	this.alexa_appliances = {};
-	this.hasSettings = true;
 	this.server = server;
 	HomematicDevice = server.homematicDevice;
 }

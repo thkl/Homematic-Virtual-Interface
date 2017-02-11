@@ -40,7 +40,6 @@ function HuePlatform(plugin,name,server,log,instance) {
 	this.effectServers={};
 	this.sfxDevice;
 	this.authorized;
-	this.hasSettings = true;
 	this.lastUpdate = undefined;
 }
 

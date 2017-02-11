@@ -32,7 +32,6 @@ util.inherits(HarmonyPlatform, HomematicVirtualPlatform);
 
 HarmonyPlatform.prototype.init = function() {
 	var that = this;
-	this.hasSettings = true;
     this.hm_layer = this.server.getBridge();
 	this.harmonyServer = new HarmonyHueServer(this);
 	this.harmonyClient = new HarmonyClient(this);
