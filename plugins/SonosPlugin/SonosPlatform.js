@@ -20,6 +20,7 @@ var path = require('path');
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
 if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
+appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
 var util = require("util");
@@ -29,8 +30,9 @@ function SonosPlatform(plugin,name,server,log,instance) {
 	SonosPlatform.super_.apply(this,arguments);
 	this.bridge = server.getBridge();
 	this.devices = [];
+	this.hasSettings = true;
 	HomematicDevice = server.homematicDevice;
-
+	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 }
 
 util.inherits(SonosPlatform, HomematicVirtualPlatform);
@@ -41,6 +43,7 @@ SonosPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
+	this.maxVolume = this.configuration.getValueForPlugin(this.name,"max_volume",20);
 
 	var players = this.configuration.getValueForPlugin(this.name,"player");
 	if (players) {
@@ -56,6 +59,50 @@ SonosPlatform.prototype.init = function() {
 	}
 	
 }
+
+SonosPlatform.prototype.showSettings = function(dispatched_request) {
+	this.localization.setLanguage(dispatched_request);
+	var volume_ramp_time = this.configuration.getValueForPlugin(this.name,"volume_ramp_time",0);
+	var result = [];
+	result.push({"control":"text",
+					"name":"maxVolume",
+				   "label":this.localization.localize("Maximum Volume (optional)"),
+				   "value":this.maxVolume || 20,
+		     "description":this.localization.localize("This is the maximum of volume which can be set thru the sonos plugin. Default is 20. This is to protect your neighbourhood from unsolicited noice")
+	});
+
+	result.push({"control":"text",
+					"name":"volume_ramp_time",
+				   "label":this.localization.localize("Volume ramp time (optional)"),
+				   "value":volume_ramp_time || 0,
+		     "description":this.localization.localize("If set to more than 0 (ms) the volume will changed thru a ramp with this time between 2 steps.")
+	});
+
+	
+	return result;
+}
+
+SonosPlatform.prototype.saveSettings = function(settings) {
+	var maxVolume = settings.maxVolume;
+	var volume_ramp_time = settings.volume_ramp_time;
+	
+	if  (maxVolume) {
+		this.maxVolume = maxVolume;
+		this.configuration.setValueForPlugin(this.name,"maxVolume",maxVolume); 
+		this.devices.some(function(device){
+			device.maxVolume = maxVolume;
+		});
+	}
+	
+	if  (volume_ramp_time) {
+		this.configuration.setValueForPlugin(this.name,"volume_ramp_time",volume_ramp_time); 
+		this.devices.some(function(device){
+			device.setRampTime(volume_ramp_time);
+		});
+	}
+
+}
+
 
 SonosPlatform.prototype.shutdown = function() {
 	this.log.debug("Sonos Plugin Shutdown");
@@ -123,7 +170,9 @@ SonosPlatform.prototype.search = function() {
 	   		 that.log.info(zone);
 	   		 
 	   		 var sdevice = new SonosDevice(that ,coordinator.ip,coordinator.port,"SONOS_" + coordinator.CurrentZoneName);
+	   		 sdevice.maxVolume = that.maxVolume;
 	   		 that.devices.push(sdevice);
+	   		 
 	   		 i = i + 1;
 	   	 }
   	})

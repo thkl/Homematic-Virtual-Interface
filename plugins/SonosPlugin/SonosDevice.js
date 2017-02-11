@@ -13,8 +13,12 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	this.bridge = plugin.server.getBridge();
 	this.modules = {};
 	this.sonos = new Sonos(sonosIP,	sonosPort);
+	this.volumeSlide = false;
+	this.maxVolume = 20;
+    this.volumeRampTime = this.configuration.getValueForPlugin(plugin.name,"volume_ramp_time",0);
 
-    // Add Event Handler
+// Add Event Handler
+    
     
     this.player = this.sonos.getEventListener();
 	this.player.listen(function (err) {
@@ -30,7 +34,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
   		that.player.on('serviceEvent', function (endpoint, sid, event) {
 	  		
 	  		if (event.name == "RenderingControlEvent") {
-				if (event.volume.Master) {
+				if ((event.volume.Master) && (!that.volumeSlide)) {
 					that.log.debug("Set new Volume %s",event.volume.Master);
 					var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
 					if (channel) {
@@ -146,7 +150,12 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 		    
 		    if (parameter.name == "TARGET_VOLUME") {
 			    var newVolume = parameter.newValue;
-				that.sonos.setVolume(newVolume, function (err, playing) {})
+			    // Do it step by step
+			    if (that.volumeRampTime > 0) {
+				    that.rampToVolume(newVolume);
+			    } else {
+				    that.setVolume(newValue,function(err){});
+			    } 
 		    }
 		    
 		    if (parameter.name == "PLAYLIST") {
@@ -165,6 +174,52 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	    }
 	});
 }
+
+SonosDevice.prototype.setRampTime = function(newTime) {
+	this.log.debug("Set new Volume Ramp Time %s",newTime);
+ this.volumeRampTime = newTime;
+}
+
+SonosDevice.prototype.rampToVolume = function(newVolume) {
+	var that = this;
+	this.sonos.getVolume(function (err, volume) {
+		that.log.debug("Current Volume %s",volume);
+	  if (newVolume < volume) {
+		  that.volumeSlide = true;
+		  that.log.debug("SetTo %s",volume - 1);
+		  that.setVolume(volume - 1, function (err) {
+			  setTimeout(function() {that.rampToVolume(newVolume)}, this.volumeRampTime);
+		  });
+		  return;
+	  } 
+	  
+	  if (newVolume > volume) {
+		  that.volumeSlide = true;
+		  that.log.debug("SetTo %s",volume + 1);
+		  that.setVolume(volume + 1, function (err) {
+			  setTimeout(function() {that.rampToVolume(newVolume)}, this.volumeRampTime);
+		  })
+		  return;
+	  }
+
+	  that.volumeSlide = false;
+
+	});
+}
+
+
+SonosDevice.prototype.setVolume = function(newVolume,callback) {
+
+	if (newVolume < parseInt(this.maxVolume)) {
+		this.sonos.setVolume(newVolume, function (err, playing) {
+			callback(err);
+		})
+	} else {
+		this.log.warn("New Volume %s is above maximum %s",newVolume,this.maxVolume);
+	}
+
+}
+
 
 SonosDevice.prototype.shutdown = function() {
   try {	
