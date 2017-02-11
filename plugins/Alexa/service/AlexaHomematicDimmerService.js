@@ -26,10 +26,9 @@ AlexaHomematicDimmerService.prototype.getActions = function() {
 
 AlexaHomematicDimmerService.prototype.handleEvent = function(event,callback) {
 	
-	
-	console.log("Event %s",JSON.stringify(event));
 	var that = this;
 	var rmp = 0;
+	// First check if we have a global ramp time
 	if (this.server) { 
 	  var configuration = this.server.configuration;
 	  if (configuration) {

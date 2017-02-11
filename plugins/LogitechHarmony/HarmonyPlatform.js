@@ -17,6 +17,7 @@ var path = require('path');
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
 if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
+appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
 var util = require("util");
@@ -31,9 +32,11 @@ util.inherits(HarmonyPlatform, HomematicVirtualPlatform);
 
 HarmonyPlatform.prototype.init = function() {
 	var that = this;
+	this.hasSettings = true;
     this.hm_layer = this.server.getBridge();
 	this.harmonyServer = new HarmonyHueServer(this);
 	this.harmonyClient = new HarmonyClient(this);
+	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 }
 
 HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
@@ -73,6 +76,68 @@ HarmonyPlatform.prototype.updateFakeLight = function(newflo) {
   this.log.debug(JSON.stringify(nobjects));
   this.config.setPersistValueForPlugin(this.name,"fakelights",JSON.stringify(nobjects));
 }
+HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
+	this.localization.setLanguage(dispatched_request);
+	var result = [];
+	
+	var localPort = this.config.getValueForPluginWithDefault(this.name,"port",7000);
+    var localHostIP = this.config.getValueForPluginWithDefault(this.name,"host",this.hm_layer.getIPAddress());
+	var hub_ip = this.config.getValueForPluginWithDefault(this.name,"hub_ip","");
+	var hue_plugin_name = this.config.getValueForPluginWithDefault(this.name,"hue_plugin_name","");
+ 	
+	result.push({"control":"text","name":"hub_ip","label":this.localization.localize("Harmony Hub IP"),"value":hub_ip,"size":10});
+
+	result.push({"control":"text","name":"localHostIP","label":this.localization.localize("Local Host IP (if not the first Interface)"),"value":localHostIP,"size":10});
+
+	
+	result.push({"control":"text",
+					"name":"localPort",
+				   "label":this.localization.localize("Local Port"),
+				   "value":localPort,
+		     "description":this.localization.localize("If you want to change the local port from 7000")
+	});
+
+	result.push({"control":"text",
+					"name":"hue_plugin_name",
+				   "label":this.localization.localize("Hue Plugin Name (optional)"),
+				   "value":hue_plugin_name,
+		     "description":this.localization.localize("If you want to use a normal hue bridge.")
+	});
+	
+	return result;
+}
+
+HarmonyPlatform.prototype.saveSettings = function(settings) {
+	var that = this
+	var hub_ip = settings.hub_ip;
+	var localHostIP = settings.localHostIP;
+	var localPort = settings.localPort;
+	var hue_plugin_name = settings.hue_plugin_name;
+
+	if  (hub_ip) {
+		this.config.setValueForPlugin(this.name,"hub_ip",hub_ip); 
+	} 
+
+	if (localHostIP) {
+		this.config.setValueForPlugin(this.name,"host",localHostIP); 
+	}
+	
+	if (localPort) {
+		this.config.setValueForPlugin(this.name,"port",localPort); 
+	}
+	
+	if (hue_plugin_name) {
+		this.config.setValueForPlugin(this.name,"hue_plugin_name",hue_plugin_name); 
+	} else {
+		this.config.setValueForPlugin(this.name,"hue_plugin_name",""); 
+	}
+	
+	this.shutdown();
+	this.harmonyServer = new HarmonyHueServer(this);
+	this.harmonyClient = new HarmonyClient(this);
+}
+
+
 
 HarmonyPlatform.prototype.myDevices = function() {
 	return this.harmonyClient.myDevices();

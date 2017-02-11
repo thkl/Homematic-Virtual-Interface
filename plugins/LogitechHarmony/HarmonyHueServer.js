@@ -50,7 +50,7 @@ util.inherits(HarmonyHueServer, EventEmitter);
 HarmonyHueServer.prototype.init = function() {
   var that = this;
   
-  this.localPort = this.config.getValueForPluginWithDefault(this.name,"port",80);
+  this.localPort = this.config.getValueForPluginWithDefault(this.name,"port",7000);
   this.hostName = this.config.getValueForPluginWithDefault(this.name,"host",this.getIPAddress());
   this.log.debug("HarmonyHueServer Server Initializing on Port %s",this.localPort);
 
