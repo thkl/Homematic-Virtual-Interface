@@ -85,9 +85,9 @@ HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
 	var hub_ip = this.config.getValueForPluginWithDefault(this.name,"hub_ip","");
 	var hue_plugin_name = this.config.getValueForPluginWithDefault(this.name,"hue_plugin_name","");
  	
-	result.push({"control":"text","name":"hub_ip","label":this.localization.localize("Harmony Hub IP"),"value":hub_ip,"size":10});
+	result.push({"control":"text","name":"hub_ip","label":this.localization.localize("Harmony Hub IP"),"value":hub_ip,"size":20});
 
-	result.push({"control":"text","name":"localHostIP","label":this.localization.localize("Local Host IP (if not the first Interface)"),"value":localHostIP,"size":10});
+	result.push({"control":"text","name":"localHostIP","label":this.localization.localize("Local Host IP (if not the first Interface)"),"value":localHostIP,"size":20});
 
 	
 	result.push({"control":"text",
