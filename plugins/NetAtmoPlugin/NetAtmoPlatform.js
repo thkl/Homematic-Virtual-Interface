@@ -57,6 +57,7 @@ NetAtmoPlatform.prototype.init = function() {
 }
 
 NetAtmoPlatform.prototype.connectApi = function(auth) {
+	auth['scope'] = "read_station read_thermostat"
 var api = new netatmo(auth);
 var i = 0;
 var that = this;		
@@ -134,19 +135,20 @@ NetAtmoPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 	   strDevice = strDevice + dispatched_request.fillTemplate(devicetemplate,{"device_name":device.name,"device_hmdevice":device.hm_device_name});
     });
     
-    var requesturl = dispatched_request.request.url;
-	var queryObject = url.parse(requesturl,true).query;
-    
-    if (queryObject["do"]!=undefined) {
-		
-		switch (queryObject["do"]) {
+    if (dispatched_request.post != undefined) {
+	
+	    this.log.debug(JSON.stringify(dispatched_request.post));
+	
+		switch (dispatched_request.post["do"]) {
 			
 			
 			case "settings.save":
 			{
-				var CO2_ADDED = queryObject["settings.co2_added"];
-				var CO2_ADDED_STRONG = queryObject["settings.co2_strong"];
+				var CO2_ADDED = dispatched_request.post["settings.co2_added"];
+				var CO2_ADDED_STRONG = dispatched_request.post["settings.co2_strong"];
+				var refresh = dispatched_request.post["settings.refresh"];
 
+				this.configuration.setPersistValueForPlugin(this.name,"refresh",refresh); 
 				this.configuration.setPersistValueForPlugin(this.name,"CO2_ADDED",CO2_ADDED); 
 				this.configuration.setPersistValueForPlugin(this.name,"CO2_ADDED_STRONG",CO2_ADDED_STRONG); 
 			}
@@ -156,7 +158,12 @@ NetAtmoPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
     
     var lvlAdded = this.configuration.getPersistValueForPluginWithDefault(this.name,"CO2_ADDED",1000);
 	var lvlStrong = this.configuration.getPersistValueForPluginWithDefault(this.name,"CO2_ADDED_STRONG",1400);
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listDevices":strDevice,"settings.co2_added":lvlAdded,"settings.co2_strong":lvlStrong});
+	var refresh = this.configuration.getPersistValueForPluginWithDefault(this.name,"refresh",360);
+
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listDevices":strDevice,
+		"settings.co2_added":lvlAdded,
+		"settings.refresh":refresh,
+		"settings.co2_strong":lvlStrong});
 }
 
 

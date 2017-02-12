@@ -96,7 +96,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 	  var that = this;	
       this.log.debug("Refresh NetAtmo Device with id %s",this.naId);
       
-	  var options = {device_id: this.naId , date_end :'last', scale: 'max',type: ['Temperature','Humidity','CO2']};
+	  var options = {device_id: this.naId , date_end :'last', scale: 'max',type: ['Temperature','Humidity','CO2','Pressure','Noise']};
 
 		this.api.getMeasure(options, function(err, measure) {
 			if ((measure != undefined) && (measure[0]!=undefined)) {
@@ -109,12 +109,17 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			if (inside_channel != undefined) {
 				var temp = lastMeasure[0][0];
 				var hum = lastMeasure[0][1];
+				var pressure = lastMeasure[0][3];
+				var noice = lastMeasure[0][4];
+				
 				inside_channel.updateValue("TEMPERATURE",temp,true);
 				inside_channel.updateValue("HUMIDITY",hum,true);
 				var dew_point = that.dew_point(temp, hum);
 			  	inside_channel.updateValue("DEW_POINT",dew_point,true);
 			  	var absolute_humidity = that.absolute_humidity(temp, hum);
 			  	inside_channel.updateValue("ABS_HUMIDITY",absolute_humidity,true);
+			  	inside_channel.updateValue("AIR_PRESSURE",pressure,true);
+			  	inside_channel.updateValue("NOICE",noice,true);
 			}
 			
 			var coChannel = that.hmCarbonDioxide.getChannelWithTypeAndIndex("SENSOR_FOR_CARBON_DIOXIDE","1");
@@ -197,9 +202,14 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			}
 		});
 		
+		var refreshTime = this.configuration.setPersistValueForPlugin(this.name,"refresh",360); 
+		if (refreshTime < 120) {
+			refreshTime = 120
+		}
+		
 		this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();
-		 }, 120000);
+		 }, (refreshTime * 1000));
 }
 
 // calculations from https://www.wetterochs.de/wetter/feuchte.html

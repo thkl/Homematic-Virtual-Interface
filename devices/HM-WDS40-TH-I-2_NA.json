@@ -133,6 +133,28 @@
 							"type": "FLOAT",
 							"unit": "g/m³"
 						}
+						,
+						{
+							"flags": 1,
+							"max": 9999,
+							"min": 0,
+							"name": "AIR_PRESSURE",
+							"operations": 5,
+							"tab_order": 3,
+							"type": "FLOAT",
+							"unit": "mbar"
+						},
+						{
+							"flags": 1,
+							"max": 200,
+							"min": -200,
+							"name": "NOICE",
+							"operations": 5,
+							"tab_order": 3,
+							"type": "FLOAT",
+							"unit": "dB"
+						}
+
 					]
 				},
 				{
