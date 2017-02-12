@@ -68,13 +68,13 @@
 			"flags": 1,
 			"paramsets": [
 				{
-					"id": "ash550_ch_master",
+					"id": "wds10_ch_master",
 					"name": "MASTER",
 					"parameter": [
 					]
 				},
 				{
-					"id": "ash550_ch_values",
+					"id": "wds10_ch_values",
 					"name": "VALUES",
 					"parameter": [
 						{
@@ -121,7 +121,7 @@
 					]
 				},
 				{
-					"id": "ash550_ch_link",
+					"id": "wds10_ch_link",
 					"name": "LINK",
 					"parameter": [
 					]
@@ -132,7 +132,7 @@
 	],
 	"paramsets": [
 		{
-			"id": "ash550_dev_master",
+			"id": "wds10_dev_master",
 			"name": "MASTER",
 			"parameter": [
 				{

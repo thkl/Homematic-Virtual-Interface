@@ -88,13 +88,17 @@
    </a>
 
    <a class="ph row" href="#">
-	  <form action="/remove/" method="get"> 
-	   
+	  <form action="/device/" method="get"> 
+		<input type="hidden" name = "do" value="remove" />	   
           <span class="dh col-md-3">Remove Device from CCU Serial number:</span>
 
-          <span class="dh col-md-6"><input name = "adr" /></span>
+          <span class="dh col-md-6"><input type="text" name = "adr" /></span>
 		  <span class="dh col-md-3"><input type="submit" value="Delete"/></span>  
       </form>
+   </a>
+   <a class="ph row" href="#">
+          <span class="dh col-md-3">Show removed devices</span>
+          <span class="dh col-md-6"><input type="button" value="Show" onclick="window.location.href='/device/'"/></span>  
    </a>
 
    <a class="ph row" href="#">
