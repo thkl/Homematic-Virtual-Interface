@@ -102,8 +102,8 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 				if (co2 > lvlStrong) {
 					co2State = 2;
 				}
-				coChannel.updateValue("STATE",co2State,true);
-				coChannel.updateValue("CO2_LEVEL",co2,true);
+				coChannel.updateValue("STATE",co2State,true,true);
+				coChannel.updateValue("CO2_LEVEL",co2,true,true);
 			}
 			}
 			}
@@ -143,6 +143,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			try {
 			devices.some(function (device){
 				device.modules.some(function (module){
+					if (module.battery_percent) {
 					var bat = module.battery_percent;
 						Object.keys(that.modules).forEach(function (s_modId) {
 						if (s_modId===module["_id"]) {
@@ -156,6 +157,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 							}
 						}
 						});
+					}
 				});
 			});
 			} catch (e) {
