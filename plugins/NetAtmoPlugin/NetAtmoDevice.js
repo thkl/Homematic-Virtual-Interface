@@ -204,8 +204,8 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 		
 		
 		var refreshrate = this.configuration.getPersistValueForPluginWithDefault(this.plugin.name,"refresh",360)*1000;
-		if (refreshTime < 120000) {
-			refreshTime = 120000
+		if (refreshrate < 120000) {
+			refreshrate = 120000
 		}
 		
 		this.updateTimer = setTimeout(function() {

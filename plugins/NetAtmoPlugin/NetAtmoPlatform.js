@@ -77,7 +77,7 @@ api.on("error", function(error) {
 
     setTimeout(function() {
 	    that.connectApi(auth);
-    }, 30000)
+    }, 90000)
 
 });
 
