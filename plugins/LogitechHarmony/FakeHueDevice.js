@@ -37,7 +37,7 @@ FakeHueDevice.prototype.init = function() {
   var deviceSerial = "Harmony_"  + this.light.uniqueid;
   HomematicDevice = this.bridge.homematicDevice;
   
-  this.hmDevice = new HomematicDevice();
+  this.hmDevice = new HomematicDevice(this.name);
   
   this.log.debug("Init new Fake Hue Device for CCU %s With type %s",deviceSerial,JSON.stringify(this.hmType));
   

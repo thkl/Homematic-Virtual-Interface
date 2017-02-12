@@ -9,6 +9,7 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 		this.api =  api;
 		this.log = plugin.log;
 		this.bridge = plugin.server.getBridge();
+		this.plugin = plugin;
 		
 		HomematicDevice = plugin.server.homematicDevice;
 		
@@ -19,7 +20,7 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 		this.log.debug("Setup new LightifyDevice %s",serialprefix);
 		this.transitiontime = 4;
 
-		this.hmDevice = new HomematicDevice();
+		this.hmDevice = new HomematicDevice(this.plugin.getName());
 		// TODO Stored Devices
 		this.hmDevice.initWithType("VIR-LG-RGBW-DIM", serialprefix);
 		this.hmDevice.firmware = light["firmware_version"];

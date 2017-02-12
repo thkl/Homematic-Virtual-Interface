@@ -38,7 +38,7 @@ HttpPlatform.prototype.init = function() {
 HttpPlatform.prototype.initRemote=function(rmIndex) {
 	var that = this;
 
-	var hmDevice = new HomematicDevice();
+	var hmDevice = new HomematicDevice(this.getName());
 	var serial = "HTTP_Device_" + rmIndex;
 		
 	var data = this.bridge.deviceDataWithSerial(serial);
@@ -50,7 +50,7 @@ HttpPlatform.prototype.initRemote=function(rmIndex) {
 		hmDevice.initWithType("HM-RC-19_HTTP", serial);
 		this.bridge.addDevice(hmDevice,true);
 	} else {
-			this.bridge.addDevice(hmDevice,false);
+		this.bridge.addDevice(hmDevice,false);
 	}
 	
 	// this will trigered when a value of a channel was changed by the ccu

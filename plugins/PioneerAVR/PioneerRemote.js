@@ -19,7 +19,7 @@ var Pioneer_Remote = function(pioneer_bridge) {
 
 
 Pioneer_Remote.prototype.init = function(remoteName,index,HomematicDevice) {
-	this.hmDevice = new HomematicDevice();
+	this.hmDevice = new HomematicDevice(this.pioneer_bridge.name);
 	this.index = index;
 	var that = this;
 	

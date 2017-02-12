@@ -123,9 +123,7 @@ NetAtmoPlatform.prototype.saveSettings = function(settings) {
 
 NetAtmoPlatform.prototype.removeMyDevices = function() {
   var that = this;
-  this.devices.forEach(function (device){
-	  that.hm_layer.deleteDevice(device,false);
-  });
+  this.hm_layer.deleteDevicesByOwner(this.plugin.name);
 }
 
 NetAtmoPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {

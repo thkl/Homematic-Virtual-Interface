@@ -6,6 +6,7 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 	var that = this;
 	this.api =  netAtmoApi;
 	this.log = plugin.log;
+	this.plugin = plugin;
 	this.configuration = plugin.configuration;
 	this.bridge = plugin.server.getBridge();
 	this.modules = {};
@@ -19,16 +20,18 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 	
 		this.log.debug("Initialize NetAtmo Device with id %s",this.naId);
 
-		this.hmInside = new HomematicDevice();
+		this.hmInside = new HomematicDevice(this.plugin.getName());
 		this.hmInside.initWithType("HM-WDS40-TH-I-2_NA", serialprefix + "1");
+	
 		this.hmInside.firmware = naDevice["firmware"];
 		this.hmInside.serialNumber = this.naId;
 		this.bridge.addDevice(this.hmInside);
 		
-		this.hmCarbonDioxide = new HomematicDevice();
-		this.hmCarbonDioxide.initWithType("HM-CC-SCD", serialprefix + "2");
+		this.hmCarbonDioxide = new HomematicDevice(this.plugin.getName());
+		this.hmCarbonDioxide.initWithType("HM-CC-SCD_NA", serialprefix + "2");
 		this.hmCarbonDioxide.firmware = naDevice["firmware"];
 		this.hmCarbonDioxide.serialNumber = this.naId + "_C";
+	
 		this.bridge.addDevice(this.hmCarbonDioxide);
 		this.hm_device_name = "HM-WDS40-TH-I-2 "+ serialprefix + "1 / HM-CC-SCD " + serialprefix + "2";
 
@@ -41,7 +44,7 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 			
 			var mid = module["_id"];
 			if (module["type"] == "NAModule1") {
-				var hmModule = new HomematicDevice();
+				var hmModule = new HomematicDevice(that.plugin.getName());
 				hmModule.initWithType("HM-WDS10-TH-O_NA", serialprefix + mi);
 				hmModule.firmware = naDevice["firmware"];
 				hmModule.serialNumber = mid;
@@ -68,6 +71,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 
 		this.api.getMeasure(options, function(err, measure) {
 			if ((measure != undefined) && (measure[0]!=undefined)) {
+				that.log.debug("NetAtmo Measurement %s",JSON.stringify(measure));
 			var lastMeasure = measure[0]["value"]
 			if ((lastMeasure !=undefined ) && (lastMeasure[0]!=undefined)) { 
 
@@ -99,6 +103,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 					co2State = 2;
 				}
 				coChannel.updateValue("STATE",co2State,true);
+				coChannel.updateValue("CO2_LEVEL",co2,true);
 			}
 			}
 			}
@@ -132,6 +137,31 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 				});
 		});
 		
+		// Update Station Data to search for LowBat
+		this.api.getStationsData(function(err, devices) {
+			// search for modules
+			try {
+			devices.some(function (device){
+				device.modules.some(function (module){
+					var bat = module.battery_percent;
+						Object.keys(that.modules).forEach(function (s_modId) {
+						if (s_modId===module["_id"]) {
+							var hmDevice = that.modules[s_modId];
+							if (hmDevice) {
+								var channel = hmDevice.getChannelWithTypeAndIndex("MAINTENANCE","0");
+								if (channel) {
+									// forcing that
+									channel.updateValue("LOWBAT", (bat < 20) ,true,true);
+								}
+							}
+						}
+						});
+				});
+			});
+			} catch (e) {
+				that.log.error("NetAtmo getStationError %s",e);
+			}
+		});
 		
 		this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();

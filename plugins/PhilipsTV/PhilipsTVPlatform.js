@@ -76,7 +76,7 @@ PhilipsTVPlatform.prototype.init = function() {
 	
 
 	
-	this.hmDevice = new HomematicDevice();
+	this.hmDevice = new HomematicDevice(this.name);
 	this.hmDevice.initWithType("HM-LC-RGBW-WM", "PhilipsTV");
 	this.bridge.addDevice(this.hmDevice);
 

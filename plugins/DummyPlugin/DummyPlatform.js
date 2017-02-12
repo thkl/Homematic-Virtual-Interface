@@ -26,8 +26,9 @@ DummyPlatform.prototype.init = function() {
 	
 	// create a Device like this : 
 	
-	this.hmDevice = new HomematicDevice();
+	this.hmDevice = new HomematicDevice(this.getName());
 	this.hmDevice.initWithType("HM-LC-RGBW-WM", "Dummy Device");
+		
 	this.bridge.addDevice(this.hmDevice);
 
 	// this will trigered when a value of a channel was changed by the ccu

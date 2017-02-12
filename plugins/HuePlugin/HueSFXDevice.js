@@ -12,7 +12,7 @@ var HueSFXDevice = function(plugin) {
 	logger.info("Create one SFX Remote");
 
 	var serial = "HUEFX001";
-	this.hmDevice = new HomematicDevice();
+	this.hmDevice = new HomematicDevice(this.plugin.getName());
 
 	var data = this.bridge.deviceDataWithSerial(serial);
 	if (data!=undefined) {

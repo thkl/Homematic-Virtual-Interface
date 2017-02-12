@@ -1,0 +1,219 @@
+{
+	"channels": [
+		{
+			"adress": "0",
+			"direction": 2,
+			"flags": 3,
+			"paramsets": [
+				{
+					"id": "maint_ch_master",
+					"name": "MASTER",
+					"parameter": [
+					]
+				},
+				{
+					"id": "maint_ch_values",
+					"name": "VALUES",
+					"parameter": [
+						{
+							"flags": 9,
+							"name": "UNREACH",
+							"operations": 5,
+							"tab_order": 0,
+							"type": "BOOL"
+						},
+						{
+							"flags": 24,
+							"name": "STICKY_UNREACH",
+							"operations": 7,
+							"tab_order": 1,
+							"type": "BOOL"
+						},
+						{
+							"flags": 9,
+							"name": "CONFIG_PENDING",
+							"operations": 5,
+							"tab_order": 2,
+							"type": "BOOL"
+						},
+						{
+							"flags": 0,
+							"max": 127,
+							"min": 0,
+							"name": "AES_KEY",
+							"operations": 1,
+							"tab_order": 3,
+							"type": "INTEGER"
+						},
+						{
+							"flags": 1,
+							"name": "RSSI_DEVICE",
+							"operations": 5,
+							"tab_order": 4,
+							"type": "INTEGER"
+						},
+						{
+							"flags": 1,
+							"name": "RSSI_PEER",
+							"operations": 5,
+							"tab_order": 5,
+							"type": "INTEGER"
+						}
+					]
+				}
+			],
+			"type": "MAINTENANCE"
+		},
+		{
+			"adress": "1",
+			"direction": 2,
+			"flags": 1,
+			"paramsets": [
+				{
+					"id": "scd_ch_master",
+					"name": "MASTER",
+					"parameter": [
+						{
+							"flags": 1,
+							"name": "MSG_FOR_POS_A",
+							"tab_order": 0,
+							"type": "ENUM",
+							"valuelist": [
+								"NO_MSG",
+								"LEVEL_NORMAL"
+							]
+						},
+						{
+							"flags": 1,
+							"name": "MSG_FOR_POS_B",
+							"tab_order": 1,
+							"type": "ENUM",
+							"valuelist": [
+								"NO_MSG",
+								"LEVEL_NORMAL",
+								"LEVEL_ADDED_STRONG",
+								"LEVEL_ADDED"
+							]
+						},
+						{
+							"flags": 1,
+							"name": "MSG_FOR_POS_C",
+							"tab_order": 2,
+							"type": "ENUM",
+							"valuelist": [
+								"NO_MSG",
+								"LEVEL_NORMAL",
+								"LEVEL_ADDED_STRONG",
+								"LEVEL_ADDED"
+							]
+						},
+						{
+							"flags": 1,
+							"name": "MSG_FOR_POS_D",
+							"tab_order": 3,
+							"type": "ENUM",
+							"valuelist": [
+								"NO_MSG",
+								"LEVEL_NORMAL",
+								"LEVEL_ADDED_STRONG",
+								"LEVEL_ADDED"
+							]
+						},
+						{
+							"flags": 3,
+							"name": "AES_ACTIVE",
+							"tab_order": 4,
+							"type": "BOOL",
+							"vdefault": 0
+						},
+						{
+							"flags": 1,
+							"max": 1200,
+							"min": 600,
+							"name": "EVENT_FILTERTIME",
+							"tab_order": 5,
+							"type": "FLOAT",
+							"unit": "s",
+							"vdefault": 600
+						},
+						{
+							"flags": 1,
+							"max": 10,
+							"min": 1,
+							"name": "TRANSMIT_TRY_MAX",
+							"tab_order": 6,
+							"type": "INTEGER",
+							"vdefault": 6
+						}
+					]
+				},
+				{
+					"id": "scd_ch_values",
+					"name": "VALUES",
+					"parameter": [
+						{
+							"flags": 1,
+							"name": "STATE",
+							"operations": 5,
+							"tab_order": 0,
+							"type": "ENUM",
+							"valuelist": [
+								"LEVEL_NORMAL",
+								"LEVEL_ADDED",
+								"LEVEL_ADDED_STRONG"
+							]
+						},
+						{
+							"flags": 1,
+							"max": 5000,
+							"min": 0,
+							"name": "CO2_LEVEL",
+							"operations": 5,
+							"tab_order": 1,
+							"type": "INTEGER",
+							"unit": "ppm"
+						},
+						{
+							"flags": 3,
+							"name": "INSTALL_TEST",
+							"operations": 4,
+							"tab_order": 1,
+							"type": ""
+						}
+					]
+				},
+				{
+					"id": "scd_ch_link",
+					"name": "LINK",
+					"parameter": [
+						{
+							"flags": 1,
+							"name": "PEER_NEEDS_BURST",
+							"tab_order": 0,
+							"type": "BOOL",
+							"vdefault": 0
+						},
+						{
+							"flags": 1,
+							"name": "EXPECT_AES",
+							"tab_order": 1,
+							"type": "BOOL",
+							"vdefault": 0
+						}
+					]
+				}
+			],
+			"type": "SENSOR_FOR_CARBON_DIOXIDE"
+		}
+	],
+	"paramsets": [
+		{
+			"id": "remote_dev_master",
+			"name": "MASTER",
+			"parameter": [
+			]
+		}
+	],
+	"type": "HM-CC-SCD",
+	"version": 41
+}

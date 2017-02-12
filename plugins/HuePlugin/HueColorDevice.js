@@ -36,8 +36,8 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		 
 		var serial = light["uniqueid"];
 
-		this.hmDevice = new HomematicDevice();
-		
+		this.hmDevice = new HomematicDevice(this.plugin.name);
+
 	// try to load persistant object
 		if (serial != undefined) {
 			this.log.debug("Serial %s",serial);

@@ -6,6 +6,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 
 	var that = this;
 	this.log = plugin.log;
+	this.plugin = plugin;
 	this.ip = sonosIP;
 	this.port = sonosPort;
 	this.playername = playername;
@@ -59,7 +60,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	HomematicDevice = plugin.server.homematicDevice;
 
 
-	this.hmDevice = new HomematicDevice();
+	this.hmDevice = new HomematicDevice(this.plugin.getName());
 	
 	
 	var data = this.bridge.deviceDataWithSerial(playername);

@@ -10,6 +10,7 @@ var hueconf = require("node-hue-api");
 		this.api =  hueApi;
 		this.log = plugin.log;
 		this.bridge = plugin.server.getBridge();
+		this.plugin = plugin;
 		
 		HomematicDevice = plugin.server.homematicDevice;
 		
@@ -22,7 +23,8 @@ var hueconf = require("node-hue-api");
 		this.log.debug("Setup new Osram Plug Bridged Device %s",serialprefix + this.lightId );
 
 
-		this.hmDevice = new HomematicDevice();
+		this.hmDevice = new HomematicDevice(this.plugin.getName());
+		
 		this.hmDevice.initWithType("HM-LC-Sw1-Pl", serialprefix  + this.lightId );
 		this.hmDevice.firmware = light["swversion"];
 		this.bridge.addDevice(this.hmDevice);
