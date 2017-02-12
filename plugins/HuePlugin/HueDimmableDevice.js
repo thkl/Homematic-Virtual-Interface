@@ -37,7 +37,7 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 		 
 		var serial = light["uniqueid"];
 
-		this.hmDevice = new HomematicDevice(this.plugin.getName());
+		this.hmDevice = new HomematicDevice(this.plugin.name);
 
 	// try to load persistant object
 		if (serial != undefined) {
