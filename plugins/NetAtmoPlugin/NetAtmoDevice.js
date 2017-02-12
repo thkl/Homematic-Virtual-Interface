@@ -112,14 +112,14 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 				var pressure = lastMeasure[0][3];
 				var noice = lastMeasure[0][4];
 				
-				inside_channel.updateValue("TEMPERATURE",temp,true);
-				inside_channel.updateValue("HUMIDITY",hum,true);
+				inside_channel.updateValue("TEMPERATURE",temp,true,true);
+				inside_channel.updateValue("HUMIDITY",hum,true,true);
 				var dew_point = that.dew_point(temp, hum);
-			  	inside_channel.updateValue("DEW_POINT",dew_point,true);
+			  	inside_channel.updateValue("DEW_POINT",dew_point,true,true);
 			  	var absolute_humidity = that.absolute_humidity(temp, hum);
-			  	inside_channel.updateValue("ABS_HUMIDITY",absolute_humidity,true);
-			  	inside_channel.updateValue("AIR_PRESSURE",pressure,true);
-			  	inside_channel.updateValue("NOICE",noice,true);
+			  	inside_channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true);
+			  	inside_channel.updateValue("AIR_PRESSURE",pressure,true,true);
+			  	inside_channel.updateValue("NOICE",noice,true,true);
 			}
 			
 			var coChannel = that.hmCarbonDioxide.getChannelWithTypeAndIndex("SENSOR_FOR_CARBON_DIOXIDE","1");
@@ -162,12 +162,12 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			  			if (channel != undefined) {
 				  			var temp = lastMeasure[0][0];
 				  			var hum = lastMeasure[0][1];
-			  				channel.updateValue("TEMPERATURE",temp,true);
-			  				channel.updateValue("HUMIDITY",hum,true);
+			  				channel.updateValue("TEMPERATURE",temp,true,true);
+			  				channel.updateValue("HUMIDITY",hum,true,true);
 			  				var dew_point = that.dew_point(temp, hum);
-			  				channel.updateValue("DEW_POINT",dew_point,true);
+			  				channel.updateValue("DEW_POINT",dew_point,true,true);
 			  				var absolute_humidity = that.absolute_humidity(temp, hum);
-			  				channel.updateValue("ABS_HUMIDITY",absolute_humidity,true);
+			  				channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true);
 						}
 					}
 					}
