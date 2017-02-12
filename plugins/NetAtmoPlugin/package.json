@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-netatmodevice",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Virtual Netatmo Device",
   "license": "ISC",
   "keywords": [

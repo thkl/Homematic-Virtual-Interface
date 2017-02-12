@@ -99,7 +99,7 @@ NetAtmoPlatform.prototype.showSettings = function(dispatched_request) {
 	var password = "";
 	
 	var auth = this.configuration.getValueForPlugin(this.name,"auth");
-	this.log.debug(auth);
+
 	if (auth != undefined) {
 		client_id =  auth["client_id"] || "";
 		client_secret = auth["client_secret"]  || "";
