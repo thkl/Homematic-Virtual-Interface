@@ -170,7 +170,7 @@
 							"name": "CO2_LEVEL",
 							"operations": 5,
 							"tab_order": 1,
-							"type": "INTEGER",
+							"type": "FLOAT",
 							"unit": "ppm"
 						},
 						{

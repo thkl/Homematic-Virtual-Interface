@@ -20,19 +20,39 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 	
 		this.log.debug("Initialize NetAtmo Device with id %s",this.naId);
 
+
 		this.hmInside = new HomematicDevice(this.plugin.getName());
-		this.hmInside.initWithType("HM-WDS40-TH-I-2_NA", serialprefix + "1");
-	
-		this.hmInside.firmware = naDevice["firmware"];
-		this.hmInside.serialNumber = this.naId;
-		this.bridge.addDevice(this.hmInside);
+
+		var data = this.bridge.deviceDataWithSerial(this.naId);
+		if (data!=undefined) {
+				this.hmInside.initWithStoredData(data);
+		}
+
+		if (this.hmInside.initialized === false) {
+			this.hmInside.initWithType("HM-WDS40-TH-I-2_NA", serialprefix + "1");
+			this.hmInside.firmware = naDevice["firmware"];
+			this.hmInside.serialNumber = this.naId;
+			this.bridge.addDevice(this.hmInside,true);
+		} else {
+			this.bridge.addDevice(this.hmInside,false);
+		}
 		
 		this.hmCarbonDioxide = new HomematicDevice(this.plugin.getName());
-		this.hmCarbonDioxide.initWithType("HM-CC-SCD_NA", serialprefix + "2");
-		this.hmCarbonDioxide.firmware = naDevice["firmware"];
-		this.hmCarbonDioxide.serialNumber = this.naId + "_C";
-	
-		this.bridge.addDevice(this.hmCarbonDioxide);
+
+		var data = this.bridge.deviceDataWithSerial(this.naId + "_C");
+		if (data!=undefined) {
+				this.hmCarbonDioxide.initWithStoredData(data);
+		}
+
+		if (this.hmCarbonDioxide.initialized === false) {
+			this.hmCarbonDioxide.initWithType("HM-CC-SCD_NA", serialprefix + "2");
+			this.hmCarbonDioxide.firmware = naDevice["firmware"];
+			this.hmCarbonDioxide.serialNumber = this.naId + "_C";
+			this.bridge.addDevice(this.hmCarbonDioxide,true);
+		} else {
+			this.bridge.addDevice(this.hmCarbonDioxide,false);
+		}
+
 		this.hm_device_name = "HM-WDS40-TH-I-2 "+ serialprefix + "1 / HM-CC-SCD " + serialprefix + "2";
 
 		var mi = 3;
@@ -43,12 +63,21 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 		modules.forEach(function (module) {
 			
 			var mid = module["_id"];
-			if (module["type"] == "NAModule1") {
+			if (module["type"] === "NAModule1") {
 				var hmModule = new HomematicDevice(that.plugin.getName());
-				hmModule.initWithType("HM-WDS10-TH-O_NA", serialprefix + mi);
-				hmModule.firmware = naDevice["firmware"];
-				hmModule.serialNumber = mid;
-				that.bridge.addDevice(hmModule);
+				var data = that.bridge.deviceDataWithSerial(mid);
+				if (data != undefined) {
+					hmModule.initWithStoredData(data);
+				}
+				
+				if (hmModule.initialized === false) {
+					hmModule.initWithType("HM-WDS10-TH-O_NA", serialprefix + mi);
+					hmModule.firmware = naDevice["firmware"];
+					hmModule.serialNumber = mid;
+					that.bridge.addDevice(hmModule,true);
+				} else {
+					that.bridge.addDevice(hmModule,false);
+				}
 				that.modules[mid] = hmModule;
 				that.hm_device_name = that .hm_device_name  + " / HM-WDS10-TH-O " + serialprefix + mi; 
 			}
@@ -90,6 +119,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			
 			var coChannel = that.hmCarbonDioxide.getChannelWithTypeAndIndex("SENSOR_FOR_CARBON_DIOXIDE","1");
 			if (coChannel != undefined) {
+				that.log.debug("Set CO2 Level from Measuremet %s",JSON.stringify(lastMeasure[0]));
 				var co2 = lastMeasure[0][2];
 				var co2State = 0;
 				
@@ -104,6 +134,8 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 				}
 				coChannel.updateValue("STATE",co2State,true,true);
 				coChannel.updateValue("CO2_LEVEL",co2,true,true);
+			} else {
+				that.log.warn("CO2 Channel not found");
 			}
 			}
 			}
