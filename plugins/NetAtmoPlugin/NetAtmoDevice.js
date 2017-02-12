@@ -202,14 +202,15 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			}
 		});
 		
-		var refreshTime = this.configuration.setPersistValueForPlugin(this.name,"refresh",360); 
-		if (refreshTime < 120) {
-			refreshTime = 120
+		
+		var refreshrate = this.configuration.getPersistValueForPluginWithDefault(this.plugin.name,"refresh",360)*1000;
+		if (refreshTime < 120000) {
+			refreshTime = 120000
 		}
 		
 		this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();
-		 }, (refreshTime * 1000));
+		}, refreshrate);
 }
 
 // calculations from https://www.wetterochs.de/wetter/feuchte.html

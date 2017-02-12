@@ -57,7 +57,8 @@ NetAtmoPlatform.prototype.init = function() {
 }
 
 NetAtmoPlatform.prototype.connectApi = function(auth) {
-	auth['scope'] = "read_station read_thermostat"
+this.log.info("Connecting to netatmo Service.")
+auth['scope'] = "read_station read_thermostat"
 var api = new netatmo(auth);
 var i = 0;
 var that = this;		
@@ -73,11 +74,17 @@ api.getStationsData(function(err, devices) {
 api.on("error", function(error) {
     // When the "error" event is emitted, this is called
     that.log.error('Netatmo threw an error: ' + error);
+
+    setTimeout(function() {
+	    that.connectApi(auth);
+    }, 30000)
+
 });
 
 api.on("warning", function(error) {
     // When the "warning" event is emitted, this is called
-    that.log.log('Netatmo threw a warning: ' + error);
+    that.log.warn('Netatmo threw a warning: ' + error);
+    
 });
 
 }
