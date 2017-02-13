@@ -85,7 +85,7 @@
 							"operations": 5,
 							"tab_order": 0,
 							"type": "FLOAT",
-							"unit": "°C"
+							"unit": "C"
 						},
 						{
 							"flags": 1,
@@ -105,7 +105,7 @@
 							"operations": 5,
 							"tab_order": 2,
 							"type": "FLOAT",
-							"unit": "°C"
+							"unit": "C"
 						},
 						{
 							"flags": 1,
@@ -115,7 +115,7 @@
 							"operations": 5,
 							"tab_order": 3,
 							"type": "FLOAT",
-							"unit": "g/m³"
+							"unit": "g/m3"
 						}
 
 					]

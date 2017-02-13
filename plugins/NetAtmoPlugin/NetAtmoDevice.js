@@ -110,7 +110,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 				var temp = lastMeasure[0][0];
 				var hum = lastMeasure[0][1];
 				var pressure = lastMeasure[0][3];
-				var noice = lastMeasure[0][4];
+				var noise = lastMeasure[0][4];
 				
 				inside_channel.updateValue("TEMPERATURE",temp,true,true);
 				inside_channel.updateValue("HUMIDITY",hum,true,true);
@@ -119,7 +119,7 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			  	var absolute_humidity = that.absolute_humidity(temp, hum);
 			  	inside_channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true);
 			  	inside_channel.updateValue("AIR_PRESSURE",pressure,true,true);
-			  	inside_channel.updateValue("NOICE",noice,true,true);
+			  	inside_channel.updateValue("NOISE",noise,true,true);
 			}
 			
 			var coChannel = that.hmCarbonDioxide.getChannelWithTypeAndIndex("SENSOR_FOR_CARBON_DIOXIDE","1");
