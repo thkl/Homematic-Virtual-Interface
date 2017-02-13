@@ -624,9 +624,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
              */
             debug: function () {
                 var args = Array.prototype.slice.call(arguments);
-                args.unshift(name + ':');
-                that.log.debug.apply(that.log, args);
-                logicLogger.debug(args.toString());
+				var rep = args.slice(1, args.length);
+				var i=0;
+				var output = args[0].replace(/%s/g, function(match,idx) {
+					var subst=rep.slice(i, ++i).toString();
+					return( subst );
+  				});
+                logicLogger.debug(name + ':' + output);
             },
             /**
              * Log an info message
@@ -636,9 +640,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
              */
             info: function () {
                 var args = Array.prototype.slice.call(arguments);
-                args.unshift(name + ':');
-                that.log.info.apply(that.log, args);
-                logicLogger.info(args.toString());
+				var rep = args.slice(1, args.length);
+				var i=0;
+				var output = args[0].replace(/%s/g, function(match,idx) {
+					var subst=rep.slice(i, ++i).toString();
+					return( subst );
+  				});
+                logicLogger.info(name + ':' + output);
             },
             /**
              * Log a warning message
@@ -648,9 +656,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
              */
             warn: function () {
                 var args = Array.prototype.slice.call(arguments);
-                args.unshift(name + ':');
-                that.log.warn.apply(that.log, args);
-                logicLogger.warn(args.toString());
+				var rep = args.slice(1, args.length);
+				var i=0;
+				var output = args[0].replace(/%s/g, function(match,idx) {
+					var subst=rep.slice(i, ++i).toString();
+					return( subst );
+  				});
+                logicLogger.warn(name + ':' + output);
             },
             /**
              * Log an error message
@@ -660,9 +672,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
              */
             error: function () {
                 var args = Array.prototype.slice.call(arguments);
-                args.unshift(name + ':');
-                that.log.error.apply(that.log, args);
-                logicLogger.error(args.toString());
+				var rep = args.slice(1, args.length);
+				var i=0;
+				var output = args[0].replace(/%s/g, function(match,idx) {
+					var subst = rep.slice(i, ++i).toString();
+					return( subst );
+  				});
+                logicLogger.error(name + ':' + output);
             }
         },
         
