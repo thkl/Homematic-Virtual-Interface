@@ -105,7 +105,9 @@
 	<li><b>executeCCUProgram(program).then(function () {})</b> Will launch the named programm at your ccu</li>
 	<li><b>setVariables({"Name1":Value1,"Name2":value2,"NameN":vnalue})</b> Will set new Variable Values</li>
 	<li><b>schedule('m h d M Y', {"name":"SchedulerName"}, function () {})</b> Will schedule a function for the given time. Syntax is like unix cron</li>
-	
+	<li><b>fetchMessages().then(function (messages) {})</b>will fetch all CCU system messages into the array  messages.</li>
+	<li><b>confirmMessages(messages)</b>will confirm all ccu system messages from messages array.</li>
+
 </ul>
 </div>
 	

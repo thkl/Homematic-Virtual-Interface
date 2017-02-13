@@ -377,6 +377,36 @@ LogicalPlatform.prototype.executeCCUProgram = function(programName,callback) {
    });
 }
 
+LogicalPlatform.prototype.fetchMessages = function(callback) {
+   var that = this;
+   var script = "boolean df = true;Write(\'{\"messages\":[\');var i=dom.GetObject(41);if(i.State()>0){var s=dom.GetObject(ID_SERVICES);string sid;foreach(sid,s.EnumIDs()){var o=dom.GetObject(sid);if (o.AlState()==asOncoming){if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\'#sid#\'\",\');Write(\'\"obj\": \"\'#o.Name()#\'\",\');var n = dom.GetObject(o.AlTriggerDP());if ((n) && (n.Device())) {var d=dom.GetObject(n.Device());Write(\'\"trg\":\"\'#d.Name()#\'\",\');}Write(\'\"time\":\"\'#o.Timestamp()#\'\"}\');}}}Write(\']}\');"
+   
+   this.regaCommand(script,function (result){
+	   try {
+		   var obj = JSON.parse(result);
+		   callback(obj);
+ 	   } catch (e) {
+	 	   that.error(e);
+	   }
+   });
+}
+
+
+LogicalPlatform.prototype.confirmMessages = function(messages,callback) {
+   var that = this;
+   var script = "var o;"
+   messages.some(function (message){
+	  script = script + "o=dom.GetObject(" + message.id + ");if(o.State()==true){o.AlReceipt();}"
+   });
+   
+   this.regaCommand(script,function (result){
+	   try {
+		   callback();
+ 	   } catch (e) {
+	 	   that.error(e);
+	   }
+   });
+}
 
 
 
@@ -723,6 +753,24 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 				});
 	        }	);
         },
+       
+        fetchMessages:   function Sandbox_fetchMessages() {
+        	return new Promise(function (resolve,reject) {
+				that.fetchMessages(function(value){
+					resolve(value);
+				});
+	        }	);
+        }, 
+
+        confirmMessages:   function Sandbox_confirmMessages(messages) {
+        	return new Promise(function (resolve,reject) {
+				that.confirmMessages(messages,function(value){
+					resolve(value);
+				});
+	        }	);
+        }, 
+        
+        
 
         getVariables:   function Sandbox_get_Variables(varnames) {
         	return new Promise(function (resolve,reject) {
