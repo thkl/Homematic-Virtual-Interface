@@ -294,7 +294,7 @@ HarmonyPlatform.prototype.buildCCUObjectList = function(dispatched_request,editI
 																	  				  "lamp_index":lightdevice["index"],
 																					  "hm_device_type":type,
 																	  				  "ctype":lightdevice["ctype"],
-																					  "adress":lightdevice["adress"] ||Ê"Browse"});
+																					  "adress":lightdevice["adress"] || "Browse"});
 			}
 	});
 	return fakeLights;
