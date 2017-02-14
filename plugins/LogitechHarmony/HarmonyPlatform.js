@@ -419,6 +419,16 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 
 		}
 		break;
+
+
+		case "ccu_object.new":
+		{
+			var lighttemplatefake = dispatchedRequest.getTemplate(this.plugin.pluginPath , "list_lamp_ccu_object_edit.html",null);
+			ccuObjects = ccuObjects + dispatchedRequest.fillTemplate(lighttemplatefake,{"lamp_name":"New Device",
+																						  "lamp_index":(50 + this.flobjects.length )});
+
+		}
+		break;
 		
 		
 		
