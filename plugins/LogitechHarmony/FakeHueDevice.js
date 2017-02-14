@@ -28,7 +28,7 @@ var FakeHueDevice = function (hueserver,fobject) {
 	this.ctype = fobject["ctype"]
 	this.isReal = false;
 	this.rpcClient = this.hueserver.plugin.hm_layer.addRPCClient("BidCos-RF")
-	this.log.debug("Fake Data %s",fobject);
+	this.log.debug("Fake Data %s",fobject)
 	this.init();
 }	
 	
@@ -58,11 +58,11 @@ FakeHueDevice.prototype.initRealDevice = function(hmtype) {
 	  if (parameter=="on") {
 		
 		if (that.ctype=="SWITCH") {
-			that.rpcClient.callRPCMethod("BidCos-RF","setValue",[that.adress,"STATE",state], function(error, value) {});
+			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"STATE",state], function(error, value) {});
 		}
 		
 		if (that.ctype=="DIMMER") {
-			that.rpcClient.callRPCMethod("BidCos-RF","setValue",[that.adress,"STATE",(state==true)?1:0], function(error, value) {});
+			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"STATE",(state==true)?1:0], function(error, value) {});
   		}
 	  }
   })
