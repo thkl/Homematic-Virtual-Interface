@@ -66,24 +66,20 @@ GenericAlexaHomematicService.prototype =  {
 
 
 	setState: function(adress,datapoint,value,callback) {
-		if (this.rpcClient) {
-		this.rpcClient.callRPCMethod(this.ccuInterface,"setValue",[adress,datapoint,value], function(error, value) {
+		this.hm_layer.callRPCMethod(this.ccuInterface,"setValue",[adress,datapoint,value], function(error, value) {
 			if (callback) {
 				callback(value);
 			}
 		});
-		}
 	},
     
     
     getState: function(adress,datapoint,callback) {
-	    if (this.rpcClient) {
-		this.rpcClient.callRPCMethod(this.ccuInterface,"getValue",[adress,datapoint], function(error, value) {
+		this.hm_layer.callRPCMethod(this.ccuInterface,"getValue",[adress,datapoint], function(error, value) {
 			if (callback) {
 				callback(error,value);
 			}
 		});
-		}
 	}
 	
 }

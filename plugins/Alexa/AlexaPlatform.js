@@ -52,7 +52,7 @@ AlexaPlatform.prototype.init = function() {
     this.log.debug("CCU is at %s",ccuIP);
     
     this.rf_client = this.bridge.addRPCClient('BidCos-RF')
-        
+    this.log.debug("Alexa RF Client" ,this.rf_client)
     if (this.configuration.getValueForPluginWithDefault(this.name,"enable_hmip",false)) {
 	    // Create an optional HMIP Client
 		this.hmip_client = this.bridge.addRPCClient('HmIP-RF')
