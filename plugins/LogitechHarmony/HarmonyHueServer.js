@@ -362,7 +362,11 @@ HarmonyHueServer.prototype.validateMethod = function(dispatched_request,allowedM
 HarmonyHueServer.prototype.activateLinkMode = function() {
 	this.linkMode = true;
 	var that = this;
-	setTimeout(function() {that.linkMode = false;}, 30000);
+	this.log.info("Activate Pairing Mode");
+	setTimeout(function() {
+		that.log.info("Pairing Mode Ended");
+		that.linkMode = false;
+	}, 30000);
 }
 
 HarmonyHueServer.prototype.error = function(dispatched_request,type,address,message) {
