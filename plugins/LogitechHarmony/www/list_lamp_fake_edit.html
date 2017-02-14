@@ -1,19 +1,16 @@
-	<a class="ph" href="#">
+<div class="ph row" href="#">
 
 		<form action="index.html" method="get">
 	<input type="hidden" name="do" value="fake.save" >
 	<input type="hidden" name="id" value="$lamp_index$" >
 
-          <span class="dh">$lamp_index$</span> - 
-          <span class="dh">Name <input name="name" size="10" value="$lamp_name$" /></span>
-          
-         <span class="dy"><input type="button" onclick="window.location='index.html?do=fake.delete&id=$lamp_index$'" value="Remove" /></span>
-          
-          
-          <span class="dy"><input type="submit" value="Save" /></span>
-          <span class="dy">Hm Type <select name="type">
-	          <option value="0" $switch_select$>Switch</option>
-	          <option value="1" $dimmer_select$>Dimmer</option>
+          <span class="dh col-md-1">$lamp_index$ - </span>
+          <span class="dh col-md-4">Name <input name="name" size="10" value="$lamp_name$" /></span>
+          <span class="dh col-md-3">Hm Type <select name="type">
+	          <option value="0" $switch_select$>New Switch</option>
+	          <option value="1" $dimmer_select$>New Dimmer</option>
 	      </select></span>
+          <span class="dh col-md-2"><input type="submit" value="Save" /></span>
+         <span class="dh col-md-2"><input type="button" onclick="window.location='index.html?do=fake.delete&id=$lamp_index$'" value="Remove" /></span>
 </form>
-</a>
+</div>

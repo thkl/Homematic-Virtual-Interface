@@ -142,14 +142,10 @@ LogicalPlatform.prototype.init = function() {
     // Publish Server to CCU
     var ccuIP =  this.hm_layer.ccuIP;
     
-    this.client = xmlrpc.createClient({
-      host: ccuIP,
-      port: 2001,
-      path: "/"
-    });
+	this.bridge.addRPCClient('BidCos-RF')
     
     this.log.debug("CCU RPC Init Call for interface %s",this.interface);
-    this.client.methodCall("init", ["http://" + localIP + ":" + port , "hvl_BidCos" ], function(error, value) {
+    this.bridge.callRPCMethod('BidCos-RF','init', ["http://" + localIP + ':' + port , 'hvl_BidCos' ], function(error, value) {
       that.log.debug("CCU Response ...Value (%s) Error : (%s)",JSON.stringify(value) , error);
     });
 
@@ -162,7 +158,7 @@ LogicalPlatform.prototype.shutdown = function() {
 	Object.keys(scheduler.scheduledJobs).forEach(function(job){
 	   scheduler.cancelJob(job); 
     });
-    this.client.methodCall("init", ["http://" + localIP + ":" + port , null ], function(error, value) {
+    this.bridge.callRPCMethod('BidCos-RF','init', ['http://' + localIP + ':' + port , null ], function(error, value) {
       that.log.debug("CCU Event listener removed (Yes we are good citicens) Error : (%s)",JSON.stringify(value) , error);
     });
     
@@ -288,7 +284,7 @@ LogicalPlatform.prototype.createScript = function(source, name) {
 
 LogicalPlatform.prototype.sendValueRPC = function(adress,datapoint,value,callback) {
 	var that = this;
-	this.client.methodCall("setValue",[adress,datapoint,value], function(error, value) {
+	this.bridge.callRPCMethod('BidCos-RF','setValue',[adress,datapoint,value], function(error, value) {
 		that.doCache(adress,datapoint,value);
 		callback();
 	});
@@ -296,7 +292,7 @@ LogicalPlatform.prototype.sendValueRPC = function(adress,datapoint,value,callbac
 
 LogicalPlatform.prototype.internal_getState = function(adress,datapoint,callback) {
 	var that = this;
-	this.client.methodCall("getValue", [adress,datapoint], function(error, value) {
+	this.bridge.callRPCMethod('BidCos-RF','getValue', [adress,datapoint], function(error, value) {
 		that.doCache(adress,datapoint,value);
 		callback(value);
 	});

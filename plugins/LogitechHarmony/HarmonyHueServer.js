@@ -164,7 +164,7 @@ HarmonyHueServer.prototype.changeFakeLightDevice = function(lightId,newLight) {
 		this.log.debug("Remove Light Object %s",device.index);
 		this.removeLightDevice(device);
 		if (newLight != undefined) {
-			var fhue = new FakeHueDevice(this,newLight["name"],newLight["type"],newLight["index"]);
+			var fhue = new FakeHueDevice(this,newLight);
 		}
 	}
 }

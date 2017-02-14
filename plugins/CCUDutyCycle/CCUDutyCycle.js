@@ -24,13 +24,8 @@ util.inherits(CCUDutyCycle, HomematicVirtualPlatform)
 CCUDutyCycle.prototype.init = function () {
   var that = this
   this.dutyCycle = {};
-  var ccuIP =  this.bridge.ccuIP;
-    
-  this.client = xmlrpc.createClient({
-      host: ccuIP,
-      port: 2001,
-      path: "/"
-  });
+  
+  this.bridge.addRPCClient('BidCos-RF')
 
   this.queryCCU();
 
@@ -42,14 +37,14 @@ CCUDutyCycle.prototype.init = function () {
 
 CCUDutyCycle.prototype.queryCCU = function () {
 	var that = this;
-	this.log.debug("Query CCU");
-	this.client.methodCall("listBidcosInterfaces",[], function(error, value) {
+	
+	this.bridge.callRPCMethod('BidCos-RF','listBidcosInterfaces',[], function(error, value) {
 		if (value) {
 			value.some(function (ccuInterface){
-				var adr = ccuInterface.ADDRESS;
-				var dc = ccuInterface.DUTY_CYCLE;
-				var tp = ccuInterface.TYPE;
-				that.dutyCycle[adr] = {"adress":adr,"dutycycle":dc,"type":tp};
+				var adr = ccuInterface.ADDRESS
+				var dc = ccuInterface.DUTY_CYCLE
+				var tp = ccuInterface.TYPE
+				that.dutyCycle[adr] = {'adress':adr,'dutycycle':dc,'type':tp};
 				dcLogger.info("Interface %s Type %s DutyCycle %s",adr,tp,dc);
 			});
 		}		

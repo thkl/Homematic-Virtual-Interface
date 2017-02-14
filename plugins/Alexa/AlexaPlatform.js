@@ -51,28 +51,16 @@ AlexaPlatform.prototype.init = function() {
     var ccuIP =  this.hm_layer.ccuIP;
     this.log.debug("CCU is at %s",ccuIP);
     
-    this.rf_client = xmlrpc.createClient({
-      host: ccuIP,
-      port: 2001,
-      path: "/"
-    });
-    
+    this.rf_client = this.bridge.addRPCClient('BidCos-RF')
+        
     if (this.configuration.getValueForPluginWithDefault(this.name,"enable_hmip",false)) {
 	    // Create an optional HMIP Client
-		this.hmip_client = xmlrpc.createClient({
-			host: ccuIP,
-			port: 2010,
-			path: "/"
-			});
+		this.hmip_client = this.bridge.addRPCClient('HmIP-RF')
     }
     
     if (this.configuration.getValueForPluginWithDefault(this.name,"enable_wired",false)) {
     	// Create an optional Wired Client
-		this.wired_client = xmlrpc.createClient({
-			host: ccuIP,
-			port: 2000,
-			path: "/"
-		});
+		this.wired_client =  this.bridge.addRPCClient('BidCos-Wired')
 	}
     
     this.reloadApplicances();
@@ -568,70 +556,50 @@ AlexaPlatform.prototype.channelService = function(channelType) {
 }
 
 AlexaPlatform.prototype.loadHMDevices = function(callback) {
-    var that = this;
-    var result_list = {};
-    
-    var ifSelector = "(oInterface.Name() == 'BidCos-RF')";
+    var that = this
+    var result_list = {}
+    var interfaces = ['BidCos-RF']
     
     if (this.wired_client) {
-	    ifSelector = ifSelector + " || (oInterface.Name() == 'BidCos-Wired')"
+	    interfaces.push('BidCos-Wired')
     }
 
     if (this.hmip_client) {
-	    ifSelector = ifSelector + " || (oInterface.Name() == 'HmIP-RF')"
+	    interfaces.push('HmIP-RF')
     }
     
-    
-    var script = "string sDeviceId;string sChannelId;boolean df = true;Write(\'{\"devices\":[\');foreach(sDeviceId, root.Devices().EnumIDs()){object oDevice = dom.GetObject(sDeviceId);if(oDevice){var oInterface = dom.GetObject(oDevice.Interface());if (" + ifSelector + ") { if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # sDeviceId # \'\",\');Write(\'\"if\": \"\' # oInterface # \'\",\');Write(\'\"name\": \"\' # oDevice.Name() # \'\",\');Write(\'\"address\": \"\' # oDevice.Address() # \'\",\');Write(\'\"type\": \"\' # oDevice.HssType() # \'\",\');Write(\'\"channels\": [\');boolean bcf = true;foreach(sChannelId, oDevice.Channels().EnumIDs()){object oChannel = dom.GetObject(sChannelId);if(bcf) {bcf = false;} else {Write(\',\');}Write(\'{\');Write(\'\"cId\": \' # sChannelId # \',\');Write(\'\"name\": \"\' # oChannel.Name() # \'\",\');if(oInterface){Write(\'\"intf\": \"\' # oInterface.Name() 	# \'\",\');Write(\'\"address\": \"\' # oInterface.Name() #\'.'\ # oChannel.Address() # \'\",\');}Write(\'\"type\": \"\' # oChannel.HssType() # \'\"\');Write(\'}\');}Write(\']}\');}}}Write(\']}\');";
-    
-    new regaRequest(this.server.getBridge(),script,function(result){
-	    
-	    try {
-		    if (result) {
-		    var jobj = JSON.parse(result);
+	this.hm_layer.loadCCUDevices(interfaces,function (jobj){
+		if (jobj) {
 		    jobj.devices.forEach(function (device){
 			    device.channels.forEach(function (channel){
 				    var intf = channel.intf;
-				   var service = that.channelService(intf + "." + channel.type);
+				   var service = that.channelService(intf + "." + channel.type)
 				   if (service) {
-					   that.log.debug("Service %s found",service);
-					   var address = channel.address;
-					   address = address.replace('BidCos-RF.', '');
-					   if (that.wired_client) {address = address.replace('BidCos-Wired.', '');}
-					   if (that.hmip_client) {address = address.replace('HmIP-RF.', '');}
-					   result_list[channel.address] = {"device":device.name,"address":address,"name":channel.name,"service":service};   
-				   };
-			    });
-		    });
-			}    
-	    } catch (e) {
-		    console.log(e.stack);
-	    }
-	    
-	    callback(result_list);
-    });
+					   that.log.debug("Service %s found",service)
+					   var address = channel.address
+					   address = address.replace('BidCos-RF.', '')
+					   if (that.wired_client) {address = address.replace('BidCos-Wired.', '')}
+					   if (that.hmip_client) {address = address.replace('HmIP-RF.', '')}
+					   result_list[channel.address] = {"device":device.name,"address":address,"name":channel.name,"service":service}   
+				   }
+			    })
+		    })
+	    callback(result_list)
+	   }
+    })
 }
 
 AlexaPlatform.prototype.loadCCUProgramms = function(callback) {
-    var that = this;
-    var result_list = {};
-    var script = "string pid;boolean df = true;Write(\'{\"programs\":[\');foreach(pid, dom.GetObject(ID_PROGRAMS).EnumUsedIDs()){var prg = dom.GetObject(pid);if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # pid # \'\",\"name\": \"\' # prg.Name() # \'\"}\');}Write(\"]}\");\";"
-    
-    new regaRequest(this.server.getBridge(),script,function(result){
-	    
-	    try {
-		    if (result) {
-		    var jobj = JSON.parse(result);
-		    jobj.programs.forEach(function (program){
-				result_list["P:" + program.id] = {"device":program.name,"address":"P:" + program.id,"name":program.name,"service":"AlexaHomematicProgramService"};   
-			});
-			}  
-	    } catch (e) {
-		    console.log(e.stack);
-	    }
-	    
-	    callback(result_list);
-    });
+    var that = this
+    var result_list = {}
+    this.hm_layer.loadCCUProgramms( function (jobj) {
+    	if (jobj) {	
+    	jobj.programs.forEach(function (program){
+			result_list["P:" + program.id] = {"device":program.name,"address":"P:" + program.id,"name":program.name,"service":"AlexaHomematicProgramService"};   
+		})
+	    callback(result_list)
+		}  
+	})
 }
 
 AlexaPlatform.prototype.loadVirtualDevices = function(callback) {
@@ -666,9 +634,7 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 	var template = "index.html";
 	
 	var requesturl = dispatched_request.request.url;
-	
 	var queryObject = url.parse(requesturl,true).query;
-
 	if (queryObject["do"]!=undefined) {
 		
 		switch (queryObject["do"]) {

@@ -1,0 +1,22 @@
+<div class="ph row" href="#">
+
+	<form action="index.html" method="get">
+	<input type="hidden" name="do" value="fake.save" >
+	<input type="hidden" name="id" value="$lamp_index$" >
+	<input type="hidden" name="device.adress" id="device.adress" value="$adress$" >
+	<input type="hidden" name="device.ctype" id="device.ctype" value="$ctype$" >
+
+          <span class="dh col-md-1">$lamp_index$ - </span>
+          <span class="dh col-md-3">Name <input id="device.name" name="name" size="10" value="$lamp_name$" /></span>
+          <span class="dh col-md-2"><select id="type" name="type">
+	          <option value="3" $switch_select$>Device</option>
+	          <option value="4" $dimmer_select$>Program</option>
+	      </select></span>
+          <span class="dh col-md-3"><span id="device.device_2">$adress$</span>&nbsp;<a href='javascript:loadObjects()'>[...]</a></span>
+ 		  <span class="dh col-md-1"><input type="submit" value="Save" /></span>
+		  <span class="dh col-md-1"><input type="button" onclick="window.location='index.html?do=fake.delete&id=$lamp_index$'" value="Remove" /></span>
+          <span class="dh col-md-1"></span>
+</form>
+</div>
+
+<div class="row"><div class="col-md-12" id="devicelist"></div></div>

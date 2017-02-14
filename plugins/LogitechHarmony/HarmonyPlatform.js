@@ -31,17 +31,18 @@ util.inherits(HarmonyPlatform, HomematicVirtualPlatform);
 
 
 HarmonyPlatform.prototype.init = function() {
-	var that = this;
-    this.hm_layer = this.server.getBridge();
-	this.harmonyServer = new HarmonyHueServer(this);
-	this.harmonyClient = new HarmonyClient(this);
-	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
+	var that = this
+    this.hm_layer = this.server.getBridge()
+	this.harmonyServer = new HarmonyHueServer(this)
+	this.harmonyClient = new HarmonyClient(this)
+	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")
+	this.supportedChannels = ["BidCos-RF.SWITCH","BidCos-RF.DIMMER","BidCos-RF.BLIND"]
+	this.flobjects = this.getFakeLights()
 }
 
 HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
   var result = undefined;
-  var flobjects = this.getFakeLights();
-  flobjects.forEach(function (flo) {
+  this.flobjects.forEach(function (flo) {
 	 if (flo["index"] == lightId) {
 		 result = flo; 
 	 }
@@ -55,12 +56,12 @@ HarmonyPlatform.prototype.shutdown = function() {
 }
 
 
-HarmonyPlatform.prototype.updateFakeLight = function(newflo) {
+HarmonyPlatform.prototype.updateFakeLight = function(newflo,callback) {
   var that = this;
   this.log.debug("Updating Object %s",JSON.stringify(newflo));
   var nobjects = [];
-  var flobjects = this.getFakeLights();
-  flobjects.forEach(function (flo) {
+  this.flobjects.forEach(function (flo) {
+	  
 	 if (flo["index"] == newflo["index"]) {
 		 that.log.debug("Found and Change");
 		 // If there is a new Type -> we have to do a ccu change
@@ -71,10 +72,13 @@ HarmonyPlatform.prototype.updateFakeLight = function(newflo) {
 	 } else {
 		 nobjects.push(flo);
 	 }
-  });
-  this.log.debug(JSON.stringify(nobjects));
-  this.config.setPersistValueForPlugin(this.name,"fakelights",JSON.stringify(nobjects));
+  })
+  
+  this.log.debug(JSON.stringify(nobjects))
+  this.saveHarmonyObjects(nobjects)
+  this.flobjects = this.getFakeLights()
 }
+
 HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
 	this.localization.setLanguage(dispatched_request);
 	var result = [];
@@ -148,59 +152,66 @@ HarmonyPlatform.prototype.sendClientAction = function(actionname) {
 }
 
 HarmonyPlatform.prototype.addFakeLight = function(flo) {
-  var flobjects = this.getFakeLights();
-  this.log.debug("Add New Light to existing %s",flobjects.length)
-  flobjects.push(flo);
-  this.log.debug("We have now %s",flobjects.length)
-  this.config.setPersistValueForPlugin(this.name,"fakelights",JSON.stringify(flobjects));
+  this.log.debug("Add New Light to existing %s",this.flobjects.length)
+  this.flobjects.push(flo);
+  this.log.debug("We have now %s",this.flobjects.length)
   this.harmonyServer.addFakeLightDevice(flo);
+  this.saveHarmonyObjects(this.flobjects)
 }
 
 HarmonyPlatform.prototype.removeFakeLight = function(lightId) {
-    var flobjects = this.getFakeLights();
 	var flo = undefined;
-	flobjects.forEach(function (tmp) {
+	this.flobjects.forEach(function (tmp) {
 	 if (tmp["index"] == lightId) {
 		 flo = tmp; 
 	 }
 	});
 	if (flo!=undefined) {
-    var index = flobjects.indexOf(flo);
+    var index = this.flobjects.indexOf(flo);
     if (index > -1) {
-	    flobjects.splice(index, 1);
-		this.config.setPersistValueForPlugin(this.name,"fakelights",JSON.stringify(flobjects));
+	    this.flobjects.splice(index, 1);
 		this.harmonyServer.changeFakeLightDevice(lightId,undefined);
+		this.saveHarmonyObjects(this.flobjects)
    	} else {
     	this.log.debug("Not Found");
     }
     }
 }
 
+HarmonyPlatform.prototype.saveHarmonyObjects = function(objectsToSave,callback) {
+     this.config.savePersistentObjektToFile({'harmony_objects':objectsToSave},'harmony_objects',callback);
+}
 
 HarmonyPlatform.prototype.getFakeLights = function() {
-	var flo = []; // Fake Light Objects
-	var strflo = this.config.getPersistValueForPluginWithDefault(this.name,"fakelights",undefined);
 	
-	if (strflo != undefined) {
-		try {
-			flo = JSON.parse(strflo);
-		} catch (err){}
+	var harmony_objects = this.config.loadPersistentObjektfromFile('harmony_objects')
+	if ((harmony_objects != undefined) && (harmony_objects['harmony_objects']!=undefined)) {
+		return harmony_objects['harmony_objects']
+	} else {
+		// the old style
+		this.log.warn('Fallback to the old storage')
+		var strflo = this.config.getPersistValueForPluginWithDefault(this.name,'fakelights',undefined);
+		var flo = [] // Fake Light Objects
+		if (strflo != undefined) {
+			try {
+				flo = JSON.parse(strflo);
+			} catch (err){}
+		} 
+		return flo
 	} 
-	return flo;
 }
 
 HarmonyPlatform.prototype.buildFakeLightList = function(dispatched_request,editId) {
 
 	var fakeLights = "";
-	var flobjects = this.getFakeLights();
 	var that = this;
 	var lighttemplatefake = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_fake.html",null);
 	var lighttemplatefakeEdit = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_fake_edit.html",null);
 
 	
-	flobjects.forEach(function (lightdevice) {
+	this.flobjects.some(function (lightdevice) {
 			
-			var type = "unknow";
+			var type = undefined
 			var dimmer_select;
 			var switch_select;
 			switch (lightdevice["type"]) {
@@ -222,7 +233,7 @@ HarmonyPlatform.prototype.buildFakeLightList = function(dispatched_request,editI
 				
 			}
 						
-			
+			if (type != undefined) {
 			if ((editId != undefined) && (lightdevice["index"] == editId)) {
 				
 		 
@@ -238,11 +249,53 @@ HarmonyPlatform.prototype.buildFakeLightList = function(dispatched_request,editI
 																		  				  "lamp_index":lightdevice["index"],
 																						  "hm_device_type":type});
 			}
-			
-
+			}
 	});
 	return fakeLights;
 }
+
+
+HarmonyPlatform.prototype.buildCCUObjectList = function(dispatched_request,editId) {
+
+	var fakeLights = "";
+	var that = this;
+	var lighttemplatefake = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_ccu_object.html",null);
+	var lighttemplatefakeEdit = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_ccu_object_edit.html",null);
+
+	
+	this.flobjects.some(function (lightdevice) {
+			
+			var type = undefined
+
+			switch (lightdevice["type"]) {
+				case "3": 
+				{
+					type = "CCU Device";
+				}
+				break;
+				
+				case "4": 
+				{
+					type = "CCU †rogram";
+				}
+				break;
+				
+			}
+			var template = lighttemplatefake	
+			if (type != undefined) {
+			if ((editId != undefined) && (lightdevice["index"] == editId)) {
+				template = lighttemplatefakeEdit
+			} 
+				fakeLights = fakeLights +  dispatched_request.fillTemplate(template,{"lamp_name":lightdevice["name"],
+																	  				  "lamp_index":lightdevice["index"],
+																					  "hm_device_type":type,
+																	  				  "ctype":lightdevice["ctype"],
+																					  "adress":lightdevice["adress"]});
+			}
+	});
+	return fakeLights;
+}
+
 
 HarmonyPlatform.prototype.listHarmonyCommands = function(dispatched_request) {
 	var result = this.harmonyClient.listActions();
@@ -255,12 +308,54 @@ HarmonyPlatform.prototype.listHarmonyCommands = function(dispatched_request) {
 	return list;
 }
 
-HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
+
+HarmonyPlatform.prototype.loadCCUDevices = function(callback) {
+    var that = this
+    var result_list = {}
+    var interfaces = ['BidCos-RF']
+    
+	this.hm_layer.loadCCUDevices(interfaces,function (jobj){
+		if (jobj) {
+			    that.log.debug(JSON.stringify(jobj.devices));
+		    jobj.devices.forEach(function (device){
+			    device.channels.forEach(function (channel){
+				    var intf = channel.intf;
+				    if (that.supportedChannels.indexOf(intf + "." + channel.type)>-1) {
+					   var address = channel.address
+					   address = address.replace('BidCos-RF.', '')
+					   result_list[channel.address] = {"device":device.name,"address":address,"name":channel.name,"type":channel.type}   
+				   }
+			    })
+		    })
+	    callback(result_list)
+	   }
+    })
+}
+
+HarmonyPlatform.prototype.loadCCUProgramms = function(callback) {
+    var that = this
+    var result_list = {}
+    this.hm_layer.loadCCUProgramms( function (jobj) {
+    	if (jobj) {	
+    	jobj.programs.forEach(function (program){
+			result_list["P:" + program.id] = {"device":program.name,"address":"P:" + program.id,"name":program.name};   
+		})
+	    callback(result_list)
+		}  
+	})
+}
+
+HarmonyPlatform.prototype.channelService = function(channelType) {
+	return  this.supportedChannels[channelType];
+}
+
+HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedRequest) {
 	var that = this;
-	var requesturl = dispatched_request.request.url;
+	var requesturl = dispatchedRequest.request.url;
 	var queryObject = url.parse(requesturl,true).query;
 	var realLights = ""; // String of Fake Lights for Output
-	var fakeLights = this.buildFakeLightList(dispatched_request,undefined); // String of Real Lights for Output
+	var fakeLights = this.buildFakeLightList(dispatchedRequest,undefined); // String of Real Lights for Output
+	var ccuObjects = this.buildCCUObjectList(dispatchedRequest,undefined); 
 	
 	var operation = queryObject["do"];
 	if (operation ==undefined) {
@@ -269,13 +364,13 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 	
 	
 					// Load Lamps
-	var lighttemplatereal = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_real.html",null);
+	var lighttemplatereal = dispatchedRequest.getTemplate(this.plugin.pluginPath , "list_lamp_real.html",null);
 	
 	var lightdevices = this.harmonyServer.getLightDevices();
 	if (lightdevices!=undefined) {
 		lightdevices.forEach(function (lightdevice){
 		if (lightdevice.isReal == true) {
-			realLights = realLights +  dispatched_request.fillTemplate(lighttemplatereal,{"lamp_name":lightdevice.name,"lamp_index":lightdevice.index});
+			realLights = realLights +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":lightdevice.name,"lamp_index":lightdevice.index});
 		}
 		});
 	}		
@@ -298,7 +393,7 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 			if (lightId!=undefined) {
 				this.log.debug("Remove Device %s",lightId);
 				this.removeFakeLight(lightId);
-				fakeLights = this.buildFakeLightList(dispatched_request,lightId); 
+				fakeLights = this.buildFakeLightList(dispatchedRequest,lightId); 
 			}
 		}
 		break;
@@ -309,7 +404,8 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 			var lightId = queryObject["id"];
 			if (lightId!=undefined) {
 				this.log.debug("Edit Device %s",lightId);
-				fakeLights = this.buildFakeLightList(dispatched_request,lightId); 
+				fakeLights = this.buildFakeLightList(dispatchedRequest,lightId); 
+				ccuObjects = this.buildCCUObjectList(dispatchedRequest,lightId); 
 			}
 
 		}
@@ -317,9 +413,9 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 		
 		case "fake.new":
 		{
-			var lighttemplatefake = dispatched_request.getTemplate(this.plugin.pluginPath , "list_lamp_fake_edit.html",null);
-			fakeLights = fakeLights +  dispatched_request.fillTemplate(lighttemplatefake,{"lamp_name":"New Device",
-																						  "lamp_index":(50 + this.getFakeLights().length )});
+			var lighttemplatefake = dispatchedRequest.getTemplate(this.plugin.pluginPath , "list_lamp_fake_edit.html",null);
+			fakeLights = fakeLights + dispatchedRequest.fillTemplate(lighttemplatefake,{"lamp_name":"New Device",
+																						  "lamp_index":(50 + this.flobjects.length )});
 
 		}
 		break;
@@ -328,35 +424,56 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 		
 		case "fake.save":
 		{
-			var lightId = queryObject["id"];
-			var name = queryObject["name"];
-			var type = queryObject["type"];
-			that.log.debug("New DeviceType : %s",type);
+			var lightId = queryObject['id']
+			var name = queryObject['name']
+			var type = queryObject['type']
+			var adr =  queryObject['device.adress']
+			var ctype = queryObject['device.ctype']
+			
+			that.log.debug('New DeviceType : %s',type)
 
-			if ((lightId!=undefined) && (name!=undefined) && (type!=undefined)) {
-				var flo = this.getFakeLightWithId(lightId);
-				if (flo==undefined) {
+			if ((lightId != undefined) && (name != undefined) && (type != undefined)) {
+				var flo = this.getFakeLightWithId(lightId)
+				if (flo == undefined) {
 				  flo = {};
-				  flo["name"] = name;
-				  flo["type"] = type;
-				  flo["index"] = lightId;	
-				  this.addFakeLight(flo);
-				} else {
-				  flo["name"] = name;
-			   	  flo["type"] = type;
-				  this.updateFakeLight(flo);
+				  flo['name'] = name
+				  flo['type'] = type
+				  flo['index'] = lightId
+				  if ((type == '3') || (type == '4')) {
+					  flo['adress'] = adr
+					  flo['ctype'] = ctype || ''
+				  }
+				  this.addFakeLight(flo)
+				} 
+				
+				else 
+				
+				{
+				  flo['name'] = name
+			   	  flo['type'] = type
+
+				  if ((type == '3') || (type == '4')) {
+					  flo['adress'] = adr
+					  flo['ctype'] = ctype || ''
+				  }
+
+				  that.log.debug('udpate %s',JSON.stringify(flo))
+				  this.updateFakeLight(flo)
 				}
 			}
-			fakeLights = this.buildFakeLightList(dispatched_request,undefined);	
+			
+			fakeLights = this.buildFakeLightList(dispatchedRequest,undefined)
+			ccuObjects = this.buildCCUObjectList(dispatchedRequest,undefined)
+
 		}
 		break;	
 
 		case "list.commands":
 		{
 			
-			var list = this.listHarmonyCommands(dispatched_request);
-			dispatched_request.dispatchFile(this.plugin.pluginPath , "list_actions.html",
-																	{"actions":list});
+			var list = this.listHarmonyCommands(dispatchedRequest)
+			dispatchedRequest.dispatchFile(this.plugin.pluginPath , 'list_actions.html',
+																	{'actions':list})
 			return;
 
 		}
@@ -364,26 +481,57 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 		
 		case "send.command":
 		{
-			var cmdName = queryObject["action"];
-			if (cmdName) {this.harmonyClient.sendAction(cmdName);}
-			var list = this.listHarmonyCommands(dispatched_request);
-			dispatched_request.dispatchFile(this.plugin.pluginPath , "list_actions.html",
-																	{"actions":list});
+			var cmdName = queryObject['action']
+			if (cmdName) {this.harmonyClient.sendAction(cmdName)}
+			var list = this.listHarmonyCommands(dispatchedRequest)
+			dispatchedRequest.dispatchFile(this.plugin.pluginPath , 'list_actions.html',
+																	{'actions':list})
 			return;
 		}
 		break;
 
+
+		case "device.list":
+		{
+			this.loadCCUDevices(function (result){
+				dispatchedRequest.dispatchFile(that.plugin.pluginPath , "list.json" ,{"list":JSON.stringify(result)});
+			});
+			return;
+		}
+		
+		break;
+		
+		
+		case "device.listprograms":
+		{
+			this.loadCCUProgramms(function (result){
+				dispatchedRequest.dispatchFile(that.plugin.pluginPath , "list.json" ,{"list":JSON.stringify(result)});
+			});
+			return;
+		}
+		break;
+
+		case "app.js":
+		{
+			dispatchedRequest.dispatchFile(this.plugin.pluginPath , "app.js",{});
+			return;
+		}
+		break;
+		
 		default:
 		break;
 	}
 	
 	var activityList = "";
 	this.harmonyClient.getActivities().forEach(function (activity){
-		activityList = activityList +  dispatched_request.fillTemplate(lighttemplatereal,{"lamp_name":activity.label,"lamp_index":activity.chid});
+		activityList = activityList +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":activity.label,"lamp_index":activity.chid});
 	});
 	
 	
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listRealLights":realLights,"listFakeLights":fakeLights,"activityList":activityList});
+	dispatchedRequest.dispatchFile(this.plugin.pluginPath , "index.html",{"listRealLights":realLights,
+																		  "listFakeLights":fakeLights,
+																		  "listCCUObjects":ccuObjects,
+																		  "activityList":activityList});
 }
 
 
