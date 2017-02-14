@@ -80,7 +80,7 @@ FakeHueDevice.prototype.initRealDevice = function(hmtype) {
 	  
 	  // HM Program
  	 if (that.objType == "4") {
-	 	if (parameter=="on") {
+	 	if ((parameter=="on") && (state==true)) {
 	 		that.bridge.runRegaScript("var x = dom.GetObject('" +  that.adress.slice(2) + "');if (x) {x.ProgramExecute();}");
 	 	}
 	 }
