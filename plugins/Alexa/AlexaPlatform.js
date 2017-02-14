@@ -52,7 +52,7 @@ AlexaPlatform.prototype.init = function() {
     this.log.debug("CCU is at %s",ccuIP);
     
     this.rf_client = this.bridge.addRPCClient('BidCos-RF')
-    this.log.debug("Alexa RF Client" ,this.rf_client)
+
     if (this.configuration.getValueForPluginWithDefault(this.name,"enable_hmip",false)) {
 	    // Create an optional HMIP Client
 		this.hmip_client = this.bridge.addRPCClient('HmIP-RF')
@@ -366,26 +366,6 @@ AlexaPlatform.prototype.add_appliance = function(id,name,hmService,virtual) {
 	  
 	  // Switch RPC Client
 	  var hms = new service(id,this.log,this.hm_layer);
-	  
-	  if (hms.ccuInterface != undefined) {
-		
-		switch (hms.ccuInterface) {
-			
-			case "BidCos-RF": 
-			  hms.rpcClient = this.rf_client;
-			  break;
-
-			case "HmIP-RF": 
-			  hms.rpcClient = this.hmip_client;
-			  break;
-
-			case "BidCos-Wired": 
-			  hms.rpcClient = this.wired_client;
-			  break;
-			
-		}		  
-		  
-	  }
 	  
 	  hms.alexaname = name;
 	  hms.server = this.server;
