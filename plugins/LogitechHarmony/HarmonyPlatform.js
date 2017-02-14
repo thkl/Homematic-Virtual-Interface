@@ -37,7 +37,7 @@ HarmonyPlatform.prototype.init = function() {
 	this.harmonyClient = new HarmonyClient(this)
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")
 	this.supportedChannels = ["BidCos-RF.SWITCH","BidCos-RF.DIMMER","BidCos-RF.BLIND"]
-	this.flobjects = this.getFakeLights()
+	this.flobjects = this.loadFakeLights()
 }
 
 HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
@@ -76,7 +76,7 @@ HarmonyPlatform.prototype.updateFakeLight = function(newflo,callback) {
   
   this.log.debug(JSON.stringify(nobjects))
   this.saveHarmonyObjects(nobjects)
-  this.flobjects = this.getFakeLights()
+  this.flobjects = this.loadFakeLights()
 }
 
 HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
@@ -182,7 +182,7 @@ HarmonyPlatform.prototype.saveHarmonyObjects = function(objectsToSave,callback) 
      this.config.savePersistentObjektToFile({'harmony_objects':objectsToSave},'harmony_objects',callback);
 }
 
-HarmonyPlatform.prototype.getFakeLights = function() {
+HarmonyPlatform.prototype.loadFakeLights = function() {
 	
 	var harmony_objects = this.config.loadPersistentObjektfromFile('harmony_objects')
 	if ((harmony_objects != undefined) && (harmony_objects['harmony_objects']!=undefined)) {
@@ -199,6 +199,10 @@ HarmonyPlatform.prototype.getFakeLights = function() {
 		} 
 		return flo
 	} 
+}
+
+HarmonyPlatform.prototype.getFakeLights = function() {
+	return this.flobjects;
 }
 
 HarmonyPlatform.prototype.buildFakeLightList = function(dispatched_request,editId) {
@@ -440,7 +444,7 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 			var adr =  queryObject['device.adress']
 			var ctype = queryObject['device.ctype']
 			
-			that.log.debug('New DeviceType : %s',type)
+			that.log.debug('Light with id %s, New DeviceType : %s',lightId,type)
 
 			if ((lightId != undefined) && (name != undefined) && (type != undefined)) {
 				var flo = this.getFakeLightWithId(lightId)
