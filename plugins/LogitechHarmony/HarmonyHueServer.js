@@ -151,7 +151,7 @@ HarmonyHueServer.prototype.initFakeLights = function() {
 }
 
 HarmonyHueServer.prototype.addFakeLightDevice = function(newLight) {
-	var fhue = new FakeHueDevice(this,newLight["name"],newLight["type"],newLight["index"]);
+	var fhue = new FakeHueDevice(this,newLight);
 }
 
 HarmonyHueServer.prototype.changeFakeLightDevice = function(lightId,newLight) {

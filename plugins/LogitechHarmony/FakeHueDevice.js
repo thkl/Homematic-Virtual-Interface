@@ -28,6 +28,7 @@ var FakeHueDevice = function (hueserver,fobject) {
 	this.ctype = fobject["ctype"]
 	this.isReal = false;
 	this.rpcClient = this.hueserver.plugin.hm_layer.addRPCClient("BidCos-RF")
+	this.log.debug("Fake Data %s",fobject);
 	this.init();
 }	
 	
