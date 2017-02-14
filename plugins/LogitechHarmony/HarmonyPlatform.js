@@ -280,7 +280,7 @@ HarmonyPlatform.prototype.buildCCUObjectList = function(dispatched_request,editI
 				
 				case "4": 
 				{
-					type = "CCU †rogram";
+					type = "CCU Program";
 				}
 				break;
 				
