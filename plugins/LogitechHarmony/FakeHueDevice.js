@@ -55,19 +55,23 @@ FakeHueDevice.prototype.initRealDevice = function(hmtype) {
 	  if (that.objType == "3") {
 	  // HM Device
 	  if ((parameter=="bri") && (state > 0)) {
-		if (that.ctype=="DIMMER") {
-			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",state], function(error, value) {});
+		if (that.ctype == "DIMMER") {
+			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",{"explicitDouble":(state/255)}], function(error, value) {});
   		}
 	  }	   
 	  
-	  if (parameter=="on") {
+	  if (parameter == "on") {
 		
-		if (that.ctype=="SWITCH") {
+		if (that.ctype == "SWITCH") {
 			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"STATE",state], function(error, value) {});
 		}
 		
-		if (that.ctype=="DIMMER") {
-			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",(state=="true") ? 1:0], function(error, value) {});
+		if (that.ctype == "DIMMER") {
+			if (state == true) {
+				that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",{"explicitDouble":1}], function(error, value) {});
+			} else {
+				that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",{"explicitDouble":0}], function(error, value) {});
+			}
   		}
 
 	  }
