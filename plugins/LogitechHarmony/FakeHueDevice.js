@@ -67,7 +67,7 @@ FakeHueDevice.prototype.initRealDevice = function(hmtype) {
 		}
 		
 		if (that.ctype=="DIMMER") {
-			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",(state==true)?1:0], function(error, value) {});
+			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",(state=="true") ? 1:0], function(error, value) {});
   		}
 
 	  }
@@ -76,7 +76,9 @@ FakeHueDevice.prototype.initRealDevice = function(hmtype) {
 	  
 	  // HM Program
  	 if (that.objType == "4") {
-	 	that.bridge.runRegaScript("var x = dom.GetObject('" +  that.adress.slice(2) + "');if (x) {x.ProgramExecute();}");
+	 	if (parameter=="on") {
+	 		that.bridge.runRegaScript("var x = dom.GetObject('" +  that.adress.slice(2) + "');if (x) {x.ProgramExecute();}");
+	 	}
 	 }
 	 
 	 
