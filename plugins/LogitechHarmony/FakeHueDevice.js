@@ -51,8 +51,11 @@ FakeHueDevice.prototype.initRealDevice = function(hmtype) {
   var that = this
   this.light.on("harmony_device_value_change", function(lightid,parameter,state){
 	  that.log.debug("Event -> Set %s to %s",parameter,state);
+
 	  if ((parameter=="bri") && (state > 0)) {
-	  
+		if (that.ctype=="DIMMER") {
+			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",state], function(error, value) {});
+  		}
 	  }	   
 	  
 	  if (parameter=="on") {
@@ -62,7 +65,7 @@ FakeHueDevice.prototype.initRealDevice = function(hmtype) {
 		}
 		
 		if (that.ctype=="DIMMER") {
-			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"STATE",(state==true)?1:0], function(error, value) {});
+			that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",(state==true)?1:0], function(error, value) {});
   		}
 	  }
   })
