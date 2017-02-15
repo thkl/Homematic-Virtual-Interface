@@ -55,12 +55,10 @@ var _global = {};
 
 function LogicalPlatform(plugin,name,server,log,instance) {
 	LogicalPlatform.super_.apply(this,arguments);
-	this.interface = "BidCos-RF";
 	this.scripts = {};
     this.subscriptions = [];
 	this.sunEvents = [];
 	this.sunTimes = [/* yesterday */ {}, /* today */ {}, /* tomorrow */ {}];
-	this.cache = {};
 }
 
 util.inherits(LogicalPlatform, HomematicVirtualPlatform);
@@ -70,85 +68,23 @@ LogicalPlatform.prototype.init = function() {
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
 	this.log.info("Init %s",this.name);
-	var port = this.configuration.getValueForPluginWithDefault(this.name,"bridge_port",7002);
 	var localIP = this.hm_layer.getIPAddress();
 	
 	logicLogger.info("Logical Bridge is starting");
 	
-	this.server = xmlrpc.createServer({
-      host: localIP,
-      port: port
-    });
+	// Add myself to COre Event Notifier
 
-    
-    this.methods = {
-   	'system.listMethods': function listMethods(err, params, callback) {
-	   	    that.log.debug('rpc < system.listMethods', null, params);
-            that.log.debug('repl  >', null, JSON.stringify(Object.keys(that.methods)));
-            callback(null,Object.keys(that.methods));
-    },
-    
-    'listDevices': function listDevices(err, params, callback) {
-      that.log.debug('rpc <- listDevices Zero Reply');
-      that.hm_layer.lastMessage = new Date();
-      callback(null,[]);
-    },
-
-
-    'newDevices': function newDevices(err, params, callback) {
-      that.log.debug('rpc <- newDevices Zero Reply');
-      that.hm_layer.lastMessage = new Date();
-      callback(null,[]);
-    },
-   
-   
-    'event': function event(err, params, callback) {
-      that.log.debug('rpc <- event Zero Reply');
-      that.hm_layer.lastMessage = new Date();
-      callback(null,[]);
-    },
-    
-    'system.multicall': function systemmulticall(err, params, callback) {
-      that.log.debug('rpc <- system.multicall Zero Reply');
-      
-      that.hm_layer.lastMessage = new Date();
-
-      params.map(function(events) {
-        try {
-          events.map(function(event) {
-            if ((event["methodName"] == "event") && (event["params"] !== undefined)) {
-              var params = event["params"];
-              var channel = that.interface + "." + params[1];
-              var datapoint = params[2];
-              var value = params[3];
-          	  that.log.debug("RPC event for %s %s with value %s",channel,datapoint,value);
-          	  that.doCache(channel,datapoint,value);
-          	  that.ccuEvent(channel,datapoint,value);
-          	  
-            }
-          });
-        } catch (err) {}
-      });
-      callback(null,[]);
-    } 
-	
-	};
-    
-    
-    Object.keys(that.methods).forEach(function (m) {
-           that.server.on(m, that.methods[m]);
-    });
-    
-    // Publish Server to CCU
-    var ccuIP =  this.hm_layer.ccuIP;
-    
 	this.bridge.addRPCClient('BidCos-RF')
-    
-    this.log.debug("CCU RPC Init Call for interface %s",this.interface);
-    this.bridge.callRPCMethod('BidCos-RF','init', ["http://" + localIP + ':' + port , 'hvl_BidCos' ], function(error, value) {
-      that.log.debug("CCU Response ...Value (%s) Error : (%s)",JSON.stringify(value) , error);
-    });
+	
+	this.hm_layer.addEventNotifier(function (){
 
+		that.hm_layer.on('ccu_datapointchange_event', function(strIf, channel,datapoint,value){
+			that.log.debug("CCU Event %s %s %s %s",strIf,channel,datapoint,value)        
+    	    that.ccuEvent(strIf + "." +channel,datapoint,value)
+		})
+		that.log.debug("Done adding Event Listener")        
+	})
+    
 	this.calculateSunTimes();
 	this.reInitScripts();
 }
@@ -158,29 +94,11 @@ LogicalPlatform.prototype.shutdown = function() {
 	Object.keys(scheduler.scheduledJobs).forEach(function(job){
 	   scheduler.cancelJob(job); 
     });
-    this.bridge.callRPCMethod('BidCos-RF','init', ['http://' + localIP + ':' + port , null ], function(error, value) {
-      that.log.debug("CCU Event listener removed (Yes we are good citicens) Error : (%s)",JSON.stringify(value) , error);
-    });
-    
 }
 
 
 LogicalPlatform.prototype.regaCommand = function(script,callback) {
   new regarequest(this.hm_layer,script,callback);
-}
-
-
-LogicalPlatform.prototype.doCache = function(adress,datapoint,value) {
-  var adr = adress + "." + datapoint;
-  var el = this.cache[adr];
-  if (!el) {
-	  el = {"v":value,"t":Date.now()};
-  } else {
-	  el["l"] = el['v'];
-	  el["v"] = value;
-	  el["t"] = Date.now();
-  }
-  this.cache[adr]=el;
 }
 
 LogicalPlatform.prototype.reInitScripts = function() {
@@ -193,7 +111,7 @@ LogicalPlatform.prototype.reInitScripts = function() {
     Object.keys(scheduler.scheduledJobs).forEach(function(job){
 	   scheduler.cancelJob(job); 
     });
-    
+   
     var l_path = this.configuration.storagePath();
     this.loadScriptDir(l_path + "/scripts/");
     
@@ -282,34 +200,36 @@ LogicalPlatform.prototype.createScript = function(source, name) {
 }
 
 
-LogicalPlatform.prototype.sendValueRPC = function(adress,datapoint,value,callback) {
+LogicalPlatform.prototype.sendValueRPC = function(interf,adress,datapoint,value,callback) {
 	var that = this;
-	this.bridge.callRPCMethod('BidCos-RF','setValue',[adress,datapoint,value], function(error, value) {
+	this.bridge.callRPCMethod(interf,'setValue',[adress,datapoint,value], function(error, value) {
 		that.doCache(adress,datapoint,value);
 		callback();
 	});
 }
 
-LogicalPlatform.prototype.internal_getState = function(adress,datapoint,callback) {
+LogicalPlatform.prototype.internal_getState = function(interf,adress,datapoint,callback) {
 	var that = this;
-	this.bridge.callRPCMethod('BidCos-RF','getValue', [adress,datapoint], function(error, value) {
+	this.bridge.callRPCMethod(interf,'getValue', [adress,datapoint], function(error, value) {
 		that.doCache(adress,datapoint,value);
 		callback(value);
 	});
 }
 
-LogicalPlatform.prototype.get_State = function(adress,datapoint,callback) {
-  this.internal_getState(adress,datapoint,callback);
+LogicalPlatform.prototype.get_State = function(interf,adress,datapoint,callback) {
+  this.internal_getState(interfmadress,datapoint,callback);
 }
 
-LogicalPlatform.prototype.get_Value = function(adress,datapoint,callback) {
-	var adr = adress + "." + datapoint;
-	var dp = this.cache[adr];
-	if (dp) {
-		callback(dp['v']);
+LogicalPlatform.prototype.get_Value = function(interf,adress,datapoint,callback) {
+	
+	var value = this.bridge.getCachedState(interf,adress,datapoint)
+
+	if (value) {
+		callback(value);
 	} else {
-		this.internal_getState(adress,datapoint,callback);
+		this.internal_getState(interf,adress,datapoint,callback);
 	}
+
 }
 
 LogicalPlatform.prototype.set_Variable = function(name,value,callback) {
@@ -848,14 +768,6 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 			// third the Datapoint
 			if (tmp.length>2) {
 				
-				if (tmp[0].toLowerCase()==that.interface.toLowerCase()) {
-					var adress = tmp[1];
-					var datapointName = tmp[2];
-					that.sendValueRPC (adress,datapointName,val,function(){
-						resolve();
-					});  
-				}
-
 				if (tmp[0].toLowerCase()=="hmvirtual") {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
@@ -868,6 +780,12 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 					} else {
 						that.log.error("Channel %s not found",adress);
 					}
+				} else {
+					var adress = tmp[1];
+					var datapointName = tmp[2];
+					that.sendValueRPC(tmp[0],adress,datapointName,val,function(){
+						resolve();
+					}); 
 				}
 				
 				
@@ -889,14 +807,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 			// Second the Adress
 			// third the Datapoint
 			if (tmp.length>2) {
-				if (tmp[0].toLowerCase()==that.interface.toLowerCase()) {
-					var adress = tmp[1];
-					var datapointName = tmp[2];
-				    that.get_Value(adress,datapointName,function(value){
-					    resolve(value);
-				    });
-				}
-
+				
 				if (tmp[0].toLowerCase()=="hmvirtual") {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
@@ -904,6 +815,12 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 					if (channel) {
 						resolve(channel.getValue(datapointName));
 					}
+				} else {
+					var adress = tmp[1];
+					var datapointName = tmp[2];
+				    that.get_Value(tmp[0],adress,datapointName,function(value){
+					    resolve(value);
+				    });
 				}
 				
 				
@@ -925,14 +842,6 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 			// third the Datapoint
 			if (tmp.length>2) {
 				
-				if (tmp[0].toLowerCase()==that.interface.toLowerCase()) {
-					var adress = tmp[1];
-					var datapointName = tmp[2];
-				    that.get_State(adress,datapointName,function(value){
-					    resolve(value);
-				    });
-				}
-
 				if (tmp[0].toLowerCase()=="hmvirtual") {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
@@ -940,6 +849,12 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 					if (channel) {
 						resolve(channel.getValue(datapointName));
 					}
+				} else {
+					var adress = tmp[1];
+					var datapointName = tmp[2];
+				    that.get_State(tmp[0],adress,datapointName,function(value){
+					    resolve(value);
+				    });
 				}
 				
 				
