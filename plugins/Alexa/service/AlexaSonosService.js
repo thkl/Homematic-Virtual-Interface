@@ -85,7 +85,7 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 						newValue = i_max;
 					}
 					
-					sw_channel.setValue("TARGET_VOLUME",newValue);
+					sw_channel.updateValue("TARGET_VOLUME",newValue,true,true,true);
 					callback("Alexa.ConnectedHome.Control","SetPercentageConfirmation");
 			} else {
 					callback("Alexa.ConnectedHome.Control","NoSuchTargetError");

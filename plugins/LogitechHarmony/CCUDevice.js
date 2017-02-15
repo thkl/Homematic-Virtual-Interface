@@ -58,7 +58,9 @@ CCUDevice.prototype.initRealDevice = function(hmtype) {
 		if (that.ctype == "DIMMER") {
 			if (state == false) {
 				that.bridge.callRPCMethod("BidCos-RF","setValue",[that.adress,"LEVEL",{"explicitDouble":0}], function(error, value) {});
-			} // Do Not switch to 1 with the ON Message
+			} else {
+				
+			}
   		}
 
 	  }
