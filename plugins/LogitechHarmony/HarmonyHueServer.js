@@ -114,6 +114,7 @@ HarmonyHueServer.prototype.init = function() {
 	  	  
 	  	  // add the fake Lights
 	  	  that.initFakeLights();
+	  	  that.startEventListener();
 		});
 	} else {
 		this.log.warn("username or bridge ip not found in %s",huePluginName)
@@ -121,6 +122,7 @@ HarmonyHueServer.prototype.init = function() {
   } else {
 	  this.log.info("No Hue Pluginname provided in hue_plugin_name. Skipping real Bridge mapping.");
  	  this.initFakeLights();
+ 	  this.startEventListener();
   }
 
 };
@@ -131,22 +133,25 @@ HarmonyHueServer.prototype.initFakeLights = function() {
 		return;
   }
   this.initFake = true;
-  this.log.debug("Adding your Fake Lights");
   var that = this;
   var lights = this.plugin.getFakeLights();
+  this.log.debug("Adding your Fake Lights %s",JSON.stringify(lights));
   lights.forEach(function (light){
-	  that.log.debug("Add %s",JSON.stringify(light))
 	  that.addFakeLightDevice(light);
   });
 }
 
 HarmonyHueServer.prototype.addFakeLightDevice = function(newLight) {
+	if (newLight.type) {
 	if ((newLight.type=="0") || (newLight.type=="1")) {
-		new FakeHueDevice(this,newLight);
+		var x = new FakeHueDevice(this,newLight);
 	}
 
 	if ((newLight.type=="3") || (newLight.type=="4")) {
-		new CCUDevice(this,newLight);
+		var x = new CCUDevice(this,newLight);
+	}
+	} else {
+		this.log.error("Light type is missing")
 	}
 }
 
@@ -182,8 +187,25 @@ HarmonyHueServer.prototype.removeLightDevice = function(device) {
 
 HarmonyHueServer.prototype.addLightDevice = function(light) {
 	// Add Event for StatusRequests
-	this.log.debug("Adding new Harmony Hue Device to server %s",light.name);
+	this.log.debug("Adding new Harmony Hue Device to server %s",light.adress);
 	this.lights.push(light);
+}
+
+HarmonyHueServer.prototype.startEventListener = function() {
+	var that = this;
+	this.bridge.addEventNotifier(function (){
+
+		that.bridge.on('ccu_datapointchange_event', function(strIf, channel,datapoint,value){
+			that.lights.some(function (light){
+				if ((light.adress) && (light.adress == channel)) {
+					light.setValue(datapoint,value);
+				}
+			});
+			
+		})
+		that.log.debug("Done adding Event Listener")        
+	})
+
 }
 
 HarmonyHueServer.prototype.getLightDevices = function() {

@@ -1,7 +1,7 @@
 'use strict'
 
 //
-//  FakeHueDevice.js
+//  CCUDevice.js
 //  Homematic Virtual Interface Plugin
 //
 //  Created by Thomas Kluge on 10.12.16.
@@ -76,10 +76,25 @@ CCUDevice.prototype.initRealDevice = function(hmtype) {
   })
 }
 
+CCUDevice.prototype.setValue = function(datapoint, value) {
+   
+   if (this.objType === '3') {
+	   if (datapoint === 'STATE') {
+		   this.light.isOn = value
+	   }
+	
+	   if (datapoint === 'LEVEL') {
+		   this.light.isOn = (value === 0)
+		   this.light.bri = value*255;	
+	   }
+	   
+   }
+}
+
 CCUDevice.prototype.getType = function() {
   return this.hmDevice.type;
 }
 
 module.exports = {
-  FakeHueDevice : CCUDevice
+  CCUDevice : CCUDevice
 }

@@ -203,7 +203,7 @@ LogicalPlatform.prototype.createScript = function(source, name) {
 LogicalPlatform.prototype.sendValueRPC = function(interf,adress,datapoint,value,callback) {
 	var that = this;
 	this.bridge.callRPCMethod(interf,'setValue',[adress,datapoint,value], function(error, value) {
-		that.doCache(adress,datapoint,value);
+		that.bridge.doCache(interf,adress,datapoint,value);
 		callback();
 	});
 }
@@ -1056,7 +1056,7 @@ LogicalPlatform.prototype.saveScript=function(data,filename) {
   try {
  	 fs.writeFileSync(filename, data)
  	 this.reInitScripts();
-  } catch (e){}
+  } catch (e){this.log.error(e)}
 }
 
 LogicalPlatform.prototype.existsScript=function(filename) {
