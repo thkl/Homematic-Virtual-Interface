@@ -622,10 +622,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                 var args = Array.prototype.slice.call(arguments);
 				var rep = args.slice(1, args.length);
 				var i=0;
-				var output = args[0].replace(/%s/g, function(match,idx) {
-					var subst=rep.slice(i, ++i).toString();
-					return( subst );
-  				});
+				var output = args[0];
+				if ((typeof args[0])=="string") {
+					 output = args[0].replace(/%s/g, function(match,idx) {
+						var subst=rep.slice(i, ++i).toString();
+						return( subst );
+					});
+				}
                 logicLogger.debug(name + ':' + output);
             },
             /**
@@ -638,11 +641,15 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                 var args = Array.prototype.slice.call(arguments);
 				var rep = args.slice(1, args.length);
 				var i=0;
-				var output = args[0].replace(/%s/g, function(match,idx) {
-					var subst=rep.slice(i, ++i).toString();
-					return( subst );
-  				});
-                logicLogger.info(name + ':' + output);
+				var output = args[0];
+				if ((typeof args[0])=="string") {
+					 output = args[0].replace(/%s/g, function(match,idx) {
+						var subst=rep.slice(i, ++i).toString();
+						return( subst );
+					});
+				}
+				
+				logicLogger.info(name + ':' + output);
             },
             /**
              * Log a warning message
@@ -654,10 +661,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                 var args = Array.prototype.slice.call(arguments);
 				var rep = args.slice(1, args.length);
 				var i=0;
-				var output = args[0].replace(/%s/g, function(match,idx) {
-					var subst=rep.slice(i, ++i).toString();
-					return( subst );
-  				});
+				var output = args[0];
+				if ((typeof args[0])=="string") {
+					 output = args[0].replace(/%s/g, function(match,idx) {
+						var subst=rep.slice(i, ++i).toString();
+						return( subst );
+					});
+				}
                 logicLogger.warn(name + ':' + output);
             },
             /**
@@ -670,10 +680,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                 var args = Array.prototype.slice.call(arguments);
 				var rep = args.slice(1, args.length);
 				var i=0;
-				var output = args[0].replace(/%s/g, function(match,idx) {
-					var subst = rep.slice(i, ++i).toString();
-					return( subst );
-  				});
+				var output = args[0];
+				if ((typeof args[0])=="string") {
+					 output = args[0].replace(/%s/g, function(match,idx) {
+						var subst=rep.slice(i, ++i).toString();
+						return( subst );
+					});
+				}
                 logicLogger.error(name + ':' + output);
             }
         },
