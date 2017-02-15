@@ -211,7 +211,7 @@ LogicalPlatform.prototype.sendValueRPC = function(interf,adress,datapoint,value,
 LogicalPlatform.prototype.internal_getState = function(interf,adress,datapoint,callback) {
 	var that = this;
 	this.bridge.callRPCMethod(interf,'getValue', [adress,datapoint], function(error, value) {
-		that.doCache(adress,datapoint,value);
+		that.bridge.doCache(interf,adress,datapoint,value);
 		callback(value);
 	});
 }
