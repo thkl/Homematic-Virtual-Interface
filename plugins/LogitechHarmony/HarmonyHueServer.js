@@ -135,17 +135,18 @@ HarmonyHueServer.prototype.initFakeLights = function() {
   var that = this;
   var lights = this.plugin.getFakeLights();
   lights.forEach(function (light){
-  	that.addFakeLightDevice(light);
+	  that.log.debug("Add %s",JSON.stringify(light))
+	  that.addFakeLightDevice(light);
   });
 }
 
 HarmonyHueServer.prototype.addFakeLightDevice = function(newLight) {
 	if ((newLight.type=="0") || (newLight.type=="1")) {
-		var fhue = new FakeHueDevice(this,newLight);
+		new FakeHueDevice(this,newLight);
 	}
 
 	if ((newLight.type=="3") || (newLight.type=="4")) {
-		var fhue = new CCUDevice(this,newLight);
+		new CCUDevice(this,newLight);
 	}
 }
 
