@@ -11,6 +11,7 @@
 "use strict";
 var DispatchedRequest = require(__dirname + '/DispatchedRequest.js').DispatchedRequest;
 var FakeHueDevice = require(__dirname + '/FakeHueDevice.js').FakeHueDevice;
+var CCUDevice = require(__dirname + '/CCUDevice.js').CCUDevice;
 var RealHueDevice = require(__dirname + '/RealHueDevice.js').RealHueDevice;
 var HueApi = require("node-hue-api").HueApi;
 
@@ -88,17 +89,6 @@ HarmonyHueServer.prototype.init = function() {
  	options["location"] =  {udp4: "http://"+ this.hostName + ":" + this.localPort + "/description.xml"};
  	this.bus.advertise(options);
  	
- /*
- bus.on('transport:outgoing-message', function (socket, message, remote) {
-  this.log.debug('-> Outgoing to %s:%s via %s', remote.address, remote.port, socket.type)
-  this.log.debug(message.toString('utf8'))
-})
-bus.on('transport:incoming-message', function (message, remote) {
-  this.log.debug('<- Incoming from %s:%s', remote.address, remote.port)
-  this.log.debug(message.toString('utf8'))
-})
-*/
-
   // Build the Lights
   
   // Check existing Hue Bridge .. Init and Add Real Lights
@@ -144,14 +134,19 @@ HarmonyHueServer.prototype.initFakeLights = function() {
   this.log.debug("Adding your Fake Lights");
   var that = this;
   var lights = this.plugin.getFakeLights();
-  that.log.debug("Ok we have here %s",JSON.stringify(lights));
   lights.forEach(function (light){
   	that.addFakeLightDevice(light);
   });
 }
 
 HarmonyHueServer.prototype.addFakeLightDevice = function(newLight) {
-	var fhue = new FakeHueDevice(this,newLight);
+	if ((newLight.type=="0") || (newLight.type=="1")) {
+		var fhue = new FakeHueDevice(this,newLight);
+	}
+
+	if ((newLight.type=="3") || (newLight.type=="4")) {
+		var fhue = new CCUDevice(this,newLight);
+	}
 }
 
 HarmonyHueServer.prototype.changeFakeLightDevice = function(lightId,newLight) {
@@ -164,7 +159,12 @@ HarmonyHueServer.prototype.changeFakeLightDevice = function(lightId,newLight) {
 		this.log.debug("Remove Light Object %s",device.index);
 		this.removeLightDevice(device);
 		if (newLight != undefined) {
-			var fhue = new FakeHueDevice(this,newLight);
+			if ((newLight.type=="0") || (newLight.type=="1")) {
+				var fhue = new FakeHueDevice(this,newLight);
+			}
+			if ((newLight.type=="3") || (newLight.type=="4")) {
+				var fhue = new CCUDevice(this,newLight);
+			}
 		}
 	}
 }
