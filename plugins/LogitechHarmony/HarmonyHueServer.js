@@ -181,7 +181,7 @@ HarmonyHueServer.prototype.removeLightDevice = function(device) {
 
 HarmonyHueServer.prototype.addLightDevice = function(light) {
 	// Add Event for StatusRequests
-	this.log.debug("Adding new Harmony Hue Device to server");
+	this.log.debug("Adding new Harmony Hue Device to server %s",light.name);
 	this.lights.push(light);
 }
 

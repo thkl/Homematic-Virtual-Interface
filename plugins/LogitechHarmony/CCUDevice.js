@@ -11,10 +11,6 @@
 var Fakelight = require(__dirname + '/device/Fakelight.js').Fakelight;
 var HomematicDevice;
 
-var hmtypes = {"0":{"type":"HM-LC-Sw1-Pl","channel":"SWITCH"},
-			   "1":{"type":"HM-LC-Dim1T-Pl","channel":"DIMMER"}};
-
-
 var CCUDevice = function (hueserver,fobject) {
 	this.hueserver = hueserver;
 	this.log = hueserver.log;
@@ -28,7 +24,7 @@ var CCUDevice = function (hueserver,fobject) {
 	this.ctype = fobject["ctype"]
 	this.isReal = false;
 	this.rpcClient = this.hueserver.plugin.hm_layer.addRPCClient("BidCos-RF")
-	this.log.debug("Fake Data %s",fobject)
+	this.log.debug("CCU Device Data %s",JSON.stringify(fobject))
 	this.init();
 }	
 	
