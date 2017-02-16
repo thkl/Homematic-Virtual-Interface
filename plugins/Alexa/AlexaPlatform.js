@@ -487,8 +487,9 @@ AlexaPlatform.prototype.generateEditForm = function(dispatched_request) {
 	});
 	
 	var appdevice = appliance.id;
-	if (appliance.id.indexOf("P:"===0)) {
-		appdevice = appliance.name;
+
+	if (appliance.id.indexOf("P:") == 0) {
+			appdevice = appliance.name;
 	}
 								
 	formData = dispatched_request.fillTemplate(appliance_template,{"appliance.device":appdevice,
@@ -729,9 +730,11 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 		Object.keys(this.alexa_appliances).forEach(function (key) {
 		var appliance = that.alexa_appliances[key];
 		var appdevice = appliance.id;
-		if (appliance.id.indexOf("P:"===0)) {
+		
+		if (appliance.id.indexOf("P:") == 0) {
 			appdevice = appliance.name;
 		}
+
 		deviceList = deviceList + dispatched_request.fillTemplate(appliance_template,{"appliance.id":appliance.id,
 																				  "appliance.device":appdevice,
   																			   	    "appliance.name":appliance.name,
