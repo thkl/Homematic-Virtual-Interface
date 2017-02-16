@@ -113,8 +113,9 @@ HarmonyHueServer.prototype.init = function() {
 	  	  }
 	  	  
 	  	  // add the fake Lights
-	  	  that.initFakeLights();
-	  	  that.startEventListener();
+	  	  that.initFakeLights()
+	  	  that.startEventListener()
+	  	  that.queryRealBridge()
 		});
 	} else {
 		this.log.warn("username or bridge ip not found in %s",huePluginName)
@@ -127,6 +128,22 @@ HarmonyHueServer.prototype.init = function() {
 
 };
 
+HarmonyHueServer.prototype.queryRealBridge = function() {
+	var that = this;
+	this.hue_api.lights(function(err, lights) {
+		  if ((lights != undefined) && (lights["lights"]!=undefined)) {
+		  	lights["lights"].forEach(function (light) {
+		  		that.log.debug(JSON.stringify(light))
+				var lob = that.getLight(light["id"])
+				that.log.debug(JSON.stringify(lob))
+				if (lob) {
+					lob.setState(light["state"]);
+				}
+	  		});
+		  }
+		  setTimeout(function(){that.queryRealBridge}, 30000)
+		  })
+}
 
 HarmonyHueServer.prototype.initFakeLights = function() {
   if (this.initFake==true) {

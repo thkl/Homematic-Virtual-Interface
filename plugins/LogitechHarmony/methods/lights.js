@@ -32,6 +32,7 @@ Service_Lights.prototype.process = function () {
 			if (operation=="state") {
 				
 				this.dispatched_request.processPost(function() {
+					that.log.debug("Set State Request for %s",lid)
 				    that.setLightState(lid);
 				});
 				
