@@ -704,19 +704,10 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 			
 			case "showlog": {
 				
-				var options = {
-					start:  0,
-					rows: 9999999,
-					order:  'desc',
-					fields: ['message','label','level','timestamp']
-				};
-				
-				alexaLogger.query(options, function (err, result) {
+				alexaLogger.query(function (err, result) {
 					var str = "";
-					result.dailyRotateFile.some(function (msg){
-						if (msg.label==="AlexaEvent") {
-							str = str + msg.timestamp  + "  [" + msg.level + "] - " + msg.message + "\n";
-						}
+					result.some(function (msg){
+							str = str + msg.time  + "  [" + msg.level + "] - " + msg.msg + "\n";
 					})
 	 				dispatched_request.dispatchFile(that.plugin.pluginPath , "log.html" ,{"logData":str});
  			  	});

@@ -70,20 +70,12 @@ CCUDutyCycle.prototype.handleConfigurationRequest = function (dispatchedRequest)
   	
   	case "showlog": {
 
-		var options = {
-			start:  0,
-			rows: 9999999,
-			order:  'desc',
-			fields: ['message','label','level','timestamp']
-		};
-				
-			dcLogger.query(options, function (err, result) {
-				var str = "";
-				result.dailyRotateFile.some(function (msg){
-					if (msg.label==="DutyCycle") {
-						str = str + msg.timestamp  + "  [" + msg.level + "] - " + msg.message + "\n";
-					}
-				})
+		dcLogger.query(function (err, result) {
+			var str = "";
+					var str = "";
+					result.some(function (msg){
+							str = str + msg.time  + "  [" + msg.level + "] - " + msg.msg + "\n";
+					})
 	 			dispatchedRequest.dispatchFile(that.plugin.pluginPath , "log.html" ,{"logData":str});
  			});
 

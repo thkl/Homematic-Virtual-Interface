@@ -1118,20 +1118,10 @@ LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 		  case "showlog": {
 			  htmlfile = "log.html"
 			  
-			  var options = {
-					start:  0,
-					rows: 9999999,
-					order:  'desc',
-					fields: ['message','label','level','timestamp']
-				};
-				
-				logicLogger.query(options, function (err, result) {
+			  logicLogger.query(function (err, result) {
 					var str = "";
-					result.dailyRotateFile.some(function (msg){
-						if (msg.label==="LogicLogger") {
-							
-							str = str + msg.timestamp  + "  [" + msg.level + "] - " + msg.message + "\n";
-						}
+					result.some(function (msg){
+							str = str + msg.time  + "  [" + msg.level + "] - " + msg.msg + "\n";
 					})
 					
 					editorData["content"]=str;
