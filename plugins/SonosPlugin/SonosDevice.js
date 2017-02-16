@@ -32,6 +32,11 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 			that.log.debug('Successfully subscribed, with subscription id', sid)
   		});
 
+
+  		that.player.on('error', function (error) {
+	  	  that.log.error("Sonos Event Listener Error %s",error)
+	  	}
+	  	
   		that.player.on('serviceEvent', function (endpoint, sid, event) {
 	  		
 	  		if (event.name == "RenderingControlEvent") {
