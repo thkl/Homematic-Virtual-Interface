@@ -6,7 +6,6 @@ if (appRoot.endsWith('bin')) { appRoot = appRoot + '/../lib' }
 if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = appRoot + '/../../../lib' }
 appRoot = path.normalize(appRoot);
 var xmlrpc = require(appRoot + "/homematic-xmlrpc");
-var dcLogger = require(appRoot + "/logger.js").logger("DutyCycle");
 var groupArray = require('group-array')
 var moment = require("moment")
 
@@ -53,7 +52,6 @@ CCUDutyCycle.prototype.queryCCU = function () {
 				var dc = ccuInterface.DUTY_CYCLE
 				var tp = ccuInterface.TYPE
 				that.dutyCycle[adr] = {'adress':adr,'dutycycle':dc,'type':tp}
-				dcLogger.info("Interface %s Type %s DutyCycle %s",adr,tp,dc)
 				if (that.db) {
 					 that.db.insert({'time':new Date(),'interface':adr,'dc':dc})
 				}
@@ -81,7 +79,7 @@ CCUDutyCycle.prototype.generateChart = function(callback) {
             ]
             
             
-	var ts = new Date().getTime() - 3600000
+	var ts = new Date().getTime() - 86400000
 	this.db.find({time :{$gt: new Date(ts)}}).sort({time: 1 }).exec(function (err, docs) {
 	
 	  var elements = []
@@ -139,9 +137,6 @@ CCUDutyCycle.prototype.handleConfigurationRequest = function (dispatchedRequest)
 		
   switch (queryObject["do"]) {
   	
-  	
-  	
-  	
   	case "loadvalues": {
   		
  
@@ -153,21 +148,6 @@ CCUDutyCycle.prototype.handleConfigurationRequest = function (dispatchedRequest)
 	}
   	break;
   	
-  	case "showlog": {
-	  	
-	  	dcLogger.query(function (err, result) {
-			var str = "";
-					var str = "";
-					result.some(function (msg){
-							str = str + msg.time  + "  [" + msg.level + "] - " + msg.msg + "\n";
-					})
-	 			dispatchedRequest.dispatchFile(that.plugin.pluginPath , "log.html" ,{"logData":str});
- 		});
-
-		return;
-	  	
-  	}
-
   }	  	
   
   } else {
