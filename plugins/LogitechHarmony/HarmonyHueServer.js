@@ -360,10 +360,10 @@ HarmonyHueServer.prototype.internalhandleRequest = function(dispatched_request) 
 				}
 				
 				
-			} else {
-				var path = "/" + dispatched_request.queryComponents.slice(-1)[0] ;
-				this.error(dispatched_request,1,path,"unauthorized user" );
-			}
+				} else {
+					var path = "/" + dispatched_request.queryComponents.slice(-1)[0] ;
+					this.error(dispatched_request,1,path,"unauthorized user %s",user);
+				}
 		}
 	  }
 	  return;
