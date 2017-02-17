@@ -101,7 +101,7 @@ CCUDutyCycle.prototype.generateChart = function(callback) {
 		  	rv.push({'x':x,'y':record.dc});
 			  	x = x + 1
 		  	var ts = moment.utc(record.time.getTime())
-		  	var strts = ts.format("D.MM.YYYY h:mm");
+		  	var strts = ts.format("D.MM.YYYY hh:mm");
 		  	if (timelines.indexOf(strts)==-1) {
 			  	timelines.push(strts)
 		  	}
