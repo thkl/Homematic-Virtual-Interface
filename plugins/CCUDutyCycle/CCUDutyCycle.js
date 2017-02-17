@@ -114,6 +114,8 @@ CCUDutyCycle.prototype.generateChart = function(callback) {
 		dataset.borderWidth = 1
 		dataset.fill = false
 		dataset.lineTension = 0.1
+		dataset.pointStyle = "line"
+		dataset.pointHitRadius = 5
 		datasets.push(dataset)
 		index = index+1
 	  })
