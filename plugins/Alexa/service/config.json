@@ -23,6 +23,7 @@
 		"BidCos-RF.BLIND"  : "AlexaHomematicDimmerService",
 		"BidCos-RF.THERMALCONTROL_TRANSMIT" : "AlexaHomematicThermostatService",
 		"BidCos-RF.CLIMATECONTROL_REGULATOR": "AlexaHomematicThermostatService",
+		"BidCos-RF.CLIMATECONTROL_RT_TRANSCEIVER": "AlexaHomematicThermostatService",
 		"HUELIGHT" : "AlexaHueService",
 		"HUEGROUP" : "AlexaHueService",
 		"HUESCENE" : "AlexaHueSceneService",
