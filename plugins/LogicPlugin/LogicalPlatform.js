@@ -363,6 +363,15 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
   });
 }
 
+LogicalPlatform.prototype.getDatabase = function(name) {
+	var spath = this.configuration.storagePath()
+	// Do not store outside the config file
+	
+	var Datastore = require('nedb'), db = new Datastore({ filename: path.join(spath,path.basename(name)+".udb") , autoload: true });
+	return db
+}
+
+
 LogicalPlatform.prototype.calculateSunTimes = function() {
     var now = new Date();
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0, 0);
@@ -715,7 +724,9 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 	        }	);
         }, 
         
-        
+        getDatabase: function Sandbox_getDatabase(name) {
+	        return that.getDatabase(name)
+        },
 
         getVariables:   function Sandbox_get_Variables(varnames) {
         	return new Promise(function (resolve,reject) {
