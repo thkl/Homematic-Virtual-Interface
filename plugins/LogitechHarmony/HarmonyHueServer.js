@@ -164,7 +164,7 @@ HarmonyHueServer.prototype.addFakeLightDevice = function(newLight) {
 		var x = new FakeHueDevice(this,newLight);
 	}
 
-	if ((newLight.type=="3") || (newLight.type=="4")) {
+	if ((newLight.type=="3") || (newLight.type=="4") || (newLight.type=="5")) {
 		var x = new CCUDevice(this,newLight);
 	}
 	} else {

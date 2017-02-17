@@ -283,6 +283,12 @@ HarmonyPlatform.prototype.buildCCUObjectList = function(dispatched_request,editI
 					type = "CCU Program";
 				}
 				break;
+
+				case "5": 
+				{
+					type = "CCU Variable";
+				}
+				break;
 				
 			}
 			var template = lighttemplatefake	
@@ -293,7 +299,7 @@ HarmonyPlatform.prototype.buildCCUObjectList = function(dispatched_request,editI
 				fakeLights = fakeLights +  dispatched_request.fillTemplate(template,{"lamp_name":lightdevice["name"],
 																	  				  "lamp_index":lightdevice["index"],
 																					  "hm_device_type":type,
-																	  				  "ctype":lightdevice["ctype"],
+																	  				  "ctype":lightdevice["ctype"] || "",
 																					  "adress":lightdevice["adress"] || "Browse"});
 			}
 	});
@@ -320,7 +326,6 @@ HarmonyPlatform.prototype.loadCCUDevices = function(callback) {
     
 	this.hm_layer.loadCCUDevices(interfaces,function (jobj){
 		if (jobj) {
-			    that.log.debug(JSON.stringify(jobj.devices));
 		    jobj.devices.forEach(function (device){
 			    device.channels.forEach(function (channel){
 				    var intf = channel.intf;
@@ -343,6 +348,22 @@ HarmonyPlatform.prototype.loadCCUProgramms = function(callback) {
     	if (jobj) {	
     	jobj.programs.forEach(function (program){
 			result_list["P:" + program.id] = {"device":program.name,"address":"P:" + program.id,"name":program.name};   
+		})
+	    callback(result_list)
+		}  
+	})
+}
+
+
+HarmonyPlatform.prototype.loadCCUVariables = function(callback) {
+    var that = this
+    var result_list = {}
+    this.hm_layer.loadCCUVariables( function (jobj) {
+    	if (jobj) {	
+    	jobj.variables.forEach(function (variable){
+	    	if ((variable.type == 2) && (variable.type == 2)) {
+			result_list["V:" + variable.id] = {"device":variable.name,"address":"V:" + variable.id,"name":variable.name};   
+			}
 		})
 	    callback(result_list)
 		}  
@@ -453,7 +474,7 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 				  flo['name'] = name
 				  flo['type'] = type
 				  flo['index'] = lightId
-				  if ((type == '3') || (type == '4')) {
+				  if ((type == '3') || (type == '4') || (type == '5') )  {
 					  flo['adress'] = adr
 					  flo['ctype'] = ctype || ''
 				  }
@@ -466,7 +487,7 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 				  flo['name'] = name
 			   	  flo['type'] = type
 
-				  if ((type == '3') || (type == '4')) {
+				  if ((type == '3') || (type == '4') || (type == '5') ) {
 					  flo['adress'] = adr
 					  flo['ctype'] = ctype || ''
 				  }
@@ -524,6 +545,16 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 			return;
 		}
 		break;
+
+		case "device.listvariables":
+		{
+			this.loadCCUVariables(function (result){
+				dispatchedRequest.dispatchFile(that.plugin.pluginPath , "list.json" ,{"list":JSON.stringify(result)});
+			});
+			return;
+		}
+		break;
+
 
 		case "app.js":
 		{
