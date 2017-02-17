@@ -156,11 +156,16 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 		    
 		    if (parameter.name == "TARGET_VOLUME") {
 			    var newVolume = parameter.newValue;
+			    that.log.debug("%s SetVolumeRequest %s",that.playername,newVolume);
 			    // Do it step by step
 			    if (that.volumeRampTime > 0) {
 				    that.rampToVolume(newVolume);
+				    channel.updateValue("TARGET_VOLUME",newVolume,true,true,true);
 			    } else {
-				    that.setVolume(newValue,function(err){});
+				    that.setVolume(newVolume,function(err){
+					    channel.updateValue("TARGET_VOLUME",newVolume,true,true,true);
+					    that.log.error(err	)
+				    });
 			    } 
 		    }
 		    
@@ -189,10 +194,10 @@ SonosDevice.prototype.setRampTime = function(newTime) {
 SonosDevice.prototype.rampToVolume = function(newVolume) {
 	var that = this;
 	this.sonos.getVolume(function (err, volume) {
-		that.log.debug("Current Volume %s",volume);
+		that.log.debug("%s Current Volume %s",that.playername,volume);
 	  if (newVolume < volume) {
 		  that.volumeSlide = true;
-		  that.log.debug("SetTo %s",volume - 1);
+		  that.log.debug("%s SetTo %s",that.playername,volume - 1);
 		  that.setVolume(volume - 1, function (err) {
 			  setTimeout(function() {that.rampToVolume(newVolume)}, this.volumeRampTime);
 		  });
@@ -201,7 +206,7 @@ SonosDevice.prototype.rampToVolume = function(newVolume) {
 	  
 	  if (newVolume > volume) {
 		  that.volumeSlide = true;
-		  that.log.debug("SetTo %s",volume + 1);
+		  that.log.debug("%s SetTo %s",that.playername,volume + 1);
 		  that.setVolume(volume + 1, function (err) {
 			  setTimeout(function() {that.rampToVolume(newVolume)}, this.volumeRampTime);
 		  })

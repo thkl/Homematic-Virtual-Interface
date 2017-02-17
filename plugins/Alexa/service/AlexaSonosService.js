@@ -84,8 +84,14 @@ AlexaSonosService.prototype.handleEvent = function(event,callback) {
 					if (newValue > i_max) {
 						newValue = i_max;
 					}
-					
-					sw_channel.updateValue("TARGET_VOLUME",newValue,true,true,true);
+					console.log(newValue);
+					var parameter = sw_channel.getParameterObject("TARGET_VOLUME");
+					if (parameter) {
+						parameter["channel"] = sw_channel.adress;
+						parameter["newValue"] = newValue;
+						console.log("EMit Event")
+						sw_channel.emit('channel_value_change', parameter);
+					} 
 					callback("Alexa.ConnectedHome.Control","SetPercentageConfirmation");
 			} else {
 					callback("Alexa.ConnectedHome.Control","NoSuchTargetError");
