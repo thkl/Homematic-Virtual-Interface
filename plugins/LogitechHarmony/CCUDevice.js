@@ -76,7 +76,12 @@ CCUDevice.prototype.initRealDevice = function(hmtype) {
 	 
 	 
 	 if (that.objType == "5") {
-	 		that.bridge.runRegaScript("var x = dom.GetObject('" +  that.adress.slice(2) + "');if (x) {x.State(" + (state==true) ? "1":"0" + ";}");
+	  if (parameter == "on") {
+		  that.log.debug("Var %s",that.adress)
+		  var vst = (state==true) ? "1":"0"
+	 	var script = "var x = dom.GetObject('" +  that.adress.slice(2) + "');if (x) {x.State(" + vst + ";}"
+	 	that.bridge.runRegaScript(script);
+	  }
 	 }
 	 
   })
