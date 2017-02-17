@@ -21,8 +21,6 @@
   "dependencies": {
     "node-schedule":"latest",
     "suncalc":"1.8.0",
-    "moment":"2.17.1",
-    "promise":"latest",
-    "fs-backwards-stream":"latest"
+    "promise":"latest"
   }
 }

@@ -80,9 +80,13 @@
           <span class="dh col-md-2">Type</span>
           <span class="dh col-md-2">DutyCycle</span>
 		  <span class="dh col-md-6"></span>  
-</div>
+   </div>
   $dutyCycle$
-      </div>
+</div>
+
+
+<canvas id="ccuDCChart" width="400" height="200"></canvas>
+    
     </div>
   </div>
 
@@ -90,6 +94,30 @@
 
     <script src="../assets/js/jquery.min.js"></script>
     <script src="../assets/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
+    <script type="text/javascript">
+    
+    $.getJSON( "?do=loadvalues", function( data ) {
+		var ctx = document.getElementById("ccuDCChart");
+		var myChart = new Chart(ctx, {
+		type: 'line',
+		data: {
+        labels: data.timelines,
+        datasets: data.datasets
+    	},
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+	});
+	});
+    
+    </script>
   </body>
 </html>
 

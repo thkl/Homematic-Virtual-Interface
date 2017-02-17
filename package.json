@@ -1,6 +1,6 @@
 {
   "name": "Homematic-Virtual-Interface",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Homematic Virtual Interface",
   "license": "ISC",
   "scripts": {
@@ -25,6 +25,8 @@
     "chalk": "^1.1.1",
     "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5",
     "daemonize2": "^0.4.2",
-    "nedb" : "1.8.0"
+    "nedb" : "1.8.0",
+    "moment":"2.17.1",
+    "group-array":"0.3.1"
   }
 }
