@@ -145,6 +145,10 @@ HarmonyHueServer.prototype.queryRealBridge = function() {
 		  })
 }
 
+HarmonyHueServer.prototype.queryCCU = function() {
+
+}
+
 HarmonyHueServer.prototype.initFakeLights = function() {
   if (this.initFake==true) {
 		return;
@@ -411,6 +415,7 @@ HarmonyHueServer.prototype.activateLinkMode = function() {
 
 HarmonyHueServer.prototype.error = function(dispatched_request,type,address,message) {
   var obj = [{"error":{"type":type,"address":address,"message":message}}];
+  this.log.error("Harmony Hue Error %s  Message %s",type,message)
   dispatched_request.sendResponse(obj);
 }
 
