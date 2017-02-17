@@ -39,7 +39,7 @@ CCUDevice.prototype.init = function() {
 CCUDevice.prototype.initRealDevice = function(hmtype) {
   var that = this
   this.light.on("harmony_device_value_change", function(lightid,parameter,state){
-	  that.log.debug("Event -> Set %s to %s Object Type ",parameter,state,that.objType);
+	  that.log.debug("Event -> Set %s to %s Object Type %s",parameter,state,that.objType);
 
 	  if (that.objType == "3") {
 	  // HM Device
