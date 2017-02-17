@@ -34,6 +34,11 @@ RealLight.prototype.getState = function() {
 }
 
 
+RealLight.prototype.setState = function(newState) {
+	this.data["state"] = newState;
+}
+
+
 RealLight.prototype.sendStates = function (newState) {
 	var that = this;
 	this.log.debug("Send States %s",JSON.stringify(newState));

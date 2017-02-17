@@ -86,8 +86,8 @@ CCUDevice.prototype.setValue = function(datapoint, value) {
 	   }
 	
 	   if (datapoint === 'LEVEL') {
-		   this.light.isOn = (value === 0)
-		   this.light.bri = value*255;	
+		   this.light.isOn = (value > 0)
+		   this.light.bri = value*255	
 	   }
 	   
    }

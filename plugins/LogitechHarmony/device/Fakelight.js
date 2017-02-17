@@ -73,20 +73,18 @@ Fakelight.prototype.setOn = function (state) {
 	   if (state == true) {
 		   this.emit("harmony_device_value_change", this.id , "bri",this.bri);
 	   }
+	   this.isOn = state;
+	   this.log.debug("Set isOn for Light %s to %s",this.uniqueid , this.isOn);
    }	
-	//  Check if we have new State and make a call if
-   this.isOn = state;
-   this.log.debug("Set isOn for Light %s to %s",this.uniqueid , this.isOn);
 }
 
 Fakelight.prototype.setBrightness = function (brightness) {
 	//  Check if we have new State and make a call if
    if (this.bri != brightness) {
 	   this.emit("harmony_device_value_change", this.id , "bri",brightness);
+	   this.bri = brightness;
+	   this.log.debug("Set brightness for Light %s to %s",this.uniqueid , this.bri);
    }	
-
-   this.bri = brightness;
-   this.log.debug("Set brightness for Light %s to %s",this.uniqueid , this.bri);
 }
 
 module.exports = {
