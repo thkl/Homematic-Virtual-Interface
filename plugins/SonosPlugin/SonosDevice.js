@@ -63,8 +63,6 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	});
 
 	HomematicDevice = plugin.server.homematicDevice;
-
-
 	this.hmDevice = new HomematicDevice(this.plugin.getName());
 	
 	
