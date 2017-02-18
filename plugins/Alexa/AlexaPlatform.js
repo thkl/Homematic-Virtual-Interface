@@ -704,8 +704,8 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 			break;
 			
 			case "showlog": {
-				
-				alexaLogger.query(function (err, result) {
+				var LoggerQuery = require(path.join(appRoot , 'logger.js')).LoggerQuery
+				new LoggerQuery("AlexaEvent").query(function (err, result) {
 					var str = "";
 					result.some(function (msg){
 							str = str + msg.time  + "  [" + msg.level + "] - " + msg.msg + "\n";
