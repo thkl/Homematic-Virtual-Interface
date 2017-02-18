@@ -367,7 +367,14 @@ LogicalPlatform.prototype.getDatabase = function(name) {
 	var spath = this.configuration.storagePath()
 	// Do not store outside the config file
 	try {
-		var Datastore = require('nedb'), db = new Datastore({ filename: path.join(spath,path.basename(name)+".udb") , autoload: true });
+		var Datastore = require('nedb')
+		var db = new Datastore({ filename: path.join(spath,path.basename(name)+".udb")})
+		db.loadDatabase(function (err) {    // Callback is optional
+				// Now commands will be executed
+				if (err) {
+					this.log.error("Error while loading custom db %s",err)
+				}
+		});
 		return db
 	} catch (e) {
 		this.log.error("Error while initializing custom db %s",e)
