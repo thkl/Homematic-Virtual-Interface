@@ -8,6 +8,7 @@ appRoot = path.normalize(appRoot);
 var xmlrpc = require(appRoot + "/homematic-xmlrpc");
 var groupArray = require('group-array')
 var moment = require("moment")
+var fs	= require('fs');
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')
 
@@ -30,9 +31,14 @@ CCUDutyCycle.prototype.init = function () {
   this.queryCCU();
 
   try {
-	var Datastore = require('nedb');
-	var logPath = path.normalize(appRoot+"/../log/");
-	this.db = new Datastore({ filename: logPath + "dc.db" , autoload: true });
+	var dbLogger = require('nedb-logger')
+	var logDir = path.join(this.config.storagePath(),'logs')
+	if (!fs.existsSync(logDir)){
+    	fs.mkdirSync(logDir);
+	}
+
+	this.db = new dbLogger({ filename: path.join(logDir, 'dc.db')});
+
 	} catch (e) {
 		this.log.error("Error while initializing db %s",e);
 	}
@@ -80,7 +86,18 @@ CCUDutyCycle.prototype.generateChart = function(callback) {
             
             
 	var ts = new Date().getTime() - 86400000
-	this.db.find({time :{$gt: new Date(ts)}}).sort({time: 1 }).exec(function (err, docs) {
+	
+	var Database = require('nedb')
+	var logDir = path.join(this.config.storagePath(),'logs')
+	var db = new Database({ filename: path.join(logDir, "dc.db") });
+	db.loadDatabase(function (err) {  
+		if (err) {
+			that.log.error("Error while loading logging db %s",err)
+			return
+		}
+	});
+	
+	db.find({time :{$gt: new Date(ts)}}).sort({time: 1 }).exec(function (err, docs) {
 	
 	  var elements = []
 
