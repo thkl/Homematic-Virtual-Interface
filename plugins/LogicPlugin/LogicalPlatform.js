@@ -366,9 +366,12 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
 LogicalPlatform.prototype.getDatabase = function(name) {
 	var spath = this.configuration.storagePath()
 	// Do not store outside the config file
-	
-	var Datastore = require('nedb'), db = new Datastore({ filename: path.join(spath,path.basename(name)+".udb") , autoload: true });
-	return db
+	try {
+		var Datastore = require('nedb'), db = new Datastore({ filename: path.join(spath,path.basename(name)+".udb") , autoload: true });
+		return db
+	} catch (e) {
+		this.log.error("Error while initializing custom db %s",e)
+	}
 }
 
 
