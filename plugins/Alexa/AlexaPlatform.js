@@ -593,9 +593,13 @@ AlexaPlatform.prototype.nextLogicName = function(callback) {
 	  var applicance = that.alexa_appliances[key];
 	  if ((applicance.isVirtual) && (applicance.isVirtual==true)) {
         var num = applicance.name.match(/[1-9][0-9]*/)
-		if (num[0]>lastnum) {
-			lastnum = num[0]
-		}
+		that.log.debug("%s",JSON.stringify(num))
+        if (num.length>0) {
+			var n = parseInt(num[0])
+			if (n>lastnum) {
+				lastnum = n
+			}
+        }
       }
     })
 	lastnum = lastnum + 1
