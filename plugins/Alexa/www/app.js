@@ -59,6 +59,18 @@ function loadVirtDevices() {
 
 
 
+function buildNextLogicEntry() {
+	$.getJSON( "?do=device.nextLogicName", function( data ) {
+		next = data.next;
+		document.getElementById("appliance.device").value = "Alexa_" + next;
+		document.getElementById("appliance.name").value = "Alexa_" + next;
+		document.getElementById("appliance.device_2").innerHTML = "Alexa_" + next;
+		document.getElementById("appliance.service").value = "AlexaLogicService";
+		document.getElementById("appliance.service_2").innerHTML = "AlexaLogicService";
+  	});
+}
+
+
 function select_item(key,program) {
 	var device = devicelist[key];
 	if ((device) && (device.service.length>0)) {

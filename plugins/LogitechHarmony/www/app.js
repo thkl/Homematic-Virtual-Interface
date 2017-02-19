@@ -70,7 +70,6 @@ function loadObjects() {
 	
 }
 
-
 function select_item(key) {
 	var device = devicelist[key];
 	if (device) {

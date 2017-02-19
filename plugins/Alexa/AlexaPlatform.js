@@ -511,7 +511,7 @@ AlexaPlatform.prototype.saveApplicance = function(dispatched_request) {
 	var service = 		queryObject["appliance.service"];
 	
 	if ((applianceID) && (applianceName) && (service)) {
-		
+		this.log.debug("All here saving")
 		var appliance = this.alexa_appliances[applianceID];
 		if (appliance) {
 			appliance.name = applianceName;
@@ -528,6 +528,8 @@ AlexaPlatform.prototype.saveApplicance = function(dispatched_request) {
 		this.save_appliances( function (){
 			that.reloadApplicances();
 		});
+	} else {
+		this.log.error("Something went wrong %s %s %s",applianceID,applianceName,service)
 	}
 	
 }
@@ -582,6 +584,26 @@ AlexaPlatform.prototype.loadCCUProgramms = function(callback) {
 		}  
 	})
 }
+
+AlexaPlatform.prototype.nextLogicName = function(callback) {
+    var that = this
+    var lastnum = 0
+    this.log.debug("Fetch Next Logic Name")
+    Object.keys(this.alexa_appliances).forEach(function (key) {
+	  var applicance = that.alexa_appliances[key];
+	  if ((applicance.isVirtual) && (applicance.isVirtual==true)) {
+        var num = applicance.name.match(/[1-9][0-9]*/)
+		if (num[0]>lastnum) {
+			lastnum = num[0]
+		}
+      }
+    })
+	lastnum = lastnum + 1
+	var result_list = {"next":lastnum};   
+    this.log.debug("Fetch Next Logic Name is %s",result_list)
+	callback(result_list)
+}  
+	
 
 AlexaPlatform.prototype.loadVirtualDevices = function(callback) {
    var that = this;
@@ -674,6 +696,16 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 				return;
 			}
 			break;
+
+			case "device.nextLogicName":
+			{
+				this.nextLogicName(function (result){
+				   dispatched_request.dispatchFile(that.plugin.pluginPath , "list.json" ,{"list":JSON.stringify(result)});
+				});
+				return;
+			}
+			break;
+
 
 			
 			case "phrase.list":
