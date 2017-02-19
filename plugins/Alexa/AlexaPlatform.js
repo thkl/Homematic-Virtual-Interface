@@ -414,8 +414,7 @@ AlexaPlatform.prototype.save_appliances = function(callback) {
 	  }
 	  pobj.push(aobj);
 	});
-		  	  
-     this.configuration.savePersistentObjektToFile({"alexa":pobj},"alexa_objects",callback);
+    this.configuration.savePersistentObjektToFile({"alexa":pobj},"alexa_objects",callback);
 }
 
 

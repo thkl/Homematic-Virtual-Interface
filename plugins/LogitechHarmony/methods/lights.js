@@ -32,7 +32,6 @@ Service_Lights.prototype.process = function () {
 			if (operation=="state") {
 				
 				this.dispatched_request.processPost(function() {
-					that.log.debug("Set State Request for %s",lid)
 				    that.setLightState(lid);
 				});
 				
@@ -65,8 +64,6 @@ Service_Lights.prototype.process = function () {
 Service_Lights.prototype.setLightState = function (lightId) {
 	var that = this;
 	var ro = [];
-	
-
 		var light = this.server.getLight(lightId);
 		if (light != undefined) {
 		var data = Object.keys(this.dispatched_request.request.post);

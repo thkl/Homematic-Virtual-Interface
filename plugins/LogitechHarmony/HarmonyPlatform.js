@@ -236,9 +236,11 @@ HarmonyPlatform.prototype.saveHarmonyObjects = function(objectsToSave,callback) 
 }
 
 HarmonyPlatform.prototype.loadFakeLights = function() {
-	
+	var that = this
+	this.log.debug("Loading Fake Lights")
 	var harmony_objects = this.config.loadPersistentObjektfromFile('harmony_objects')
 	if ((harmony_objects != undefined) && (harmony_objects['harmony_objects']!=undefined)) {
+		that.log.debug("Returning Harmony Objects %s",JSON.stringify(harmony_objects['harmony_objects']))
 		return harmony_objects['harmony_objects']
 	} else {
 		// the old style

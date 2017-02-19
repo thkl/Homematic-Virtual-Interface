@@ -101,7 +101,7 @@ HarmonyHueServer.prototype.init = function() {
   
   // Check existing Hue Bridge .. Init and Add Real Lights
   var huePluginName = this.config.getValueForPluginWithDefault(this.name,"hue_plugin_name",undefined);
-  if (huePluginName!=undefined) {
+  if ((huePluginName!=undefined) && (huePluginName.length>0)) {
 	  // load User And IP
 	  this.log.info("Adding Real Hue Bridge from %s Plugin",huePluginName);
 	  
@@ -126,7 +126,10 @@ HarmonyHueServer.prototype.init = function() {
 	  	  that.queryRealBridge()
 		});
 	} else {
-		this.log.warn("username or bridge ip not found in %s",huePluginName)
+		this.log.warn("username or bridge ip not found in %s Anyway continue with fake lights",huePluginName)
+ 	  this.initFakeLights();
+ 	  this.startEventListener();
+		
 	}
   } else {
 	  this.log.info("No Hue Pluginname provided in hue_plugin_name. Skipping real Bridge mapping.");
