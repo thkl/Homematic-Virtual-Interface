@@ -116,7 +116,9 @@ Service_Lights.prototype.sendLightState = function (lightId) {
 			lights.forEach(function (light){
 			  ro[light.getId()] = light.getState();
 		    });
-	    } 
+	    } else {
+		    this.server.log.error("There are no lights")
+	    }
  } else {
 	var light = this.server.getLight(lightId);
 	if (light != undefined) {

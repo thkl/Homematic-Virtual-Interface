@@ -36,15 +36,18 @@ HarmonyPlatform.prototype.init = function() {
 	var that = this
     this.hm_layer = this.server.getBridge()
 	this.flobjects = this.loadFakeLights()
-
+	this.use_roku = this.config.getValueForPluginWithDefault(this.name,"use_roku",false);
+	
 	this.harmonyServer = new HarmonyHueServer(this)
 	this.harmonyClient = new HarmonyClient(this)
 
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")
 	this.supportedChannels = ["BidCos-RF.SWITCH","BidCos-RF.DIMMER","BidCos-RF.BLIND"]
-	
-	this.rokuServer = new HarmonyRokuServer(this)
-	this.rokuServer.init()
+	if (this.config.getValueForPluginWithDefault(this.name,"use_roku",false)==true)
+	{
+		this.rokuServer = new HarmonyRokuServer(this)
+		this.rokuServer.init()
+	}
 }
 
 HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
@@ -113,6 +116,14 @@ HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
 		     "description":this.localization.localize("If you want to use a normal hue bridge.")
 	});
 	
+	
+	result.push({"control":"option",
+					"name":"use_roku",
+				   "label":this.localization.localize("Enable Fake Roku Service"),
+				   "value":this.use_roku,
+		     "description":this.localization.localize("Use this to enable a Fake Roku Revice.This will add a 19 key Remote to your ccu")
+	});
+
 	return result;
 }
 
@@ -121,6 +132,7 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 	var hub_ip = settings.hub_ip;
 	var localHostIP = settings.localHostIP;
 	var localPort = settings.localPort;
+	var hue_plugin_name = settings.hue_plugin_name;
 	var hue_plugin_name = settings.hue_plugin_name;
 
 	if  (hub_ip) {
@@ -141,9 +153,30 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 		this.config.setValueForPlugin(this.name,"hue_plugin_name",""); 
 	}
 	
+	if (hue_plugin_name) {
+		this.config.setValueForPlugin(this.name,"use_roku",hue_plugin_name); 
+	} else {
+		this.config.setValueForPlugin(this.name,"use_roku",""); 
+	}
+	
+	if (settings.use_roku) {
+		this.config.setValueForPlugin(this.name,"use_roku",true); 
+		this.use_roku = true
+	} else {
+		this.config.setValueForPlugin(this.name,"use_roku",false); 
+		this.use_roku = false
+	}
+	
 	this.shutdown();
 	this.harmonyServer = new HarmonyHueServer(this);
 	this.harmonyClient = new HarmonyClient(this);
+	
+	if (this.use_roku ==true)
+	{
+		this.rokuServer = new HarmonyRokuServer(this)
+		this.rokuServer.init()
+	}
+
 }
 
 
@@ -583,10 +616,15 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 	});
 	
 	var rokuList = "";
-	var cmdMap = this.rokuServer.getMapping()
-	Object.keys(cmdMap).forEach(function (m) { 
-		rokuList = rokuList +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":cmdMap[m],"lamp_index":m});
-	})
+	if (this.use_roku == true ) {
+		var cmdMap = this.rokuServer.getMapping()
+		Object.keys(cmdMap).forEach(function (m) { 
+			rokuList = rokuList +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":cmdMap[m],"lamp_index":m});
+		})
+	} else {
+		rokuList = '<a class="ph" href="#"><span class="dh">Not active</span></a>'
+	}
+	
 	
 	dispatchedRequest.dispatchFile(this.plugin.pluginPath , "index.html",{"listRealLights":realLights,
 																		  "listFakeLights":fakeLights,
