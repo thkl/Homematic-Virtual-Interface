@@ -134,7 +134,7 @@ HarmonyRokuServer.prototype.startDiscovery = function() {
 }
        
 HarmonyRokuServer.prototype.stopServer = function() {
-    this.server.close();
+    this.rk_server.close();
 }
 
 HarmonyRokuServer.prototype.stopDiscovery = function() {
@@ -169,7 +169,7 @@ HarmonyRokuServer.prototype.startServer = function(callback) {
     var that = this
     logger.debug("FakeRoku start Server")
 
-    this.server = http.createServer(function (request, response) {
+    this.rk_server = http.createServer(function (request, response) {
        
        request.connection.ref();
        var method = request.method;
@@ -216,16 +216,16 @@ HarmonyRokuServer.prototype.startServer = function(callback) {
         });
     });
     
-    this.server.on('connection', function (socket) {
+    this.rk_server.on('connection', function (socket) {
         socket.unref();
     });
     
-    this.server.on("error", function (err) {
+    this.rk_server.on("error", function (err) {
         that.log.error(err);
         that.stopServer();
     });
 
-    this.server.listen(this.http_port, this.bind, function () {
+    this.rk_server.listen(this.http_port, this.bind, function () {
         logger.debug("HTTP-Server started on " + that.bind + ":" + that.http_port);
     });
     if (typeof callback === 'function') callback();

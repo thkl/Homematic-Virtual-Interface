@@ -63,8 +63,16 @@ HarmonyHueServer.prototype.init = function() {
 	
 	try  {
 	//Create a server
-	this.server = http.createServer(handleRequest);
-	this.server.listen(this.localPort,this.hostName,511, function(){
+	this.hue_server = http.createServer(handleRequest);
+	
+	
+	
+	this.hue_server.on("error", function (err) {
+        that.log.error(err);
+    });
+    
+    
+    this.hue_server.listen(this.localPort,this.hostName,511, function(){
 		that.log.info("HarmonyHueServer Server is listening on: Port %s",that.localPort);
  	});
 		
@@ -291,18 +299,20 @@ HarmonyHueServer.prototype.sendDescription = function() {
 }
 
 HarmonyHueServer.prototype.shutdown = function() {
-	this.log.info("HarmonyHueServer Server Shutdown");
+	this.log.debug("HarmonyHueServer Server Shutdown");
+	var that = this
 	try {		
-	this.server.close();
-	this.bus.stop(function (error) {});
-    } catch (e) {}
+		this.hue_server.close();
+		this.bus.stop(function (error) {
+			that.log.error("BUS Error %s",error)
+		});
+    } catch (e) {
+	    
+    }
 }
 
 HarmonyHueServer.prototype.handleRequest = function(dispatched_request) {
-    
     var that = this;
-	
-
 	if (dispatched_request.method == "POST") {
 		dispatched_request.processPost(function() {
           that.internalhandleRequest(dispatched_request)

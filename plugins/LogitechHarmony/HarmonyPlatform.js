@@ -62,7 +62,15 @@ HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
 
 HarmonyPlatform.prototype.shutdown = function() {
 	this.log.debug("Harmony Plugin Shutdown");
+	try {
+	if (this.rokuServer) {
+			this.rokuServer.stopServer();
+			this.rokuServer.stopDiscovery();
+	}
 	this.harmonyServer.shutdown();
+	} catch (e) {
+		this.log.error("Shutown error %s",e.stack)
+	}
 }
 
 
@@ -166,15 +174,21 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 		this.config.setValueForPlugin(this.name,"use_roku",false); 
 		this.use_roku = false
 	}
-	
+
+	this.log.debug("Will shutdown now");
 	this.shutdown();
+	this.log.debug("Will restart Hue Server now");
 	this.harmonyServer = new HarmonyHueServer(this);
+	this.log.debug("Will restart Client");
 	this.harmonyClient = new HarmonyClient(this);
 	
 	if (this.use_roku ==true)
 	{
+		this.log.debug("Will restart RokuService now");
 		this.rokuServer = new HarmonyRokuServer(this)
 		this.rokuServer.init()
+	} else {
+		this.rokuServer = null
 	}
 
 }
