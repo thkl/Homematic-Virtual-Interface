@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-logicmanager",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Virtual Logic Manager",
   "license": "ISC",
   "keywords": [
@@ -21,6 +21,7 @@
   "dependencies": {
     "node-schedule":"latest",
     "suncalc":"1.8.0",
-    "promise":"latest"
+    "promise":"latest",
+    "qs":"6.3.1"
   }
 }

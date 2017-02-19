@@ -33,6 +33,7 @@ var modules = {
     'promise':require('promise'),
     'http' : require("http"),
     'moment':require("moment"),
+    'qs' : require('qs'),
     'regarequest' : require(appRoot + "/HomematicReqaRequest.js")
 
 };
@@ -44,6 +45,7 @@ var path = modules.path;
 var scheduler = modules['node-schedule'];
 var suncalc = modules.suncalc;
 var url = modules.url;
+var qs = modules.qs;
 var http = modules.http;
 var regarequest = modules.regarequest;
 var Promise = modules.promise;
@@ -498,6 +500,66 @@ LogicalPlatform.prototype.triggerScript = function(script) {
   this.log.debug("Subscriptions : ",JSON.stringify(this.subscriptions));
 }
 
+LogicalPlatform.prototype.httpCall = function(method,aUrl,parameter,callback) {
+  
+  try {
+  	var myURL = url.parse(aUrl);
+  	var that = this;
+  	var options = {
+		  host: myURL.hostname,
+		  port: 80,
+		  path: myURL.pathname,
+		  method: method,
+  	};
+
+  var mqs = qs.stringify(parameter);
+  
+  if ((method != "POST") && (mqs.length > 0)) {
+	  options.path = options.path + "?" + mqs  
+  }
+  
+  this.log.debug(JSON.stringify(options))
+  
+  var req = http.request(options, function(res) {
+  var data = "";
+      
+  res.setEncoding("binary");
+      
+  res.on("data", function(chunk) {
+        data += chunk.toString();
+  });
+      
+  
+  res.on("end", function() {
+     if (callback) {callback(data,null);}
+  });
+
+      
+  });
+
+
+  req.on("error", function(e) {
+	   that.log.warn("Error %s while calling %" ,e, aUrl);
+        callback(undefined,e);
+    });
+
+  req.on("timeout", function(e) {
+	    that.log.warn("timeout from %s while executing call",aUrl);
+        callback(undefined,e);
+  });
+    
+  req.setTimeout(30000);
+  if (method=="POST") {
+	  req.write(mqs);
+  }
+  req.end();
+  } catch (error) {
+	  this.log.error("HTTP Error %s",e)
+	  callback(null,error);
+  }
+}
+
+
 LogicalPlatform.prototype.runScript = function(script_object, name) {
 	var script = script_object.script;
     var scriptDir = path.dirname(path.resolve(name));
@@ -887,7 +949,15 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 			});
 		},
 		
-		
+		httpCall: function Sandbox_httpCall(method,url,parameter) {
+			
+			return new Promise(function (resolve,reject) {
+				that.httpCall(method,url,parameter,function (result,error) {
+					resolve(result,error);
+				});
+			})
+		},
+
 		schedule:   function Sandbox_schedule(pattern, /* optional */ options, callback) {
 
             if (arguments.length === 2) {
