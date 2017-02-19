@@ -150,19 +150,24 @@ HarmonyHueServer.prototype.queryCCU = function() {
 }
 
 HarmonyHueServer.prototype.initFakeLights = function() {
+  this.log.debug("Init Fake Lights")
   if (this.initFake==true) {
+  		this.log.debug("skip init flag was set")
 		return;
   }
   this.initFake = true;
   var that = this;
   var lights = this.plugin.getFakeLights();
   this.log.debug("Adding your Fake Lights %s",JSON.stringify(lights));
-  lights.forEach(function (light){
-	  that.addFakeLightDevice(light);
-  });
+  if (lights) {
+ 	 lights.forEach(function (light){
+		  that.addFakeLightDevice(light);
+  	});
+  }
 }
 
 HarmonyHueServer.prototype.addFakeLightDevice = function(newLight) {
+	this.log.debug("Adding %s",JSON.stringify(newLight))
 	if (newLight.type) {
 	if ((newLight.type=="0") || (newLight.type=="1")) {
 		var x = new FakeHueDevice(this,newLight);
@@ -240,6 +245,7 @@ HarmonyHueServer.prototype.getLights = function() {
 	  ld.forEach(function (lightDevice){result.push(lightDevice.light)});
 	  return result;
   } else {
+	  this.log.warn("No lights found .. hmm")
 	  return undefined;
   }
   

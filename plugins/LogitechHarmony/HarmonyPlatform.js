@@ -35,12 +35,13 @@ util.inherits(HarmonyPlatform, HomematicVirtualPlatform);
 HarmonyPlatform.prototype.init = function() {
 	var that = this
     this.hm_layer = this.server.getBridge()
+	this.flobjects = this.loadFakeLights()
+
 	this.harmonyServer = new HarmonyHueServer(this)
 	this.harmonyClient = new HarmonyClient(this)
 
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")
 	this.supportedChannels = ["BidCos-RF.SWITCH","BidCos-RF.DIMMER","BidCos-RF.BLIND"]
-	this.flobjects = this.loadFakeLights()
 	
 	this.rokuServer = new HarmonyRokuServer(this)
 	this.rokuServer.init()
@@ -199,8 +200,12 @@ HarmonyPlatform.prototype.loadFakeLights = function() {
 		var flo = [] // Fake Light Objects
 		if (strflo != undefined) {
 			try {
+				this.log.debug("FakeLights %s",strflo)
 				flo = JSON.parse(strflo);
-			} catch (err){}
+				this.log.debug("Loaded %s",flo.length)
+			} catch (err){
+				this.log.error("Error loading FakeLights %s",err)
+			}
 		} 
 		return flo
 	} 
