@@ -616,20 +616,25 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 	});
 	
 	var rokuList = "";
+	
 	if (this.use_roku == true ) {
+		
+		var rokuElements = ""
+		var rokutmp = dispatchedRequest.getTemplate(this.plugin.pluginPath , "roku.html",null);
+
 		var cmdMap = this.rokuServer.getMapping()
 		Object.keys(cmdMap).forEach(function (m) { 
-			rokuList = rokuList +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":cmdMap[m],"lamp_index":m});
+			rokuElements = rokuElements +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":cmdMap[m],"lamp_index":m});
 		})
-	} else {
-		rokuList = '<a class="ph" href="#"><span class="dh">Not active</span></a>'
-	}
+		
+		rokuList = dispatchedRequest.fillTemplate(rokutmp,{"rokuList":rokuElements});
+	} 
 	
 	
 	dispatchedRequest.dispatchFile(this.plugin.pluginPath , "index.html",{"listRealLights":realLights,
 																		  "listFakeLights":fakeLights,
 																		  "listCCUObjects":ccuObjects,
-																		  "rokuList":rokuList,
+																		  "rokuHint":rokuList,
 																		  "activityList":activityList});
 }
 
