@@ -52,7 +52,7 @@ HarmonyHueServer.prototype.init = function() {
   var that = this;
   
   this.localPort = this.config.getValueForPluginWithDefault(this.name,"port",7000);
-  this.hostName = this.config.getValueForPluginWithDefault(this.name,"host",this.getIPAddress());
+  this.hostName = this.config.getValueForPluginWithDefault(this.name,"host",this.bridge.getLocalIpAdress());
   this.log.debug("HarmonyHueServer Server Initializing on Port %s",this.localPort);
 
   function handleRequest(request, response){
@@ -284,19 +284,6 @@ HarmonyHueServer.prototype.sendDescription = function() {
  return result;
 }
 
-HarmonyHueServer.prototype.getIPAddress = function() {
-    var interfaces = require("os").networkInterfaces();
-    for (var devName in interfaces) {
-      var iface = interfaces[devName];
-      for (var i = 0; i < iface.length; i++) {
-        var alias = iface[i];
-        if (alias.family === "IPv4" && alias.address !== "127.0.0.1" && !alias.internal)
-          return alias.address;
-      }
-    }
-    return "0.0.0.0";
-}
-
 HarmonyHueServer.prototype.shutdown = function() {
 	this.log.info("HarmonyHueServer Server Shutdown");
 	try {		
@@ -362,7 +349,8 @@ HarmonyHueServer.prototype.internalhandleRequest = function(dispatched_request) 
 				
 				} else {
 					var path = "/" + dispatched_request.queryComponents.slice(-1)[0] ;
-					this.error(dispatched_request,1,path,"unauthorized user %s",user);
+					this.error(dispatched_request,1,path,"unauthorized user");
+					this.log.error("unauthorized user %s",user)
 				}
 		}
 	  }
@@ -375,10 +363,14 @@ HarmonyHueServer.prototype.internalhandleRequest = function(dispatched_request) 
 
 
 HarmonyHueServer.prototype.validUser = function(username) {
+	if (this.config.getValueForPluginWithDefault(this.name,"grant_all_users",false)==true) {
+		return true
+	} else {
 	var users = this.config.getPersistValueForPlugin(this.name,"user");
 	if (users != undefined) {
 		var ua = users.split(",");
 		return (ua.indexOf(username) > -1);
+	}
 	}
 }
 

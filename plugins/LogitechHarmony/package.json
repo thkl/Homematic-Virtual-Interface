@@ -21,6 +21,9 @@
   "dependencies": {
 	  "@achingbrain/ssdp":"latest",
 	  "node-hue-api": "latest",
-	  "harmonyhubjs-client":"git://github.com/thkl/harmonyhubjs-client.git"
+	  "harmonyhubjs-client":"git://github.com/thkl/harmonyhubjs-client.git",
+	  "http-headers":"latest",
+	   "uuid":"latest"
+
   }
 }

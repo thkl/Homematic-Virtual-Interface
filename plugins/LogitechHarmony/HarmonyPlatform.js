@@ -12,6 +12,8 @@
 var path = require('path');
 var url = require("url");
 var HarmonyHueServer = require(__dirname + '/HarmonyHueServer.js').HarmonyHueServer;
+var HarmonyRokuServer = require(__dirname + '/HarmonyRokuServer.js').HarmonyRokuServer;
+
 var HarmonyClient = require(__dirname + '/HarmonyClient.js').HarmonyClient;
 var path = require('path');
 var appRoot = path.dirname(require.main.filename);
@@ -35,9 +37,13 @@ HarmonyPlatform.prototype.init = function() {
     this.hm_layer = this.server.getBridge()
 	this.harmonyServer = new HarmonyHueServer(this)
 	this.harmonyClient = new HarmonyClient(this)
+
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")
 	this.supportedChannels = ["BidCos-RF.SWITCH","BidCos-RF.DIMMER","BidCos-RF.BLIND"]
 	this.flobjects = this.loadFakeLights()
+	
+	this.rokuServer = new HarmonyRokuServer(this)
+	this.rokuServer.init()
 }
 
 HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
@@ -74,7 +80,6 @@ HarmonyPlatform.prototype.updateFakeLight = function(newflo,callback) {
 	 }
   })
   
-  this.log.debug(JSON.stringify(nobjects))
   this.saveHarmonyObjects(nobjects)
   this.flobjects = this.loadFakeLights()
 }
@@ -572,10 +577,16 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 		activityList = activityList +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":activity.label,"lamp_index":activity.chid});
 	});
 	
+	var rokuList = "";
+	var cmdMap = this.rokuServer.getMapping()
+	Object.keys(cmdMap).forEach(function (m) { 
+		rokuList = rokuList +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":cmdMap[m],"lamp_index":m});
+	})
 	
 	dispatchedRequest.dispatchFile(this.plugin.pluginPath , "index.html",{"listRealLights":realLights,
 																		  "listFakeLights":fakeLights,
 																		  "listCCUObjects":ccuObjects,
+																		  "rokuList":rokuList,
 																		  "activityList":activityList});
 }
 
