@@ -82,6 +82,11 @@ LogicalPlatform.prototype.init = function() {
 		})
 		that.log.debug("Done adding Event Listener")        
 	})
+    // Check Path
+    
+    var spath = path.join(this.configuration.storagePath() , 'scripts');
+    var util = require(path.join(appRoot, 'Util.js'));
+	util.createPathIfNotExists(spath)
     
 	this.calculateSunTimes();
 	this.reInitScripts();

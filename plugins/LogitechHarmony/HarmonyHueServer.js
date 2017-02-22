@@ -124,12 +124,12 @@ HarmonyHueServer.prototype.init = function() {
 	  	  that.initFakeLights()
 	  	  that.startEventListener()
 	  	  that.queryRealBridge()
-		});
+		 });
+
 	} else {
-		this.log.warn("username or bridge ip not found in %s Anyway continue with fake lights",huePluginName)
+	  this.log.warn("username or bridge ip not found in %s Anyway continue with fake lights",huePluginName)
  	  this.initFakeLights();
  	  this.startEventListener();
-		
 	}
   } else {
 	  this.log.info("No Hue Pluginname provided in hue_plugin_name. Skipping real Bridge mapping.");
