@@ -48,7 +48,12 @@ SonosPlatform.prototype.init = function() {
 	if (players) {
 		this.log.info('Adding defined devices ...')
 		players.forEach(function (host){
-			that.addZonePlayer(host);
+			if (typeof host == 'object') {
+				var zname = Object.keys(host)[0]
+				that.addZonePlayer(host[zname],zname)			
+			} else {
+				that.addZonePlayer(host);
+			}
 		});
 		this.plugin.initialized = true;
 		this.log.info("initialization completed");
@@ -111,13 +116,16 @@ SonosPlatform.prototype.shutdown = function() {
 }
 
 
-SonosPlatform.prototype.addZonePlayer = function(host) {
+SonosPlatform.prototype.addZonePlayer = function(host,cname) {
   var that = this;
  
   var zp = new ZonePLayer(host);
   zp.deviceDescription( function (error,data) {
-	  var name = data.roomName;
+	  var name = cname || data.roomName;
       var sdevice = new SonosDevice(that ,host,1400,"SONOS_" + name);
+	  var puuid = data.UDN.substring(5)
+	  that.log.debug("RINCON %s",puuid)
+      sdevice.rincon = puuid;
 	  that.devices.push(sdevice);
   });
 }
@@ -129,11 +137,36 @@ SonosPlatform.prototype.myDevices = function() {
 	result.push({"id":"sep-son","name":"--------- Sonos Devices ---------","type":"seperator"});
 
 	this.devices.forEach(function(device){
-		result.push({"id":device["playername"],"name":device["playername"],"type":"SONOS"});
+		result.push({"id":device["playername"],"name":device["playername"],"udn":device["rincon"],"type":"SONOS"});
 	});
 
 	return result;	
 }
+
+SonosPlatform.prototype.getPlayer = function(name) {
+	// return my Devices here
+	var result;
+	this.devices.some(function(device){
+		if (device["playername"] == name) {
+			result = device
+		}
+	});
+	return result;	
+}
+
+
+SonosPlatform.prototype.getPlayerByRinCon = function(rincon) {
+	// return my Devices here
+	var result;
+	this.devices.some(function(device){
+		if (device["rincon"] == rincon) {
+			result = device
+		}
+	});
+	return result;	
+}
+
+
 
 SonosPlatform.prototype.search = function() {
 	var devices = []
@@ -221,7 +254,7 @@ SonosPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 	var devtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_device_tmp.html",null);
 
 	this.myDevices().some(function (device){
-		listDevices = listDevices +  dispatched_request.fillTemplate(devtemplate,{"device_name":device["name"],"device_hmdevice":""});
+		listDevices = listDevices +  dispatched_request.fillTemplate(devtemplate,{"device_name":device["name"],"device_hmdevice":device['udn']});
 	});
 	
 	

@@ -25,11 +25,11 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	this.player.listen(function (err) {
 
 		that.player.addService('/MediaRenderer/AVTransport/Event', function (error, sid) {
-			that.log.debug('Successfully subscribed, with subscription id', sid)
+			that.log.debug('Successfully subscribed, with subscription id %s', sid)
   		});
 
   		that.player.addService('/MediaRenderer/RenderingControl/Event', function (error, sid) {
-			that.log.debug('Successfully subscribed, with subscription id', sid)
+			that.log.debug('Successfully subscribed, with subscription id %s', sid)
   		});
 
 
@@ -46,7 +46,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 					if (channel) {
 						channel.updateValue("TARGET_VOLUME",event.volume.Master,true);
 					}
-				}		  		
+				}	
 	  		}
 	  		
 	  		if (event.name == "TransportControlEvent") {
@@ -56,12 +56,17 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 						if (event.nextTrack) {channel.updateValue("NEXT_TRACK",event.nextTrack.artist + ": " +event.nextTrack.title,true);}
 						if (event.transportState) {channel.updateValue("TRANSPORT_STATE",event.transportState,true);}
 						if (event.currentPlayMode) {channel.updateValue("PLAY_MODE",event.currentPlayMode,true);}
-					} 	  		
+					} 	
 	  		}
+	  		
+	  		that.refreshZoneGroupAttrs()
 	  		
   		});
 	});
 
+
+	this.refreshZoneGroupAttrs()
+	
 	HomematicDevice = plugin.server.homematicDevice;
 	this.hmDevice = new HomematicDevice(this.plugin.getName());
 	
@@ -167,22 +172,67 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 			    } 
 		    }
 		    
-		    if (parameter.name == "PLAYLIST") {
+		    if (parameter.name == 'COMMAND') {
 			    
-			    var playlist = parameter.newValue;
-				if (playlist.indexOf("spotify") > -1) {
-					 that.sonos.flush(function (err, flushed) {
-						 that.sonos.addSpotifyPlaylist(playlist,function (err, playing) {
-							 that.sonos.play(function (err, playing) {})
-							})
-					});
-				}
-
-		    }
-		    
+			    var cmds = parameter.newValue.split('|');
+				if (cmds.length>0) {
+					var cmd = cmds[0];
+					switch (cmd) {
+						case 'standalone':
+						{  
+							that.sonos.becomeCoordinatorOfStandaloneGroup(function (result){});
+						}
+						break;
+					
+						case 'playlist':
+						{
+							if (cmds.length>1) {
+								that.setPlayList(cmds[1])	
+					  		}
+						}
+						break;
+					
+						case 'addto':
+						{
+							try {
+							if (cmds.length>1) {
+								// get master device
+								var master = that.plugin.getPlayer(cmds[1])
+								if (master) {
+									master.sonos.addPlayerToGroup(master.rincon,function (result){
+									  that.sonos.queueNext('x-rincon:'+master.rincon,function(result){
+									  })
+									})	
+								} else {
+									that.log.error("Master %s not found",cmds[1])
+								}
+								
+					  		} else {
+						  		that.log.error("Please select a master");
+					  		}
+					  	  } catch (e) {
+						  	  that.log.error("%s",e.stack)
+					  	  }
+						}
+						break;
+					}
+		    	}
+			}
 	    }
 	});
 }
+
+SonosDevice.prototype.setPlayList = function(playlist) {
+	var that = this;
+	if (playlist.indexOf('spotify') > -1) {
+		 this.sonos.flush(function (err, flushed) {
+			that.sonos.addSpotifyPlaylist(playlist,function (err, playing) {
+			that.sonos.play(function (err, playing) {})
+		})
+	})
+	}
+}
+
 
 SonosDevice.prototype.setRampTime = function(newTime) {
 	this.log.debug("Set new Volume Ramp Time %s",newTime);
@@ -214,6 +264,31 @@ SonosDevice.prototype.rampToVolume = function(newVolume) {
 	  that.volumeSlide = false;
 
 	});
+}
+
+SonosDevice.prototype.refreshZoneGroupAttrs = function() {
+	var that = this;
+	that.sonos.getZoneGroupAttrs(function (error,result){
+	   
+	   if (result) {
+		   var tmp = result['CurrentZoneGroupID'];
+		   if (tmp) {
+			   that.log.debug("CurrentZoneGroupID %s",tmp)
+			   var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
+			   var zoneGroupId = tmp.split(":")[0]
+				  if (channel) {
+					  channel.updateValue("COORDINATOR",(zoneGroupId == that.rincon),true)
+					  var player = that.plugin.getPlayerByRinCon(zoneGroupId)
+					  channel.updateValue("ZONEGROUPID",(player) ? player['playername'] : zoneGroupId,true)
+					  
+				  } 
+			   } else {
+				   that.log.error("CurrentZoneGroupID not found in %s",JSON.stringify(result))
+			   }
+		   } else {
+			   that.log.error("Result %s Error %s",JSON.stringify(result),JSON.stringify(error))
+		   }
+	})	
 }
 
 
