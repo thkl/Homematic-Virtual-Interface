@@ -43,6 +43,10 @@ CCUDutyCycle.prototype.init = function () {
 		this.log.error("Error while initializing db %s",e);
 	}
 
+	setTimeout(function () {
+		that.clean()
+	}, 3600000)
+
   this.plugin.initialized = true;
   this.log.info('initialization completed %s', this.plugin.initialized)
 }
@@ -67,6 +71,25 @@ CCUDutyCycle.prototype.queryCCU = function () {
 	setTimeout(function () {
 		that.queryCCU();
 	}, 60000);
+}
+
+CCUDutyCycle.prototype.clean = function(callback) {
+	var ts = new Date().getTime() - (hours*3600000)
+	var that = this
+	var Database = require('nedb')
+	var logDir = path.join(this.config.storagePath(),'logs')
+	var db = new Database({ filename: path.join(logDir, "dc.db") });
+	db.loadDatabase(function (err) {  
+		if (err) {
+			that.log.error("Error while loading logging db %s",err)
+			return
+		}
+	});
+
+	db.remove({time : { $lt: new Date(ts) }}, { multi: true }, function (err, numRemoved) {
+		that.log.info("Removed %s entries from DC Table",numRemoved)
+	});
+	db.persistence.compactDatafile()
 }
 
 CCUDutyCycle.prototype.generateChart = function(callback) {
