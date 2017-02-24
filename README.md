@@ -67,10 +67,11 @@ Add plugins to the plugins directory. There is a example Hue Plugin with the fol
 
 Current plugins:
 
-HuePlugin
-LightifyPlugin
-LogicPlugin
-LogitechHarmony
-NetAtmo
-PioneerAVR
-Sonos
+HuePlugin, LightifyPlugin, LogicPlugin, LogitechHarmony, NetAtmo, Sonos
+
+
+Trademarks:
+
+Homematic is a registered trademark of the eq-3 AG | Sonos is a registered trademark of Sonos Inc | hue is a registered trademark of Philips Lighting Holding B.V |  Lightify is a registered trademark of OSRAM GmbH | netatmo is a registered trademark of NETATMO | Logitech Harmony is a registered trademark of Logitech International S.A.
+
+This project is an unofficial pice of software to control all these devices via there SDK and has nothing in common with the companies above.
