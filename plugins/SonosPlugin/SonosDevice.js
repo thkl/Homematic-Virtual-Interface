@@ -314,13 +314,13 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 
 SonosDevice.prototype.say = function(text) {
   var that = this;
-  this.plugin.texttospeech(text,function(error){
+  this.plugin.texttospeech(text,function(location){
 	 
 	that.sonos.flush(function (err, flushed) {
 		var name = "Say"
 		 	var parentID = "R:0/0"
 		 	var id = "R:0/0/0"
-		 	var uri = 'x-rincon-mp3radio://192.168.178.50:8182/tmp/tmp.mp3';
+		 	var uri = 'x-rincon-mp3radio://' + location;
 		 	
 		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
 

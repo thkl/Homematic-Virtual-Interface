@@ -132,7 +132,8 @@ SonosPlatform.prototype.texttospeech = function(text,callback) {
 		"textlen":text.length
 	},tmppath,function(result,error){
 		if (callback) {
-			callback(error)
+			var weblocation = that.bridge.getLocalIpAdress() +':'+that.config.getValueWithDefault("web_http_port",8182) + '/tmp/tmp.mp3';
+			callback(weblocation)
 		}
 	})
 }
