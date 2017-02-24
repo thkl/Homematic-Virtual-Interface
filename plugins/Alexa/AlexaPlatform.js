@@ -542,11 +542,11 @@ AlexaPlatform.prototype.loadHMDevices = function(callback) {
     var result_list = {}
     var interfaces = ['BidCos-RF']
     
-    if (this.wired_client) {
+    if (this.configuration.getValueForPluginWithDefault(this.name,"enable_wired",false)) {
 	    interfaces.push('BidCos-Wired')
     }
 
-    if (this.hmip_client) {
+    if (this.configuration.getValueForPluginWithDefault(this.name,"enable_hmip",false)) {
 	    interfaces.push('HmIP-RF')
     }
     
@@ -560,8 +560,8 @@ AlexaPlatform.prototype.loadHMDevices = function(callback) {
 					   that.log.debug("Service %s found",service)
 					   var address = channel.address
 					   address = address.replace('BidCos-RF.', '')
-					   if (that.wired_client) {address = address.replace('BidCos-Wired.', '')}
-					   if (that.hmip_client) {address = address.replace('HmIP-RF.', '')}
+					   if (that.configuration.getValueForPluginWithDefault(that.name,"enable_wired",false)) {address = address.replace('BidCos-Wired.', '')}
+					   if (that.configuration.getValueForPluginWithDefault(that.name,"enable_hmip",false))  {address = address.replace('HmIP-RF.', '')}
 					   result_list[channel.address] = {"device":device.name,"address":address,"name":channel.name,"service":service}   
 				   }
 			    })
