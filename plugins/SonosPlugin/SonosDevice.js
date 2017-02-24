@@ -230,7 +230,30 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 			that.sonos.play(function (err, playing) {})
 		})
 	})
+	
 	}
+	
+	if (playlist.indexOf('radio://') == 0) {
+		 this.sonos.flush(function (err, flushed) {
+
+		 	var name = "Radio"
+		 	var parentID = "R:0/0"
+		 	var id = "R:0/0/0"
+		 	var uri = 'x-rincon-mp3' + playlist;
+		 	
+		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
+
+		 	that.sonos.queue({
+			 		uri: uri,
+			 		metadata: meta
+			}, function (error,data) {
+				if (!error) {
+					that.sonos.play(function (err, playing) {})
+				}
+			})
+		})
+	}
+	
 }
 
 
