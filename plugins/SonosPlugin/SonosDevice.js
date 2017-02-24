@@ -192,6 +192,32 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 						}
 						break;
 					
+						case 'say':
+						{
+							if (cmds.length>1) {
+								that.say(cmds[1])	
+					  		}
+						}
+						break;
+					
+						case 'delegateto':
+						{
+							try {
+							if (cmds.length>1) {
+								// get master device
+								var newmaster = that.plugin.getPlayer(cmds[1])
+								if (newmaster) {
+									that.sonos.delegateGroupCoordinationTo(newmaster.rincon,function (result){
+									  
+									})	
+								}
+							} 
+					  	  } catch (e) {
+						  	  that.log.error("%s",e.stack)
+					  	  }
+						}
+						break
+						
 						case 'addto':
 						{
 							try {
@@ -215,10 +241,40 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 					  	  }
 						}
 						break;
+						
+						case 'moveto':
+						{
+							try {
+							if (cmds.length>1) {
+								// get master device
+								var newmaster = that.plugin.getPlayer(cmds[1])
+								if (newmaster) {
+									newmaster.sonos.addPlayerToGroup(newmaster.rincon,function (error,result){
+										that.log.error("Add %s",error)
+									  that.sonos.queueNext('x-rincon:'+newmaster.rincon,function(error,result){
+										  that.log.error("QueueNext %s",error)
+										that.sonos.delegateGroupCoordinationTo(newmaster.rincon,function (error,result){
+											that.log.error("Delegate %s",error)
+										  that.sonos.becomeCoordinatorOfStandaloneGroup(function (error,result){
+											  that.log.error("SO %s",error)
+										  });
+										})			  
+									  })
+									})	
+								}
+							} 
+					  	  } catch (e) {
+						  	  that.log.error("%s",e.stack)
+					  	  }
+						}
+						break;
+						
 					}
 		    	}
+		     channel.updateValue("COMMAND","");
 			}
 	    }
+	    
 	});
 }
 
@@ -235,7 +291,6 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 	
 	if (playlist.indexOf('radio://') == 0) {
 		 this.sonos.flush(function (err, flushed) {
-
 		 	var name = "Radio"
 		 	var parentID = "R:0/0"
 		 	var id = "R:0/0/0"
@@ -243,6 +298,7 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 		 	
 		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
 
+		 	that.log.debug("Try queue %s",uri)
 		 	that.sonos.queue({
 			 		uri: uri,
 			 		metadata: meta
@@ -256,6 +312,30 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 	
 }
 
+SonosDevice.prototype.say = function(text) {
+  var that = this;
+  this.plugin.texttospeech(text,function(error){
+	 
+	that.sonos.flush(function (err, flushed) {
+		var name = "Say"
+		 	var parentID = "R:0/0"
+		 	var id = "R:0/0/0"
+		 	var uri = 'x-rincon-mp3radio://192.168.178.50:8182/tmp/tmp.mp3';
+		 	
+		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
+
+		 	that.log.debug("Try queue %s",uri)
+		 	that.sonos.queue({
+			 		uri: uri,
+			 		metadata: meta
+			}, function (error,data) {
+				if (!error) {
+					that.sonos.play(function (err, playing) {})
+				}
+			})
+		})
+  })
+}
 
 SonosDevice.prototype.setRampTime = function(newTime) {
 	this.log.debug("Set new Volume Ramp Time %s",newTime);

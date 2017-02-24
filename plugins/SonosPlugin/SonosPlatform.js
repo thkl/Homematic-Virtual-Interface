@@ -15,7 +15,7 @@ var ZonePLayer = require('sonos').Sonos;
 var _ = require('underscore')
 var path = require('path');
 var SonosDevice = require(__dirname + "/SonosDevice.js").SonosDevice;
-
+var fs = require('fs');
 var path = require('path');
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
@@ -115,6 +115,27 @@ SonosPlatform.prototype.shutdown = function() {
 	})
 }
 
+SonosPlatform.prototype.texttospeech = function(text,callback) {
+	var that = this;
+	var url = 'http://translate.google.com/translate_tts'
+	
+	
+    var tmppath = path.join(this.configuration.storagePath(),"tmp.mp3")
+	var util = require(path.join(appRoot, "Util.js"));
+	util.httpDownload("GET",url,{
+		"ie":"UTF-8",
+		"client":"tw-ob",
+		"q":text,
+		"tl":"de",
+		"total":"1",
+		"idx":"0",
+		"textlen":text.length
+	},tmppath,function(result,error){
+		if (callback) {
+			callback(error)
+		}
+	})
+}
 
 SonosPlatform.prototype.addZonePlayer = function(host,cname) {
   var that = this;
@@ -124,7 +145,7 @@ SonosPlatform.prototype.addZonePlayer = function(host,cname) {
 	  var name = cname || data.roomName;
       var sdevice = new SonosDevice(that ,host,1400,"SONOS_" + name);
 	  var puuid = data.UDN.substring(5)
-	  that.log.debug("RINCON %s",puuid)
+	  that.log.info("Add RINCON %s",puuid)
       sdevice.rincon = puuid;
 	  that.devices.push(sdevice);
   });
