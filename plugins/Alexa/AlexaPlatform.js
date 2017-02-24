@@ -222,7 +222,14 @@ AlexaPlatform.prototype.processAlexaMessage = function(alx_message) {
 AlexaPlatform.prototype.showSettings = function(dispatched_request) {
 	this.localization.setLanguage(dispatched_request);
 	var result = [];
-	result.push({"control":"text","name":"api_key","label":this.localization.localize("Cloud Api Key"),"value":this.api_key,"size":50});
+	result.push({"control":"text",
+					"name":"api_key",
+				   "label":this.localization.localize("Cloud Api Key"),
+				   "value":this.api_key,
+				    "size":50,
+			 "description":this.localization.localize("You can register for an API Key here : https://console.ksquare.de/alexa")
+	});
+	
 	result.push({"control":"text",
 					"name":"ccu_varname",
 				   "label":this.localization.localize("CCU Variable to Enable Alexa (optional)"),
@@ -372,7 +379,7 @@ AlexaPlatform.prototype.add_appliance = function(id,name,hmService,virtual) {
 
 	  var al_ap = {"applianceId":id,
 	  	"manufacturerName":"ksquare.de",
-	  	"modelName" : "Homematic Virtual Layer - Actor",
+	  	"modelName" : "HVL Smarthome - Actor",
 	  	"version": "1",
 	  	"friendlyName": name,
 	  	"friendlyDescription": hms.getType() ,
