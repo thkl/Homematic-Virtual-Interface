@@ -14,9 +14,11 @@ var Sonos = require('sonos');
 var ZonePLayer = require('sonos').Sonos;
 var _ = require('underscore')
 var path = require('path');
-var SonosDevice = require(__dirname + "/SonosDevice.js").SonosDevice;
 var fs = require('fs');
-var path = require('path');
+var SonosDevice = require(path.join(__dirname,'SonosDevice.js')).SonosDevice;
+var SonosCoordinator = require(path.join(__dirname,'SonosCoordinator.js')).SonosCoordinator;
+
+
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
 if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
@@ -43,7 +45,11 @@ SonosPlatform.prototype.init = function() {
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
 	this.maxVolume = this.configuration.getValueForPlugin(this.name,"max_volume",20);
-
+	this.volumeTable = this.configuration.getValueForPlugin(this.name,"volume_table",undefined);
+	// Add Coordinator Device
+	this.coordinator = new SonosCoordinator(this)
+	
+	
 	var players = this.configuration.getValueForPlugin(this.name,"player");
 	if (players) {
 		this.log.info('Adding defined devices ...')
@@ -56,6 +62,7 @@ SonosPlatform.prototype.init = function() {
 			}
 		});
 		this.plugin.initialized = true;
+		this.refreshZoneAttributes();
 		this.log.info("initialization completed");
 	} else {
 		this.log.info('Searching for Sonos devices...')
@@ -64,9 +71,22 @@ SonosPlatform.prototype.init = function() {
 	
 }
 
+SonosPlatform.prototype.refreshZoneAttributes = function() {
+		var that = this
+
+		this.devices.some(function (device){
+			device.refreshZoneGroupAttrs()
+		})
+		
+		setTimeout(function() {
+			that.refreshZoneAttributes()
+		}, 30000);
+}
+
 SonosPlatform.prototype.showSettings = function(dispatched_request) {
 	this.localization.setLanguage(dispatched_request);
 	var volume_ramp_time = this.configuration.getValueForPlugin(this.name,"volume_ramp_time",0);
+	var default_playlist = this.configuration.getValueForPlugin(this.name,"default_playlist","");
 	var result = [];
 	result.push({"control":"text",
 					"name":"maxVolume",
@@ -80,6 +100,20 @@ SonosPlatform.prototype.showSettings = function(dispatched_request) {
 				   "label":this.localization.localize("Volume ramp time (optional)"),
 				   "value":volume_ramp_time || 0,
 		     "description":this.localization.localize("If set to more than 0 (ms) the volume will changed thru a ramp with this time between 2 steps.")
+	});
+
+	result.push({"control":"text",
+					"name":"default_playlist",
+				   "label":this.localization.localize("Default Playlist"),
+				   "value":default_playlist || "",
+		     "description":this.localization.localize("If the player should play this will be the default playlist.")
+	});
+
+	result.push({"control":"text",
+					"name":"volume_table",
+				   "label":this.localization.localize("Volumetable"),
+				   "value":this.volume_table || "",
+		     "description":this.localization.localize("24 values to use with autovolume. Separated with , (0-100)")
 	});
 
 	
@@ -103,6 +137,15 @@ SonosPlatform.prototype.saveSettings = function(settings) {
 		this.devices.some(function(device){
 			device.setRampTime(volume_ramp_time);
 		});
+	}
+
+	if  (settings.default_playlist) {
+		this.configuration.setValueForPlugin(this.name,"default_playlist",settings.default_playlist); 
+	}
+
+	if  (settings.volume_table) {
+		this.configuration.setValueForPlugin(this.name,"volume_table",settings.volume_table); 
+		this.volume_table = settings.volume_table
 	}
 
 }
@@ -149,6 +192,7 @@ SonosPlatform.prototype.addZonePlayer = function(host,cname) {
 	  that.log.info("Add RINCON %s",puuid)
       sdevice.rincon = puuid;
 	  that.devices.push(sdevice);
+	  that.coordinator.addZonePlayer(sdevice)
   });
 }
 

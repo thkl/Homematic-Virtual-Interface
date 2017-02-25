@@ -17,7 +17,11 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	this.volumeSlide = false;
 	this.maxVolume = 20;
     this.volumeRampTime = this.configuration.getValueForPlugin(plugin.name,"volume_ramp_time",0);
-
+	this.groupCoordinator
+	this.isCoordinator
+	this.currentPlayMode
+	this.transportState
+	this.currentVolume
 // Add Event Handler
     
     
@@ -40,6 +44,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
   		that.player.on('serviceEvent', function (endpoint, sid, event) {
 	  		
 	  		if (event.name == "RenderingControlEvent") {
+		  		that.currentVolume = event.volume.Master
 				if ((event.volume.Master) && (!that.volumeSlide)) {
 					that.log.debug("Set new Volume %s",event.volume.Master);
 					var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
@@ -54,8 +59,14 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 					if (channel) {
 						if (event.currentTrack) {channel.updateValue("CURRENT_TRACK",event.currentTrack.artist + ": " +event.currentTrack.title,true);}
 						if (event.nextTrack) {channel.updateValue("NEXT_TRACK",event.nextTrack.artist + ": " +event.nextTrack.title,true);}
-						if (event.transportState) {channel.updateValue("TRANSPORT_STATE",event.transportState,true);}
-						if (event.currentPlayMode) {channel.updateValue("PLAY_MODE",event.currentPlayMode,true);}
+						if (event.transportState) {
+							that.transportState = event.transportState
+							channel.updateValue("TRANSPORT_STATE",that.transportState,true);
+						}
+						if (event.currentPlayMode) {
+							that.currentPlayMode = event.currentPlayMode
+							channel.updateValue("PLAY_MODE",that.currentPlayMode,true);
+						}
 					} 	
 	  		}
 	  		
@@ -91,13 +102,13 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 			if (func != undefined) {
 			switch (func) {
 				case "Play": 
-					that.sonos.play(function (err, playing) {})
+					that.play(function (err, playing) {})
 				break;
 				case "Pause": 
-					that.sonos.pause(function (err, playing) {})
+					that.pause(function (err, playing) {})
 				break;
 				case "Stop": 
-					that.sonos.stop(function (err, playing) {})
+					that.stop(function (err, playing) {})
 				break;
 				case "Prev": 
 					that.sonos.previous(function (err, playing) {})
@@ -178,11 +189,6 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 				if (cmds.length>0) {
 					var cmd = cmds[0];
 					switch (cmd) {
-						case 'standalone':
-						{  
-							that.sonos.becomeCoordinatorOfStandaloneGroup(function (result){});
-						}
-						break;
 					
 						case 'playlist':
 						{
@@ -199,76 +205,13 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 					  		}
 						}
 						break;
-					
-						case 'delegateto':
+
+						case 'autovolume':
 						{
-							try {
-							if (cmds.length>1) {
-								// get master device
-								var newmaster = that.plugin.getPlayer(cmds[1])
-								if (newmaster) {
-									that.sonos.delegateGroupCoordinationTo(newmaster.rincon,function (result){
-									  
-									})	
-								}
-							} 
-					  	  } catch (e) {
-						  	  that.log.error("%s",e.stack)
-					  	  }
-						}
-						break
-						
-						case 'addto':
-						{
-							try {
-							if (cmds.length>1) {
-								// get master device
-								var master = that.plugin.getPlayer(cmds[1])
-								if (master) {
-									master.sonos.addPlayerToGroup(master.rincon,function (result){
-									  that.sonos.queueNext('x-rincon:'+master.rincon,function(result){
-									  })
-									})	
-								} else {
-									that.log.error("Master %s not found",cmds[1])
-								}
-								
-					  		} else {
-						  		that.log.error("Please select a master");
-					  		}
-					  	  } catch (e) {
-						  	  that.log.error("%s",e.stack)
-					  	  }
+							that.rampAutoVolume(false)	
 						}
 						break;
-						
-						case 'moveto':
-						{
-							try {
-							if (cmds.length>1) {
-								// get master device
-								var newmaster = that.plugin.getPlayer(cmds[1])
-								if (newmaster) {
-									newmaster.sonos.addPlayerToGroup(newmaster.rincon,function (error,result){
-										that.log.error("Add %s",error)
-									  that.sonos.queueNext('x-rincon:'+newmaster.rincon,function(error,result){
-										  that.log.error("QueueNext %s",error)
-										that.sonos.delegateGroupCoordinationTo(newmaster.rincon,function (error,result){
-											that.log.error("Delegate %s",error)
-										  that.sonos.becomeCoordinatorOfStandaloneGroup(function (error,result){
-											  that.log.error("SO %s",error)
-										  });
-										})			  
-									  })
-									})	
-								}
-							} 
-					  	  } catch (e) {
-						  	  that.log.error("%s",e.stack)
-					  	  }
-						}
-						break;
-						
+
 					}
 		    	}
 		     channel.updateValue("COMMAND","");
@@ -338,8 +281,22 @@ SonosDevice.prototype.say = function(text) {
 }
 
 SonosDevice.prototype.setRampTime = function(newTime) {
-	this.log.debug("Set new Volume Ramp Time %s",newTime);
- this.volumeRampTime = newTime;
+ 	this.log.debug("Set new Volume Ramp Time %s",newTime);
+ 	this.volumeRampTime = newTime;
+}
+
+SonosDevice.prototype.rampAutoVolume = function(increase) {
+   // If user has set a autovolume table setup the volume
+   if (this.plugin.volumeTable) {
+	   var hour = new Date().getHours()
+	   var vt = this.plugin.volumeTable.split(',')
+	   if (vt.length>hour) {
+	   	var newVolume = parseInt(vt[hour].trim())
+	   	if ((this.currentVolume > newVolume) || (increase==true)) {
+		   	this.rampToVolume(newVolume)
+	   	}
+   	   }
+   }
 }
 
 SonosDevice.prototype.rampToVolume = function(newVolume) {
@@ -348,18 +305,16 @@ SonosDevice.prototype.rampToVolume = function(newVolume) {
 		that.log.debug("%s Current Volume %s",that.playername,volume);
 	  if (newVolume < volume) {
 		  that.volumeSlide = true;
-		  that.log.debug("%s SetTo %s",that.playername,volume - 1);
 		  that.setVolume(volume - 1, function (err) {
-			  setTimeout(function() {that.rampToVolume(newVolume)}, this.volumeRampTime);
+			  setTimeout(function() {that.rampToVolume(newVolume)}, that.volumeRampTime);
 		  });
 		  return;
 	  } 
-	  
+
 	  if (newVolume > volume) {
 		  that.volumeSlide = true;
-		  that.log.debug("%s SetTo %s",that.playername,volume + 1);
 		  that.setVolume(volume + 1, function (err) {
-			  setTimeout(function() {that.rampToVolume(newVolume)}, this.volumeRampTime);
+			  setTimeout(function() {that.rampToVolume(newVolume)}, that.volumeRampTime);
 		  })
 		  return;
 	  }
@@ -374,16 +329,19 @@ SonosDevice.prototype.refreshZoneGroupAttrs = function() {
 	that.sonos.getZoneGroupAttrs(function (error,result){
 	   
 	   if (result) {
-		   var tmp = result['CurrentZoneGroupID'];
+		   var tmp = result['CurrentZoneGroupID']
+		   var players = result['CurrentZonePlayerUUIDsInGroup']
 		   if (tmp) {
-			   that.log.debug("CurrentZoneGroupID %s",tmp)
 			   var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
-			   var zoneGroupId = tmp.split(":")[0]
 				  if (channel) {
-					  channel.updateValue("COORDINATOR",(zoneGroupId == that.rincon),true)
-					  var player = that.plugin.getPlayerByRinCon(zoneGroupId)
-					  channel.updateValue("ZONEGROUPID",(player) ? player['playername'] : zoneGroupId,true)
-					  
+					  var firstGroupMember = players.split(',')[0]
+					  if (firstGroupMember) {
+						  that.isCoordinator = (firstGroupMember == that.rincon)
+						  channel.updateValue("COORDINATOR",that.isCoordinator,true)
+						  var player = that.plugin.getPlayerByRinCon(firstGroupMember)
+						  that.groupCoordinator = (player) ? player['playername'] : firstGroupMember
+						  channel.updateValue("ZONEGROUPID",that.groupCoordinator,true)
+					  }
 				  } 
 			   } else {
 				   that.log.error("CurrentZoneGroupID not found in %s",JSON.stringify(result))
@@ -405,6 +363,25 @@ SonosDevice.prototype.setVolume = function(newVolume,callback) {
 		this.log.warn("New Volume %s is above maximum %s",newVolume,this.maxVolume);
 	}
 
+}
+
+SonosDevice.prototype.stop = function(callback) {
+	this.sonos.stop(function (err, playing) {
+			callback(err);
+	})
+}
+
+
+SonosDevice.prototype.play = function(callback) {
+	this.sonos.play(function (err, playing) {
+			callback(err);
+	})
+}
+
+SonosDevice.prototype.pause = function(callback) {
+	this.sonos.pause(function (err, playing) {
+			callback(err);
+	})
 }
 
 
