@@ -183,16 +183,21 @@ SonosPlatform.prototype.texttospeech = function(text,callback) {
 
 SonosPlatform.prototype.addZonePlayer = function(host,cname) {
   var that = this;
- 
+  this.log.debug("Try to add %s with Name %s",host,cname)
   var zp = new ZonePLayer(host);
   zp.deviceDescription( function (error,data) {
-	  var name = cname || data.roomName;
-      var sdevice = new SonosDevice(that ,host,1400,"SONOS_" + name);
-	  var puuid = data.UDN.substring(5)
-	  that.log.info("Add RINCON %s",puuid)
-      sdevice.rincon = puuid;
-	  that.devices.push(sdevice);
-	  that.coordinator.addZonePlayer(sdevice)
+	  that.log.debug("ZonePlayer name(%s), UDN(%s) Error(%s)",data.roomName,data.UDN,error)
+	  try {
+		  var name = cname || data.roomName;
+		  var sdevice = new SonosDevice(that ,host,1400,"SONOS_" + name);
+		  var puuid = data.UDN.substring(5)
+		  that.log.info("Add RINCON %s",puuid)
+		  sdevice.rincon = puuid;
+		  that.devices.push(sdevice);
+		  that.coordinator.addZonePlayer(sdevice)
+	  } catch (e) {
+		  that.log.error(e.stack)
+	  }
   });
 }
 
