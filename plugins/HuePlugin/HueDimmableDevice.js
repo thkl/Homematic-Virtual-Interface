@@ -281,6 +281,8 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 	    if (di_channel!=undefined) {
 		    if (state==true) {
 	        	di_channel.updateValue("LEVEL",(bri/254),true);
+			} else {
+	        	di_channel.updateValue("LEVEL",0,true);
 			}
 	    }
 

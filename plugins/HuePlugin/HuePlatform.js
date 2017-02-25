@@ -419,7 +419,7 @@ HuePlatform.prototype.refreshAll = function() {
 	var refreshrate = this.configuration.getValueForPluginWithDefault(this.plugin.name,"refresh",60)*1000;
 	
 	this.hue_api.lights(function(err, lights) {
-		that.log.debug("Number of Lamps in update %s error %s -> %s",lights,err);
+		that.log.debug("Number of Lamps in update %s error %s",lights["lights"].length,err);
 		if (err) {
 			that.log.debug(err.stack);
 		}
