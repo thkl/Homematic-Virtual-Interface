@@ -84,6 +84,15 @@ SonosCoordinator.prototype.init = function() {
 					}
 					
 					break;
+					
+					case 'switchon':
+					{
+						if (cmds.length>1) {
+							that.switchon(cmds[1])	
+						}
+					}
+					
+					break;
 				}
 			}
 			// Reset Command
@@ -104,33 +113,44 @@ SonosCoordinator.prototype.toggle = function(playername) {
 			  playerDevice.stop(function(error){})
 		  })
 	  } else {
-		  // try to find a playing player ... 
-	  	  this.log.debug("%s is not playing try to find a running player",playername)
+   		  this.switchon(playername);
+		}
+	  
+  } else {
+	this.log.error("No Device found for %s",playername)
+  }
+}
+
+
+SonosCoordinator.prototype.switchon = function(playername) {
+  // Remove from group if playing
+  this.log.debug("SwitchOn %s",playername)
+  var playerDevice = this.getZonePlayerDevice(playername)
+  if (playerDevice) {
+	if (playerDevice.transportState != "PLAYING") {
+
 		  var playing = this.findPlayingDevice()
 		  if (playing) {
-		  	  this.log.debug("%s is  playing  add %s to that player",playing,playername)
 			  this.addtogroup(playing,playername)
   			  this.fadeIn(playername)
 		  } else {
 			  // Set a Default Playlist
 			  var default_playlist = this.configuration.getValueForPlugin(this.plugin.name,"default_playlist",undefined);
 			  if (default_playlist) {
-				  this.log.debug("Default playlist found")
 				  playerDevice.setPlayList(default_playlist)
-			  } else {
-				  this.log.warn("No default Playlist found start playing surprise what you will get")
 			  }
-			  this.log.debug("there is silence start %s player as standalone",playername)
-			  
 			  // If the user set a autovolume table fade in to that volume
 			  this.fadeIn(playername)
 			  playerDevice.play()
 		  }
-	  }
+	} else {
+		this.log.error("Player %s is already on",playername)
+	}
   } else {
 	this.log.error("No Device found for %s",playername)
   }
 }
+
 
 SonosCoordinator.prototype.fadeIn = function(playerName) {
 	if (this.plugin.volumeTable) {
