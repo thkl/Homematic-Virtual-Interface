@@ -10,8 +10,8 @@
 "use strict";
 
 var HomematicDevice;
-var Sonos = require('sonos');
-var ZonePLayer = require('sonos').Sonos;
+var Sonos = require('node-sonos');
+var ZonePLayer = require('node-sonos').Sonos;
 var _ = require('underscore')
 var path = require('path');
 var fs = require('fs');

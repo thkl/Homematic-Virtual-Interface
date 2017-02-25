@@ -10,7 +10,7 @@
 
 
 var HomematicDevice
-var Sonos = require('sonos').Sonos
+var Sonos = require('node-sonos').Sonos
 var path = require('path');
 
 var appRoot = path.dirname(require.main.filename);

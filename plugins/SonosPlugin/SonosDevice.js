@@ -1,6 +1,6 @@
 
 var HomematicDevice;
-var Sonos = require('sonos').Sonos;
+var Sonos = require('node-sonos').Sonos;
 
 var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 
