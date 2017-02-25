@@ -91,7 +91,14 @@ SonosCoordinator.prototype.init = function() {
 							that.switchon(cmds[1])	
 						}
 					}
-					
+					break;
+
+					case 'switchoff':
+					{
+						if (cmds.length>1) {
+							that.switchoff(cmds[1])	
+						}
+					}
 					break;
 				}
 			}
@@ -108,14 +115,27 @@ SonosCoordinator.prototype.toggle = function(playername) {
   var playerDevice = this.getZonePlayerDevice(playername)
   if (playerDevice) {
 	  if (playerDevice.transportState == "PLAYING") {
-	  	  this.log.debug("%s is playing remove from group",playername)
+		  this.switchoff(playername)
+	  } else {
+   		  this.switchon(playername)
+		}
+	  
+  } else {
+	this.log.error("No Device found for %s",playername)
+  }
+}
+
+
+SonosCoordinator.prototype.switchoff = function(playername) {
+  // Remove from group if playing
+  this.log.debug("SwitchOff %s",playername)
+  var playerDevice = this.getZonePlayerDevice(playername)
+  if (playerDevice) {
+	  if (playerDevice.transportState == "PLAYING") {
 		  this.removeZonePlayer(playername,function(result){
 			  playerDevice.stop(function(error){})
 		  })
-	  } else {
-   		  this.switchon(playername);
-		}
-	  
+	  }
   } else {
 	this.log.error("No Device found for %s",playername)
   }
