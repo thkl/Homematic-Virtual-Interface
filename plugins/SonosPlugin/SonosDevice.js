@@ -211,7 +211,23 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 							that.rampAutoVolume(false)	
 						}
 						break;
+						
+						case 'enablesub':
+						{
+							if (cmds.length>1) {
+								that.enablesub(cmds[1])	
+					  		}
+						}
+						break;
 
+						case 'settransportstream':
+						{
+							if (cmds.length>1) {
+								that.setTransportStream(cmds[1])	
+					  		}
+						}
+						break;
+						
 					}
 		    	}
 		     channel.updateValue("COMMAND","");
@@ -284,6 +300,22 @@ SonosDevice.prototype.setRampTime = function(newTime) {
  	this.log.debug("Set new Volume Ramp Time %s",newTime);
  	this.volumeRampTime = newTime;
 }
+
+SonosDevice.prototype.enableSub = function(enable) {
+    this.sonos.enableSub(enable,function (error,result){})
+}
+
+
+SonosDevice.prototype.setTransportStream = function(newStream) {
+	var newTs = "x-rincon-stream:" + newStream
+    var that = this
+    this.sonos.queue({uri: newTs,metadata: ""}, function (error,data) {
+		if (!error) {
+			that.sonos.play(function (err, playing) {})
+		}
+	})
+}
+
 
 SonosDevice.prototype.rampAutoVolume = function(increase) {
    // If user has set a autovolume table setup the volume

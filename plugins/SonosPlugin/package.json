@@ -19,7 +19,7 @@
   },
   
   "dependencies": {
-    "sonos":"git://github.com/thkl/node-sonos.git",
+    "node-sonos":"^0.12.3",
     "underscore":"latest"
   }
 }
