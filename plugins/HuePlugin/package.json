@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-huedevice",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Virtual Hue Device",
   "license": "ISC",
   "keywords": [
@@ -8,10 +8,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/"
+    "url": "https://github.com/thkl/Homematic-Virtual-Interface/tree/master/plugins/HuePlugin"
   },
   "bugs": {
-    "url": "http://"
+    "url": "https://github.com/thkl/Homematic-Virtual-Interface/issues"
   },
   "engines": {
     "node": ">=0.12.0",
