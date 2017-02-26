@@ -1,0 +1,24 @@
+{
+ 	"plugins":	
+ 	[
+	  {
+		"name":"Hue Plugin",
+		"npm" :"homematic-virtual-huedevice",
+		"description":{"de":"Stellt HUE Lampen als RGBW Geräte der CCU zur Verfügung","en":"Creates RGBW Devices from your HUE Bulbs"}
+	  }	,
+
+	  {
+		"name":"Duty Cycle Plugin",
+		"npm" :"homematic-virtual-ccudutycylcle",
+		"description":{"de":"Ermittelt den RFD Duty Cycle aller CCU Interfaces und loggt diesen","en":"Reads the duty cycle for all ccu interfaces."}
+	  }	,
+
+	  {
+		"name":"HTTP Plugin",
+		"npm" :"homematic-virtual-httpdevice",
+		"description":{"de":"Stellt ein HTTP Gerät in der CCU zur Verfügung","en":"Creates an Device to make http Calls."}
+	  }
+	  
+	  
+	]
+}
