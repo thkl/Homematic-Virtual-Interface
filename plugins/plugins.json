@@ -20,7 +20,16 @@
 		"npm" :"homematic-virtual-httpdevice",
 		"syname":"HTTP Calls",
 		"description":{"de-de":"Stellt ein HTTP Ger&auml;t in der CCU zur Verf&uuml;gung","en-en":"Creates an Device to make http Calls."}
+	  },
+
+	  {
+		"name":"Logic Plugin",
+		"npm" :"homematic-virtual-logicmanager",
+		"syname":"Logic",
+		"description":{"de-de":"Stellt eine Scriptengine zur Verf&uuml;gung","en-en":"Provides a script engine"}
 	  }
+	  
+	  
 	  
 	  
 	]
