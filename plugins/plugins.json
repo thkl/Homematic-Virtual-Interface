@@ -32,7 +32,7 @@
 
 	  {
 		"name":"NetAtmo Plugin",
-		"npm" :"homematic-virtual-netatmodevic",
+		"npm" :"homematic-virtual-netatmodevice",
 		"syname":"Netatmo",
 		"description":{"de-de":"Sellt Netatmo Innen und Aussen Sensor als CCU Ger&auml;te zur Verf&uuml;gung","en-en":"Creates CCU devices from weather modules"}
 	  }
