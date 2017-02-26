@@ -11,14 +11,14 @@
 	  {
 		"name":"Duty Cycle Plugin",
 		"npm" :"homematic-virtual-ccudutycylcle",
-		"syname":"Duty Cycle",
+		"syname":"DutyCycle",
 		"description":{"de-de":"Ermittelt den RFD Duty Cycle aller CCU Interfaces und loggt diesen","en-en":"Reads the duty cycle for all ccu interfaces."}
 	  }	,
 
 	  {
 		"name":"HTTP Plugin",
 		"npm" :"homematic-virtual-httpdevice",
-		"syname":"HTTP Calls",
+		"syname":"HTTPCalls",
 		"description":{"de-de":"Stellt ein HTTP Ger&auml;t in der CCU zur Verf&uuml;gung","en-en":"Creates an Device to make http Calls."}
 	  },
 
@@ -28,9 +28,13 @@
 		"syname":"Logic",
 		"description":{"de-de":"Stellt eine Scriptengine zur Verf&uuml;gung","en-en":"Provides a script engine"}
 	  }
-	  
-	  
-	  
-	  
+	  ,
+
+	  {
+		"name":"NetAtmo Plugin",
+		"npm" :"homematic-virtual-netatmodevic",
+		"syname":"Netatmo",
+		"description":{"de-de":"Sellt Netatmo Innen und Aussen Sensor als CCU Ger&auml;te zur Verf&uuml;gung","en-en":"Creates CCU devices from weather modules"}
+	  }
 	]
 }
