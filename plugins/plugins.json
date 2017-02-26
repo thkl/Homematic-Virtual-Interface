@@ -5,7 +5,7 @@
 		"name":"Hue Plugin",
 		"npm" :"homematic-virtual-huedevice",
 		"syname":"Hue",
-		"description":{"de":"Stellt HUE Lampen als RGBW Geräte der CCU zur Verf&uuml;gung","en":"Creates RGBW Devices from your HUE Bulbs"}
+		"description":{"de":"Stellt HUE Lampen als RGBW Ger&auml;te der CCU zur Verf&uuml;gung","en":"Creates RGBW Devices from your HUE Bulbs"}
 	  }	,
 
 	  {
@@ -19,7 +19,7 @@
 		"name":"HTTP Plugin",
 		"npm" :"homematic-virtual-httpdevice",
 		"syname":"HTTP Calls",
-		"description":{"de":"Stellt ein HTTP Gerät in der CCU zur Verf&uuml;gung","en":"Creates an Device to make http Calls."}
+		"description":{"de":"Stellt ein HTTP Ger&auml;t in der CCU zur Verf&uuml;gung","en":"Creates an Device to make http Calls."}
 	  }
 	  
 	  
