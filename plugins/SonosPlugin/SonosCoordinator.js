@@ -129,14 +129,14 @@ SonosCoordinator.prototype.toggle = function(playername) {
 SonosCoordinator.prototype.switchoff = function(playername) {
   // Remove from group if playing
   var that = this
-  this.log.debug("SwitchOff %s",playername)
+  this.log.info("SwitchOff %s",playername)
   var playerDevice = this.getZonePlayerDevice(playername)
   if (playerDevice) {
 	  if (playerDevice.transportState == "PLAYING") {
 		  this.removeZonePlayer(playername,function(result){
-			  that.log.debug("Zone Player is now Standalone")
+			  that.log.info("Zone Player is now Standalone %s",result)
 			  playerDevice.stop(function(error){
-			  	that.log.debug("Zone Player is now Off %s",error)
+			  	that.log.info("Zone Player is now Off %s",error)
 			  })
 		  })
 	  }

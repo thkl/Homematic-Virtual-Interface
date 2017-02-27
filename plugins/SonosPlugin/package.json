@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-sonosdevice",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Virtual Sonos Device",
   "license": "ISC",
   "keywords": [
@@ -8,10 +8,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/"
+    "url": "https://github.com/thkl/Homematic-Virtual-Interface/tree/master/plugins/SonosPlugin"
   },
   "bugs": {
-    "url": "http://"
+    "url": "https://github.com/thkl/Homematic-Virtual-Interface/issues"
   },
   "engines": {
     "node": ">=0.12.0",

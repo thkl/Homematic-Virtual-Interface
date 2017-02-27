@@ -170,7 +170,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 		    
 		    if (parameter.name == "TARGET_VOLUME") {
 			    var newVolume = parameter.newValue;
-			    that.log.debug("%s SetVolumeRequest %s",that.playername,newVolume);
+			    that.log.info("%s SetVolumeRequest %s",that.playername,newVolume);
 			    // Do it step by step
 			    if (that.volumeRampTime > 0) {
 				    that.rampToVolume(newVolume);
@@ -178,16 +178,16 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 			    } else {
 				    that.setVolume(newVolume,function(err){
 					    channel.updateValue("TARGET_VOLUME",newVolume,true,true,true);
-					    that.log.error(err	)
+					    that.log.error(err)
 				    });
 			    } 
 		    }
 		    
 		    if (parameter.name == 'COMMAND') {
-			    
 			    var cmds = parameter.newValue.split('|');
 				if (cmds.length>0) {
 					var cmd = cmds[0];
+					that.log.info("Sonos Zone Player %s Command %s received",that.playername,cmd)
 					switch (cmd) {
 					
 						case 'playlist':
