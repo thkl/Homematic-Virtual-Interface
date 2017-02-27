@@ -305,7 +305,7 @@ SonosDevice.prototype.say = function(text) {
 			}, function (error,data) {
 				if (!error) {
 					that.sonos.play(function (err, playing) {
-						that.log.error("player %s received transport stream start result %s",that.playername,err
+						that.log.error("player %s received transport stream start result %s",that.playername,err)
 					})
 				}
 			})
