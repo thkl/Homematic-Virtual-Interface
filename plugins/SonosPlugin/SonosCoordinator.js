@@ -57,13 +57,12 @@ SonosCoordinator.prototype.init = function() {
 			var cmds = parameter.newValue.split('|')
 			if (cmds.length>0) {
 				var cmd = cmds[0]
-				that.log.debug("Coordinator Command %s set (%s)",cmd,cmds[1])
+				that.log.info("Coordinator Command %s set (%s)",cmd,cmds[1])
 				switch (cmd) {
 
 					case 'standalone':
 					{
 						if (cmds.length>1) {
-							that.log.debug("Coordinator set %s to standalone",cmds[1])
 							that.removeZonePlayer(cmds[1])	
 						}
 					}
@@ -149,22 +148,27 @@ SonosCoordinator.prototype.switchoff = function(playername) {
 
 SonosCoordinator.prototype.switchon = function(playername) {
   // Remove from group if playing
-  this.log.debug("SwitchOn %s",playername)
+  this.log.info("SwitchOn %s",playername)
+  var that = this
   var playerDevice = this.getZonePlayerDevice(playername)
   if (playerDevice) {
 	if (playerDevice.transportState != "PLAYING") {
-
+		  this.log.info("TransportState of %s is not Playing",playername)
 		  var playing = this.findPlayingDevice()
 		  if (playing) {
-			  this.addtogroup(playing,playername)
+		  	  this.log.info("There is Music playing -> adding %s to %s",playername,playing)
+		  	  this.addtogroup(playing,playername)
   			  this.fadeIn(playername)
 		  } else {
 			  // Set a Default Playlist
+		  	  this.log.info("There is silence check default playlist")
 			  var default_playlist = this.configuration.getValueForPlugin(this.plugin.name,"default_playlist",undefined);
 			  if (default_playlist) {
+			  	  this.log.info("%s found. Set Playlist",default_playlist)
 				  playerDevice.setPlayList(default_playlist)
 			  }
 			  // If the user set a autovolume table fade in to that volume
+		  	  this.log.info("Set fading and start playing")
 			  this.fadeIn(playername)
 			  playerDevice.play()
 		  }
