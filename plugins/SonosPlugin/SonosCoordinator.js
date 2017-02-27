@@ -57,6 +57,7 @@ SonosCoordinator.prototype.init = function() {
 			var cmds = parameter.newValue.split('|')
 			if (cmds.length>0) {
 				var cmd = cmds[0]
+				that.log.debug("Coordinator Command %s set (%s)",cmd,cmds[1])
 				switch (cmd) {
 
 					case 'standalone':
