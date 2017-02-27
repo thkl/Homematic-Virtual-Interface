@@ -194,6 +194,8 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 						{
 							if (cmds.length>1) {
 								that.setPlayList(cmds[1])	
+					  		} else {
+						  		that.log.error("missing playlist in command")
 					  		}
 						}
 						break;
@@ -202,6 +204,8 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 						{
 							if (cmds.length>1) {
 								that.say(cmds[1])	
+					  		} else {
+						  		that.log.error("missing text to say in command")
 					  		}
 						}
 						break;
@@ -224,6 +228,8 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 						{
 							if (cmds.length>1) {
 								that.setTransportStream(cmds[1])	
+					  		} else {
+						  		that.log.error("missing transport stream in command")
 					  		}
 						}
 						break;
@@ -241,8 +247,14 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 	var that = this;
 	if (playlist.indexOf('spotify') > -1) {
 		 this.sonos.flush(function (err, flushed) {
+			that.log.info("spotify playlist found ")
 			that.sonos.addSpotifyPlaylist(playlist,function (err, playing) {
-			that.sonos.play(function (err, playing) {})
+				that.log.error("playlist added to %s -> %s",playername,err)
+
+			that.sonos.play(function (err, playing) {
+				that.log.error("player %s start %s",playername,err)
+
+			})
 		})
 	})
 	
@@ -257,13 +269,15 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 		 	
 		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
 
-		 	that.log.debug("Try queue %s",uri)
+		 	that.log.info("Try queue %s on %s",uri,playername)
 		 	that.sonos.queue({
 			 		uri: uri,
 			 		metadata: meta
 			}, function (error,data) {
 				if (!error) {
-					that.sonos.play(function (err, playing) {})
+					that.sonos.play(function (err, playing) {
+						that.log.error("player %s received transport stream start result %s",playername,err
+					})
 				}
 			})
 		})
@@ -283,13 +297,15 @@ SonosDevice.prototype.say = function(text) {
 		 	
 		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
 
-		 	that.log.debug("Try queue %s",uri)
+		 	that.log.info("Try queue %s on %s",uri,playername)
 		 	that.sonos.queue({
 			 		uri: uri,
 			 		metadata: meta
 			}, function (error,data) {
 				if (!error) {
-					that.sonos.play(function (err, playing) {})
+					that.sonos.play(function (err, playing) {
+						that.log.error("player %s received transport stream start result %s",playername,err
+					})
 				}
 			})
 		})
