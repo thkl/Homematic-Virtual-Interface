@@ -173,6 +173,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 			    that.log.info("%s SetVolumeRequest %s",that.playername,newVolume);
 			    // Do it step by step
 			    if (that.volumeRampTime > 0) {
+				    that.log.info("%s ramping volume to %s",that.playername,newVolume);
 				    that.rampToVolume(newVolume);
 				    channel.updateValue("TARGET_VOLUME",newVolume,true,true,true);
 			    } else {
@@ -249,10 +250,10 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 		 this.sonos.flush(function (err, flushed) {
 			that.log.info("spotify playlist found ")
 			that.sonos.addSpotifyPlaylist(playlist,function (err, playing) {
-				that.log.error("playlist added to %s -> %s",playername,err)
+				that.log.error("playlist added to %s -> %s",that.playername,err)
 
 			that.sonos.play(function (err, playing) {
-				that.log.error("player %s start %s",playername,err)
+				that.log.error("player %s start %s",that.playername,err)
 
 			})
 		})
@@ -269,14 +270,14 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 		 	
 		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
 
-		 	that.log.info("Try queue %s on %s",uri,playername)
+		 	that.log.info("Try queue %s on %s",uri,that.playername)
 		 	that.sonos.queue({
 			 		uri: uri,
 			 		metadata: meta
 			}, function (error,data) {
 				if (!error) {
 					that.sonos.play(function (err, playing) {
-						that.log.error("player %s received transport stream start result %s",playername,err
+						that.log.error("player %s received transport stream start result %s",that.playername,err)
 					})
 				}
 			})
@@ -297,14 +298,14 @@ SonosDevice.prototype.say = function(text) {
 		 	
 		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
 
-		 	that.log.info("Try queue %s on %s",uri,playername)
+		 	that.log.info("Try queue %s on %s",uri,that.playername)
 		 	that.sonos.queue({
 			 		uri: uri,
 			 		metadata: meta
 			}, function (error,data) {
 				if (!error) {
 					that.sonos.play(function (err, playing) {
-						that.log.error("player %s received transport stream start result %s",playername,err
+						that.log.error("player %s received transport stream start result %s",that.playername,err
 					})
 				}
 			})
