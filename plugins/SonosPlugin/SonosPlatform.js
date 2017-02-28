@@ -15,6 +15,7 @@ var ZonePLayer = require('node-sonos').Sonos;
 var _ = require('underscore')
 var path = require('path');
 var fs = require('fs');
+var url = require("url");
 var SonosDevice = require(path.join(__dirname,'SonosDevice.js')).SonosDevice;
 var SonosCoordinator = require(path.join(__dirname,'SonosCoordinator.js')).SonosCoordinator;
 
@@ -32,6 +33,8 @@ function SonosPlatform(plugin,name,server,log,instance) {
 	SonosPlatform.super_.apply(this,arguments);
 	this.bridge = server.getBridge();
 	this.devices = [];
+	this.discoveredDevices = [];
+
 	HomematicDevice = server.homematicDevice;
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 }
@@ -64,11 +67,7 @@ SonosPlatform.prototype.init = function() {
 		this.plugin.initialized = true;
 		this.refreshZoneAttributes();
 		this.log.info("initialization completed");
-	} else {
-		this.log.info('Searching for Sonos devices...')
-		this.search();
-	}
-	
+	} 	
 }
 
 SonosPlatform.prototype.refreshZoneAttributes = function() {
@@ -181,7 +180,7 @@ SonosPlatform.prototype.texttospeech = function(text,callback) {
 	})
 }
 
-SonosPlatform.prototype.addZonePlayer = function(host,cname) {
+SonosPlatform.prototype.addZonePlayer = function(host,cname,callback) {
   var that = this;
   this.log.debug("Try to add %s with Name %s",host,cname)
   var zp = new ZonePLayer(host);
@@ -193,12 +192,39 @@ SonosPlatform.prototype.addZonePlayer = function(host,cname) {
 		  var puuid = data.UDN.substring(5)
 		  that.log.info("Add RINCON %s",puuid)
 		  sdevice.rincon = puuid;
+		  sdevice.zonename = name;
+		  
 		  that.devices.push(sdevice);
 		  that.coordinator.addZonePlayer(sdevice)
+		  if (callback) {
+			  callback()
+		  }
 	  } catch (e) {
 		  that.log.error(e.stack)
 	  }
   });
+}
+
+SonosPlatform.prototype.savePlayers = function() {
+   var pts = []
+   this.devices.some(function(device){
+	   var ele = {}
+	   ele[device.zonename] = device.ip
+	   pts.push(ele)
+   })
+   this.log.debug("Player to save %s",JSON.stringify(pts))
+   this.configuration.setValueForPlugin(this.name,"player",pts);
+}
+
+
+SonosPlatform.prototype.zonePlayerWithRincon = function(rincon) {
+	var result = undefined
+	this.devices.some(function (device){
+		if (device.rincon == rincon) {
+			result = device
+		}
+	})
+	return result
 }
 
 
@@ -242,7 +268,7 @@ SonosPlatform.prototype.getPlayerByRinCon = function(rincon) {
 SonosPlatform.prototype.search = function() {
 	var devices = []
 	var that = this;
-	
+	this.discoveredDevices = []
 	Sonos.search(function (device, model) {
 	var data = {ip: device.host, port: device.port, model: model}
 
@@ -270,13 +296,10 @@ SonosPlatform.prototype.search = function() {
 	that.getZones(devices).forEach(function (zone) {
    		 var coordinator = that.getZoneCoordinator(zone, devices)
    		 if (coordinator !== undefined) {
-	   		 that.log.info(zone);
-	   		 
-	   		 var sdevice = new SonosDevice(that ,coordinator.ip,coordinator.port,"SONOS_" + coordinator.CurrentZoneName);
-	   		 sdevice.maxVolume = that.maxVolume;
-	   		 that.devices.push(sdevice);
-	   		 
-	   		 i = i + 1;
+	   		 that.log.info(JSON.stringify(coordinator));
+	   		 if (that.zonePlayerWithRincon(coordinator.uuid)==undefined) {
+		   		 that.discoveredDevices.push({"name":coordinator.CurrentZoneName,"host":coordinator.ip,"rincon":coordinator.uuid})
+	   		 }
 	   	 }
   	})
   	that.plugin.initialized = true;
@@ -322,14 +345,58 @@ SonosPlatform.prototype.getZoneCoordinator = function(zone, deviceList) {
 SonosPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	
 	var listDevices = "";
+	var newDevices = "";
+	var cfg_handled = false
+	var that = this
 	var devtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_device_tmp.html",null);
+	var newdevtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_device_new.html",null);
+	var requesturl = dispatched_request.request.url;
+	var queryObject = url.parse(requesturl,true).query;
 
+	if (queryObject["do"]!=undefined) {
+		
+		switch (queryObject["do"]) {
+		
+		   case "search":
+		     this.search()
+		     dispatched_request.dispatchMessage('{"result":"OK"}')
+		     cfg_handled = true
+		     break; 
+		     
+		   case "addplayer":
+		    {
+			    var host = queryObject['host']
+			    var name = queryObject['name']
+			    if ((host) && (name)) {
+				   this.addZonePlayer(host,name,function (){
+					   that.savePlayers()
+					   for(var i = that.discoveredDevices.length - 1; i >= 0; i--) {
+				   			if(that.discoveredDevices[i]['host'] === host) {
+				   				that.discoveredDevices.splice(i, 1);
+    						}
+						}
+						dispatched_request.dispatchMessage('{"result":"OK"}')
+					})
+				} else {
+					dispatched_request.dispatchMessage('{"result":"FAIL"}')
+				}
+		    } 
+		     cfg_handled = true
+		     break;   
+		}
+	}
+
+	if (cfg_handled == false) {
 	this.myDevices().some(function (device){
 		listDevices = listDevices +  dispatched_request.fillTemplate(devtemplate,{"device_name":device["name"],"device_hmdevice":device['udn']});
 	});
 	
-	
-	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listDevices":listDevices});
+	this.discoveredDevices.some(function (device){
+		newDevices = newDevices +  dispatched_request.fillTemplate(newdevtemplate,{"device_name":device["name"],"host":device['host']});
+	});
+
+	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listDevices":listDevices,"newDevices":newDevices});
+	}
 }
 
 

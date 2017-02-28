@@ -30,6 +30,21 @@
         min-width: 100%;
         *width: 100%;
       }
+      
+      
+      .overlay {
+    background-color: #000;
+    bottom: 0;
+    display: none;
+    left: 0;
+    opacity: 0.5;
+    filter: alpha(opacity = 50); /* IE7 & 8 */
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 99;
+}
+
     </style>
   </head>
 
@@ -53,9 +68,8 @@
               <li>
                 <a href="/">Home</a>
               </li>
-              <li class="active">
-                <a href="index.html">Sonos Plugin</a>
-              </li>
+              <li class="active"><a href="index.html">Sonos Plugin</a></li>
+              <li ><a href="javascript:search()">Suche starten</a></li>
               
             </ul>
             <hr class="rw aky">
@@ -79,14 +93,73 @@
   </h4>
     
     $listDevices$
+ 
+ 
+  <h4 class="ty">
+    neue Ger&auml;te
+  </h4>
     
+    $newDevices$
+   
+    <form action="index.html" name="addplayer" method="get"> 
+		<input type="hidden" name = "do" value="addplayer" />	   
+		<input type="hidden" name = "host" id ="host" value="" />	   
+
+    <div class="ph row">
+          <span class="dh col-md-4">SONOS_<input type="text" name="name" id="name" value="" /></span>
+          <span class="dh col-md-1"></span>
+		  <span class="dh col-md-2"><input type="button" value="Add player" onclick="saveplayer()"/></span>  
+          <span class="dh col-md-4"></span>
+    </div>
+    </form>
+   
 </div>
       </div>
     </div>
 
 
 </div>
+	
+	<script type="text/javascript">
+		function select_player(name,host) {
+			document.getElementById("host").value = host
+			document.getElementById("name").value = name
+		}
+		
+		function search() {
+			
+			if( $('.overlay').length == 0 ){
+					$('body').append('<div class="overlay"></div>');
+			} 
+			
+			$('.overlay').show();
 
+
+			$.getJSON( "index.html?do=search", function( data ) {
+				setTimeout(function() {
+					window.location.reload()
+				}, 6000)
+			})
+		}
+		
+		function saveplayer() {
+			
+			if( $('.overlay').length == 0 ){
+					$('body').append('<div class="overlay"></div>');
+			} 
+			
+			$('.overlay').show();
+
+			var host = document.getElementById("host").value
+			var name = document.getElementById("name").value
+			$.getJSON( "index.html?do=addplayer&name=" + name + "&host=" + host , function( data ) {
+				setTimeout(function() {
+					window.location.reload()
+				}, 2000)
+			})
+		}
+		
+    </script>		
 
     <script src="../assets/js/jquery.min.js"></script>
     <script src="../assets/js/bootstrap.min.js" type="text/javascript"></script>

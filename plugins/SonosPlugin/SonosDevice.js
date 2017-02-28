@@ -62,6 +62,12 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 						if (event.transportState) {
 							that.transportState = event.transportState
 							channel.updateValue("TRANSPORT_STATE",that.transportState,true);
+							// Check if we hat to continue a queue
+							if (event.transportState=="STOPPED") {
+								 process.nextTick(function() {
+									 that.continueOldPlayList()
+								 })
+							}
 						}
 						if (event.currentPlayMode) {
 							that.currentPlayMode = event.currentPlayMode
@@ -276,6 +282,7 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 			 		metadata: meta
 			}, function (error,data) {
 				if (!error) {
+					
 					that.sonos.play(function (err, playing) {
 						that.log.error("player %s received transport stream start result %s",that.playername,err)
 					})
@@ -288,28 +295,66 @@ SonosDevice.prototype.setPlayList = function(playlist) {
 
 SonosDevice.prototype.say = function(text) {
   var that = this;
+  
   this.plugin.texttospeech(text,function(location){
-	 
-	that.sonos.flush(function (err, flushed) {
-		var name = "Say"
+		  	that.sonos.getPositionInfo(function (err,data){
+			 
+			 that.log.debug(JSON.stringify(data))
+			 
+			 if (data[0]) {
+			  	that.cur_track = data[0]['Track']
+			 }
+			 
+			 that.sonos.currentTrack(function (err,data){
+				that.log.debug("CT %s",JSON.stringify(data))
+				if (data) {
+			  		that.cur_position = data['position']
+			  		that.log.debug("Set Current Position to %s",that.cur_position)
+			  	}
+ 
+
+		    var name = "Say"
 		 	var parentID = "R:0/0"
 		 	var id = "R:0/0/0"
 		 	var uri = 'x-rincon-mp3radio://' + location;
 		 	
 		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
 
-		 	that.log.info("Try queue %s on %s",uri,that.playername)
-		 	that.sonos.queue({
-			 		uri: uri,
-			 		metadata: meta
-			}, function (error,data) {
-				if (!error) {
-					that.sonos.play(function (err, playing) {
-						that.log.error("player %s received transport stream start result %s",that.playername,err)
+		 	that.sonos.queue({uri:uri,meta:meta} ,function (err, data) {
+				if ((data) && (data[0])) {
+					var tnum = data[0]['FirstTrackNumberEnqueued'];
+					that.returnToOldPositionAndDeleteTrack = tnum
+
+					that.sonos.selectTrack(tnum,function(err,success){
+						that.sonos.play(function(){});
 					})
-				}
-			})
+				}			 	
+		 	})
 		})
+	})
+
+  })
+ }
+
+
+SonosDevice.prototype.continueOldPlayList = function() {
+	
+   var that = this	
+   if (this.returnToOldPositionAndDeleteTrack > 0 ) {
+		that.log.info("We have an old Playlist %s to continue on %s ",that.cur_position,that.playername)
+
+		that.sonos.selectTrack(that.cur_track,function(err,success){
+			that.log.debug("Restore to %s",that.cur_position)
+			that.sonos.seek(that.cur_position,function(err,success){
+				that.sonos.play(function(){
+					  this.cur_position = 0
+				});
+			})
+			})
+   }
+  // delete this track : 
+  this.sonos.removeTrackFromQueue(this.returnToOldPositionAndDeleteTrack,function(err,result){
+	  that.returnToOldPositionAndDeleteTrack = 0
   })
 }
 
@@ -393,7 +438,7 @@ SonosDevice.prototype.refreshZoneGroupAttrs = function() {
 					  }
 				  } 
 			   } else {
-				   that.log.error("CurrentZoneGroupID not found in %s",JSON.stringify(result))
+
 			   }
 		   } else {
 			   that.log.error("Result %s Error %s",JSON.stringify(result),JSON.stringify(error))
