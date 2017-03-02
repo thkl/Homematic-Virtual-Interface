@@ -1,6 +1,6 @@
 {
-  "name": "Homematic-Virtual-Interface",
-  "version": "0.2.5",
+  "name": "homematic-virtual-interface",
+  "version": "0.2.12",
   "description": "Homematic Virtual Interface",
   "license": "ISC",
   "scripts": {
@@ -15,7 +15,7 @@
     "node": ">=0.12.0"
   },
   "bin": {
-    "hmhue": "bin/hmvi"
+    "hmvi": "bin/hmvi"
   },
   "dependencies": {
     "debug": "^2.2.0",
@@ -30,5 +30,15 @@
     "group-array":"0.3.1",
     "nedb-logger":"0.1.0",
     "qs":"6.3.1"
-  }
+  },
+  
+  "files": [
+    "addon/",
+    "bin/",
+    "lib/",
+    "README.md",
+    "devices/",
+    "hvl_addon.tar.gz",
+    "www/"
+  ]
 }
