@@ -36,5 +36,13 @@
 		"syname":"Netatmo",
 		"description":{"de-de":"Sellt Netatmo Innen und Aussen Sensor als CCU Ger&auml;te zur Verf&uuml;gung","en-en":"Creates CCU devices from weather modules"}
 	  }
+	  ,
+
+	  {
+		"name":"Sonos Plugin",
+		"npm" :"homematic-virtual-sonosdevice",
+		"syname":"Sonos",
+		"description":{"de-de":"Sellt Sonos Zoneplayer als CCU Ger&auml;te zur Verf&uuml;gung","en-en":"Creates CCU devices from sonos zone players"}
+	  }
 	]
 }
