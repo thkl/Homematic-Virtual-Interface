@@ -66,8 +66,8 @@ cat > /etc/init.d/S51hvl <<EOF
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:	Homematic Virtual Interface Layer
-# Required-Start:    $remote_fs $syslog
-# Required-Stop:     $remote_fs $syslog
+# Required-Start:    \$remote_fs \$syslog
+# Required-Stop:     \$remote_fs \$syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Start daemon at boot time
@@ -79,39 +79,39 @@ dir="/usr/local/node_modules/homematic-virtual-interface"
 cmd="node lib/index.js -C /usr/local/etc/config/hvl"
 user="root"
 
-name=`basename $0`
+name=`basename \$0`
 pid_file="/var/run/hvl.pid"
 stdout_log="/var/log/hvl.log"
 stderr_log="/var/log/hvl.err"
 
 get_pid() {
-    cat "$pid_file"
+    cat "\$pid_file"
 }
 
 is_running() {
-    [ -f "$pid_file" ] && ps `get_pid` > /dev/null 2>&1
+    [ -f "\$pid_file" ] && ps `get_pid` > /dev/null 2>&1
 }
 
-case "$1" in
+case "\$1" in
     start)
     if is_running; then
         echo "Already started"
     else
-        echo "Starting $name"
-        cd "$dir"
+        echo "Starting \$name"
+        cd "\$dir"
         
-        $cmd $1 >> "$stdout_log" 2>> "$stderr_log" &
+        $cmd \$1 >> "\$stdout_log" 2>> "\$stderr_log" &
         
-        echo $! > "$pid_file"
+        echo \$! > "\$pid_file"
         if ! is_running; then
-            echo "Unable to start, see $stdout_log and $stderr_log"
+            echo "Unable to start, see \$stdout_log and \$stderr_log"
             exit 1
         fi
     fi
     ;;
     stop)
     if is_running; then
-        echo -n "Stopping $name.."
+        echo -n "Stopping \$name.."
         kill `get_pid`
         for i in {1..10}
         do
@@ -126,14 +126,14 @@ case "$1" in
 
         if is_running; then
             echo "Not stopped; may still be shutting down or shutdown may have failed"
-			if [ -f "$pid_file" ]; then
-                rm "$pid_file"
+			if [ -f "\$pid_file" ]; then
+                rm "\$pid_file"
             fi
 			exit 1
         else
             echo "Stopped"
-            if [ -f "$pid_file" ]; then
-                rm "$pid_file"
+            if [ -f "\$pid_file" ]; then
+                rm "\$pid_file"
             fi
         fi
     else
@@ -141,12 +141,12 @@ case "$1" in
     fi
     ;;
     restart)
-    $0 stop
+    \$0 stop
     if is_running; then
         echo "Unable to stop, will not attempt to start"
         exit 1
     fi
-    $0 start
+    \$0 start
     ;;
     status)
     if is_running; then
@@ -157,7 +157,7 @@ case "$1" in
     fi
     ;;
     *)
-    echo "Usage: $0 {start|stop|restart|status}"
+    echo "Usage: \$0 {start|stop|restart|status}"
     exit 1
     ;;
 esac
