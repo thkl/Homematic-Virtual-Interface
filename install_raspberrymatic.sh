@@ -22,6 +22,7 @@ npm install homematic-virtual-interface
 # Add Button to System Prefrences
 if [ $(cat /usr/local/etc/config/hm_addons.cfg|grep "hvl"|wc -l) -eq 0 ];then
 cat >> /usr/local/etc/config/hm_addons.cfg <<EOF
+
 hvl {CONFIG_URL /addons/hvl/ CONFIG_DESCRIPTION {de {Virtueller Homematic Ger&aumltelayer} en {virtual homematic device layer}} ID hvl CONFIG_NAME HVL}
 EOF
 
@@ -37,12 +38,12 @@ fi
 
 # Add Interface 
 if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
-	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/http:\/\/127.0.0.1:8000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
+	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 fi
 
 # Add Interface Template
 if [ $(cat /etc/config_templates/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
-	sed -i /etc/config_templates/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/http:\/\/127.0.0.1:8000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
+	sed -i /etc/config_templates/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 fi
 
 #Setup config.json
@@ -79,7 +80,7 @@ dir="/usr/local/node_modules/homematic-virtual-interface"
 cmd="node lib/index.js -C /usr/local/etc/config/hvl"
 user="root"
 
-name=`basename \$0`
+name=`hvl`
 pid_file="/var/run/hvl.pid"
 stdout_log="/var/log/hvl.log"
 stderr_log="/var/log/hvl.err"
@@ -100,7 +101,7 @@ case "\$1" in
         echo "Starting \$name"
         cd "\$dir"
         
-        $cmd \$1 >> "\$stdout_log" 2>> "\$stderr_log" &
+        \$cmd \$1 >> "\$stdout_log" 2>> "\$stderr_log" &
         
         echo \$! > "\$pid_file"
         if ! is_running; then
