@@ -1,9 +1,10 @@
 mount -o remount,rw /
-
 cd /usr/local/
-wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -o node.tar.xz --no-check-certificate
-tar xf node.tar.xz
 
+wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -O node.tar.xz --no-check-certificate
+tar xf node.tar.xz
+rm node.tar.xz
+mv node-v6.10.0-linux-armv7l node
 # link it
 ln /usr/local/node/bin/node /usr/bin/node -s
 ln /usr/local/node/bin/npm /usr/bin/npm -s
@@ -35,20 +36,18 @@ EOF
 fi
 
 # Add Interface 
-if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]
-then
+if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
 	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/http://127.0.0.1:8000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 fi
 
 # Add Interface Template
-if [ $(cat /etc/config_templates/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]
-then
+if [ $(cat /etc/config_templates/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
 	sed -i /etc/config_templates/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/http://127.0.0.1:8000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 fi
 
 #Setup config.json
 
-if [ !-f /usr/local/etc/config/hvl/config.json ] then
+if [ !-f /usr/local/etc/config/hvl/config.json ]; then
 	mkdir /usr/local/etc/config/hvl
 	touch /usr/local/etc/config/hvl/config.json
 cat > /usr/local/etc/config/hvl/config.json <<EOF
@@ -62,7 +61,7 @@ EOF
 fi
 
 #build system launcher
-if [ !-f /etc/init.d/S51hvl ] then
+if [ !-f /etc/init.d/S51hvl ]; then
 cat > /etc/init.d/S51hvl <<EOF
 #!/bin/sh
 ### BEGIN INIT INFO
