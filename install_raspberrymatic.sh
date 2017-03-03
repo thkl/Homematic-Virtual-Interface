@@ -1,7 +1,7 @@
 mount -o remount,rw /
 cd /usr/local/
 
-wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -O node.tar.xz --no-check-certificate
+wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -Onode.tar.xz --no-check-certificate
 tar xf node.tar.xz
 rm node.tar.xz
 mv node-v6.10.0-linux-armv7l node
