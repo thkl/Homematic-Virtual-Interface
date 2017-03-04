@@ -80,7 +80,7 @@ dir="/usr/local/node_modules/homematic-virtual-interface"
 cmd="node lib/index.js -C /usr/local/etc/config/hvl"
 user="root"
 
-name=`hvl`
+name="hvl"
 pid_file="/var/run/hvl.pid"
 stdout_log="/var/log/hvl.log"
 stderr_log="/var/log/hvl.err"
@@ -113,7 +113,7 @@ case "\$1" in
     stop)
     if is_running; then
         echo -n "Stopping \$name.."
-        kill `get_pid`
+        kill \`get_pid\`
         for i in {1..10}
         do
             if ! is_running; then
