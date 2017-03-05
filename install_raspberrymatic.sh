@@ -12,14 +12,15 @@ tar xf node.tar.xz
 rm node.tar.xz
 mv node-v6.10.0-linux-armv7l node
 # link it
-ln /usr/local/node/bin/node /usr/bin/node -s
-ln /usr/local/node/bin/npm /usr/bin/npm -s
+ln /usr/local/addons/hvl/node/bin/node /usr/bin/node -s
+ln /usr/local/addons/hvl/node/bin/npm /usr/bin/npm -s
 
 # Set some new Paths for NPM -> /root is RO 
-npm set cache=/usr/local/.npm
-npm set init-module=/usr/local/.npm-init.js
-npm set userconfig=/usr/local/.npmrc
-npm set path=/usr/local/.npm
+npm set cache=/usr/local/addons/hvl/.npm
+npm set init-module=/usr/local/addons/hvl/.npm-init.js
+npm set userconfig=/usr/local/addons/hvl/.npmrc
+npm set path=/usr/local/addons/hvl/.npm
+
 
 # Install Core System
 npm install homematic-virtual-interface
