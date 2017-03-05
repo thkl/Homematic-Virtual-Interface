@@ -95,92 +95,9 @@ fi
 
 #build system launcher
 if [ ! -f /usr/local/etc/config/rc.d/hvl ]; then
-cat > /usr/local/etc/config/rc.d/hvl <<EOF
-#!/bin/sh
-HVLDIR=/usr/local/addons/hvl
-CONFIG_URL=/addons/hvl/www/
-CONFIG_DIR=/usr/local/etc/config
-PIDFILE=/var/run/hvl.pid
-STARTRC=/etc/init.d/S51hvl
-PSPID=`ps -o pid,comm | awk '{if(\$2=="hvl"){print \$1}}'`
-
-
-case "\$1" in
-  ""|start)
-	if [ ! -h \$CONFIG_DIR/addons/www/hvl ]
-	then ln -sf \$HVLDIR $CONFIG_DIR/addons/www/hvl
-	fi
-	if [ ! -h \$STARTRC ]
-	then
-	  mount -o remount,rw /
-	  ln -sf \$CONFIG_DIR/rc.d/hvl \$STARTRC
-	  mount -o remount,ro /
-	fi
-	if [ "\$PSPID" = "" ]
-	then
-	  \$HVLDIR/node/bin/node \$HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C \$CONFIG_DIR/hvl  &
-	  logger -t homematic -p user.info "started homematic virtual layer"
-	fi
-	;;
-
-  stop)
-  	if [ "\$PSPID" != "" ]
-  	then
-	  kill -TERM \$PSPID 2>/dev/null
-	  sleep 1
-	  kill -0 \$PSPID 2>/dev/null
-	  if [ \$? -eq 0 ]
-	  then
-	    sleep 10
-	    kill -KILL \$PSPID 2>/dev/null
-	  fi
-	  logger -t homematic -p user.info "stopped homematic virtual layer"
-	fi
-	;;
-
-  restart)
-  	if [ "\$PSPID" != "" ]
-  	then
-	  kill -HUP `cat $PIDFILE` 2>/dev/null
-	  logger -t homematic -p user.info "stopped (restart) homematic virtual layer"
-	  sleep 1
-	  kill -0 `cat \$PIDFILE` 2>/dev/null
-	  if [ \$? -eq 0 ]
-	  then
-	    sleep 5
-	    kill -KILL `cat \$PIDFILE` 2>/dev/null
-	  fi
-	fi
-	\$HVLDIR/node/bin/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C \$CONFIG_DIR/hvl >/dev/null &
-	logger -t homematic -p user.info "started (restart) homematic virtual layer"
-	;;
-
-  info)
-	echo "Info: <center><b>Homematic Virtual Layer</b></center>"
-	echo "Name: HVL"
-	echo "Version: "
-	echo "Operations: uninstall restart"
-	echo "Config-Url: \$CONFIG_URL"
-	echo "Update: "
-	;;
-
-  uninstall)
-	logger -t homematic -p user.info "removing homematic virtual layer"
-	echo "not yet implemented"
-	;;
-
-  *)
-	echo "Usage: \$0 {start|stop|restart|uninstall}" >&2
-	exit 1
-	;;
-esac
-
-exit 0
-
-EOF
-chmod +x /usr/local/etc/config/rc.d/hvl
+  wget --no-check-certificate -nv -O /usr/local/etc/config/rc.d/hvl https://raw.githubusercontent.com/thkl/Homematic-Virtual-Interface/master/rc.d/hvl
+  chmod +x /usr/local/etc/config/rc.d/hvl
 fi
-
 
 #back to RO
 mount -o remount,ro /
