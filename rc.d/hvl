@@ -20,7 +20,6 @@ case "$1" in
 	fi
 	if [ "$PSPID" = "" ]
 	then
-	  chmod 0755 $HVLDIR/hvl
 	  $HVLDIR/node/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -D $CONFIG_DIR/hvl/ >/dev/null 2>&1
 	  logger -t homematic -p user.info "started homematic virtual layer"
 	fi
@@ -54,7 +53,6 @@ case "$1" in
 	    kill -KILL `cat $PIDFILE` 2>/dev/null
 	  fi
 	fi
-	chmod 0755 $HVLDIR/hvl
 	$HVLDIR/node/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -D $CONFIG_DIR/hvl/ >/dev/null 2>&1
 	logger -t homematic -p user.info "started (restart) homematic virtual layer"
 	;;
