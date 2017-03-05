@@ -83,7 +83,7 @@ cat > /usr/local/etc/config/hvl/config.json <<EOF
   "ccu_ip": "127.0.0.1",
   "local_ip": "127.0.0.1",
   "local_rpc_port": 8301,
-  "web_http_port":8300
+  "web_http_port":8300,
   "plugins": []
 }
 EOF
@@ -91,7 +91,6 @@ fi
 
 #build system launcher
 if [ ! -f /usr/local/etc/config/rc.d/hvl ]; then
-
 cat > /usr/local/etc/config/rc.d/hvl <<EOF
 #!/bin/sh
 HVLDIR=/usr/local/addons/hvl
