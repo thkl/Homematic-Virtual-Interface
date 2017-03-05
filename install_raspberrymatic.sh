@@ -26,11 +26,29 @@ npm install homematic-virtual-interface
 
 
 # Add Button to System Prefrences
-if [ $(cat /usr/local/etc/config/hm_addons.cfg|grep "hvl"|wc -l) -eq 0 ];then
-cat >> /usr/local/etc/config/hm_addons.cfg <<EOF
+cat >> /tmp/inst_button <<EOF
+#!/bin/tclsh
 
-hvl {CONFIG_URL /addons/hvl/ CONFIG_DESCRIPTION {de {Virtueller Homematic Ger&aumltelayer} en {virtual homematic device layer}} ID hvl CONFIG_NAME HVL}
+package require HomeMatic
+
+set ID          hvl
+set URL         /addons/hvl/index.html
+set NAME        "Homematic Virt. Interface"
+
+array set DESCRIPTION {
+  de {<li>Stellt einen virtuellen Layer f&uuml;r die Nutzung div. Ger&auml;te (Hue, Sonos) direkt aus der CCU zur Verf&uuml;gung</li>} 
+  en {<li>provides a virtual layer to control other devices from CCU (eg Hue or Sonos).</li>}
+}
+
+::HomeMatic::Addon::AddConfigPage $ID $URL $NAME [array get DESCRIPTION]
+
+
 EOF
+
+/bin/tclsh /tmp/inst_button
+
+# clean the mess up
+rm /tmp/inst_button
 
 # Build JS Redirector 
 mkdir /usr/local/etc/config/addons/www/hvl
@@ -154,7 +172,10 @@ esac
 exit 0
 
 EOF
+
+chmod +x /usr/local/etc/config/rc.d/hvl
 fi
+
 
 #back to RO
 mount -o remount,ro /
