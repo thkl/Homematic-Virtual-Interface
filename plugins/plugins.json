@@ -51,6 +51,15 @@
 		"syname":"Alexa",
 		"description":{"de-de":"Benutze Amazon Alexa um Ger&auml;te zu steuern.","en-en":"Use amazon alexa to control your devices"}
 	  }
+	  ,
+
+	  {
+		"name":"Logitech Harmony",
+		"npm" :"homematic-virtual-harmonydevice",
+		"syname":"Harmony",
+		"description":{"de-de":"Steuerung der Harmony durch die CCU und umgekehr.","en-en":"Control Harmony Activities from CCU and vise versa"}
+	  }
+	  
 	  
 	  
 	]
