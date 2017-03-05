@@ -6,12 +6,8 @@ PIDFILE=/var/run/hvl.pid
 STARTRC=/etc/init.d/S51hvl
 PSPID=`ps -o pid,comm | awk '{if($2=="hvl"){print $1}}'`
 
-
 case "$1" in
   ""|start)
-	if [ ! -h $CONFIG_DIR/addons/www/hvl ]
-	then ln -sf $HVLDIR $CONFIG_DIR/addons/www/hvl
-	fi
 	if [ ! -h $STARTRC ]
 	then
 	  mount -o remount,rw /
@@ -20,7 +16,7 @@ case "$1" in
 	fi
 	if [ "$PSPID" = "" ]
 	then
-	  $HVLDIR/node/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -D $CONFIG_DIR/hvl/ >/dev/null 2>&1
+	  $HVLDIR/node/bin/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/ >>/dev/null &
 	  logger -t homematic -p user.info "started homematic virtual layer"
 	fi
 	;;
@@ -53,7 +49,7 @@ case "$1" in
 	    kill -KILL `cat $PIDFILE` 2>/dev/null
 	  fi
 	fi
-	$HVLDIR/node/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -D $CONFIG_DIR/hvl/ >/dev/null 2>&1
+	$HVLDIR/node/bin/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/ >>/dev/null &
 	logger -t homematic -p user.info "started (restart) homematic virtual layer"
 	;;
 
