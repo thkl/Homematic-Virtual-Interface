@@ -174,7 +174,6 @@ esac
 exit 0
 
 EOF
-
 chmod +x /usr/local/etc/config/rc.d/hvl
 fi
 
