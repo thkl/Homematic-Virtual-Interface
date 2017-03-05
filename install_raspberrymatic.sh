@@ -52,6 +52,8 @@ EOF
 rm /tmp/inst_button
 
 # Build JS Redirector 
+
+if [ ! -f /usr/local/etc/config/addons/www/hvl/index.html ]; then
 mkdir /usr/local/etc/config/addons/www/hvl
 
 cat > /usr/local/etc/config/addons/www/hvl/index.html <<EOF
