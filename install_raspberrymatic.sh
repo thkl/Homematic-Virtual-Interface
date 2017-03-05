@@ -1,8 +1,8 @@
 mount -o remount,rw /
-cd /usr/local/
+
 # check addon is there
 if [ ! -d /usr/local/addons/hvl ]; then
-  mkdir -p usr/local/addons/hvl
+  mkdir -p /usr/local/addons/hvl
 fi
 
 cd /usr/local/addons/hvl
