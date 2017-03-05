@@ -37,19 +37,19 @@ mkdir /usr/local/etc/config/addons/www/hvl
 
 cat > /usr/local/etc/config/addons/www/hvl/index.html <<EOF
 <script type="text/javascript">
-  window.location.href='http://' + window.location.host +':8182/'
+  window.location.href='http://' + window.location.host +':8300/'
 </script>
 EOF
 fi
 
 # Add Interface 
 if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
-	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
+	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 fi
 
 # Add Interface Template
 if [ $(cat /etc/config_templates/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
-	sed -i /etc/config_templates/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
+	sed -i /etc/config_templates/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 fi
 
 #Setup config.json
@@ -61,118 +61,99 @@ cat > /usr/local/etc/config/hvl/config.json <<EOF
 {
   "ccu_ip": "127.0.0.1",
   "local_ip": "127.0.0.1",
-  "local_rpc_port": 8000,
+  "local_rpc_port": 8301,
+  "web_http_port":8300
   "plugins": []
 }
 EOF
 fi
 
 #build system launcher
-if [ ! -f /etc/init.d/S51hvl ]; then
-cat > /etc/init.d/S51hvl <<EOF
+if [ ! -f /usr/local/etc/config/rc.d/hvl ]; then
+
+cat > /usr/local/etc/config/rc.d/hvl <<EOF
 #!/bin/sh
-### BEGIN INIT INFO
-# Provides:	Homematic Virtual Interface Layer
-# Required-Start:    \$remote_fs \$syslog
-# Required-Stop:     \$remote_fs \$syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Start daemon at boot time
-# Description:       Enable service provided by daemon.
-### END INIT INFO
+HVLDIR=/usr/local/addons/hvl
+CONFIG_URL=/addons/hvl/www/
+CONFIG_DIR=/usr/local/etc/config
+PIDFILE=/var/run/hvl.pid
+STARTRC=/etc/init.d/S51hvl
+PSPID=`ps -o pid,comm | awk '{if(\$2=="hvl"){print \$1}}'`
 
-
-dir="/usr/local/addons/hvl/node_modules/homematic-virtual-interface"
-cmd="/usr/local/addons/hvl/node/node lib/index.js -C /usr/local/etc/config/hvl"
-user="root"
-
-name="hvl"
-pid_file="/var/run/hvl.pid"
-stdout_log="/var/log/hvl.log"
-stderr_log="/var/log/hvl.err"
-
-get_pid() {
-    cat "\$pid_file"
-}
-
-is_running() {
-    [ -f "\$pid_file" ] && ps `get_pid` > /dev/null 2>&1
-}
 
 case "\$1" in
-    start)
-    if is_running; then
-        echo "Already started"
-    else
-        echo "Starting \$name"
-        cd "\$dir"
-        
-        \$cmd \$1 >> "\$stdout_log" 2>> "\$stderr_log" &
-        
-        echo \$! > "\$pid_file"
-        if ! is_running; then
-            echo "Unable to start, see \$stdout_log and \$stderr_log"
-            exit 1
-        fi
-    fi
-    ;;
-    stop)
-    if is_running; then
-        echo -n "Stopping \$name.."
-        kill \`get_pid\`
-        for i in {1..10}
-        do
-            if ! is_running; then
-                break
-            fi
+  ""|start)
+	if [ ! -h \$CONFIG_DIR/addons/www/hvl ]
+	then ln -sf \$HVLDIR $CONFIG_DIR/addons/www/hvl
+	fi
+	if [ ! -h \$STARTRC ]
+	then
+	  mount -o remount,rw /
+	  ln -sf \$CONFIG_DIR/rc.d/hvl \$STARTRC
+	  mount -o remount,ro /
+	fi
+	if [ "\$PSPID" = "" ]
+	then
+	  \$HVLDIR/node/bin/node \$HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C \$CONFIG_DIR/hvl  &
+	  logger -t homematic -p user.info "started homematic virtual layer"
+	fi
+	;;
 
-            echo -n "."
-            sleep 1
-        done
-        echo
+  stop)
+  	if [ "\$PSPID" != "" ]
+  	then
+	  kill -TERM \$PSPID 2>/dev/null
+	  sleep 1
+	  kill -0 \$PSPID 2>/dev/null
+	  if [ \$? -eq 0 ]
+	  then
+	    sleep 10
+	    kill -KILL \$PSPID 2>/dev/null
+	  fi
+	  logger -t homematic -p user.info "stopped homematic virtual layer"
+	fi
+	;;
 
-        if is_running; then
-            echo "Not stopped; may still be shutting down or shutdown may have failed"
-			if [ -f "\$pid_file" ]; then
-                rm "\$pid_file"
-            fi
-			exit 1
-        else
-            echo "Stopped"
-            if [ -f "\$pid_file" ]; then
-                rm "\$pid_file"
-            fi
-        fi
-    else
-        echo "Not running"
-    fi
-    ;;
-    restart)
-    \$0 stop
-    if is_running; then
-        echo "Unable to stop, will not attempt to start"
-        exit 1
-    fi
-    \$0 start
-    ;;
-    status)
-    if is_running; then
-        echo "Running"
-    else
-        echo "Stopped"
-        exit 1
-    fi
-    ;;
-    *)
-    echo "Usage: \$0 {start|stop|restart|status}"
-    exit 1
-    ;;
+  restart)
+  	if [ "\$PSPID" != "" ]
+  	then
+	  kill -HUP `cat $PIDFILE` 2>/dev/null
+	  logger -t homematic -p user.info "stopped (restart) homematic virtual layer"
+	  sleep 1
+	  kill -0 `cat \$PIDFILE` 2>/dev/null
+	  if [ \$? -eq 0 ]
+	  then
+	    sleep 5
+	    kill -KILL `cat \$PIDFILE` 2>/dev/null
+	  fi
+	fi
+	\$HVLDIR/node/bin/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C \$CONFIG_DIR/hvl >/dev/null &
+	logger -t homematic -p user.info "started (restart) homematic virtual layer"
+	;;
+
+  info)
+	echo "Info: <center><b>Homematic Virtual Layer</b></center>"
+	echo "Name: HVL"
+	echo "Version: "
+	echo "Operations: uninstall restart"
+	echo "Config-Url: \$CONFIG_URL"
+	echo "Update: "
+	;;
+
+  uninstall)
+	logger -t homematic -p user.info "removing homematic virtual layer"
+	echo "not yet implemented"
+	;;
+
+  *)
+	echo "Usage: \$0 {start|stop|restart|uninstall}" >&2
+	exit 1
+	;;
 esac
 
 exit 0
-EOF
 
-chmod +x /etc/init.d/S51hvl
+EOF
 fi
 
 #back to RO
