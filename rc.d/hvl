@@ -39,15 +39,15 @@ case "$1" in
   restart)
   	if [ "$PSPID" != "" ]
   	then
-	  kill -HUP `cat $PIDFILE` 2>/dev/null
-	  logger -t homematic -p user.info "stopped (restart) homematic virtual layer"
+	  kill -TERM $PSPID 2>/dev/null
 	  sleep 1
-	  kill -0 `cat $PIDFILE` 2>/dev/null
+	  kill -0 $PSPID 2>/dev/null
 	  if [ $? -eq 0 ]
 	  then
-	    sleep 5
-	    kill -KILL `cat $PIDFILE` 2>/dev/null
+	    sleep 10
+	    kill -KILL $PSPID 2>/dev/null
 	  fi
+	  logger -t homematic -p user.info "stopped homematic virtual layer for restart"
 	fi
 	$HVLDIR/node/bin/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/ >>/dev/null &
 	logger -t homematic -p user.info "started (restart) homematic virtual layer"
