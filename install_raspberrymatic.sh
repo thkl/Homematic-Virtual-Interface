@@ -1,10 +1,10 @@
 mount -o remount,rw /
 cd /usr/local/
 # check addon is there
-if [ ! -d /usr/local/addons ]; then
-  mkdir addons
+if [ ! -d /usr/local/addons/hvl ]; then
+  mkdir -p usr/local/addons/hvl
 fi
-mkdir hvl
+
 cd /usr/local/addons/hvl
 
 wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -Onode.tar.xz --no-check-certificate
