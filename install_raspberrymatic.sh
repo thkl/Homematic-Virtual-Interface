@@ -1,5 +1,11 @@
 mount -o remount,rw /
 cd /usr/local/
+# check addon is there
+if [ ! -d /usr/local/addons ]; then
+  mkdir addons
+fi
+mkdir hvl
+cd /usr/local/addons/hvl
 
 wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -Onode.tar.xz --no-check-certificate
 tar xf node.tar.xz
@@ -76,8 +82,8 @@ cat > /etc/init.d/S51hvl <<EOF
 ### END INIT INFO
 
 
-dir="/usr/local/node_modules/homematic-virtual-interface"
-cmd="node lib/index.js -C /usr/local/etc/config/hvl"
+dir="/usr/local/addons/hvl/node_modules/homematic-virtual-interface"
+cmd="/usr/local/addons/hvl/node/node lib/index.js -C /usr/local/etc/config/hvl"
 user="root"
 
 name="hvl"
