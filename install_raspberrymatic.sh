@@ -41,7 +41,7 @@ array set DESCRIPTION {
   en {<li>provides a virtual layer to control other devices from CCU (eg Hue or Sonos).</li>}
 }
 
-::HomeMatic::Addon::AddConfigPage $ID $URL $NAME [array get DESCRIPTION]
+::HomeMatic::Addon::AddConfigPage \$ID \$URL \$NAME [array get DESCRIPTION]
 
 
 EOF
