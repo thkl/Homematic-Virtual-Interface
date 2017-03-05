@@ -76,7 +76,11 @@ fi
 #Setup config.json
 
 if [ ! -f /usr/local/etc/config/hvl/config.json ]; then
-	mkdir /usr/local/etc/config/hvl
+	
+	if [ ! -d /usr/local/etc/config/hvl ]; then
+		mkdir /usr/local/etc/config/hvl
+	fi
+	
 	touch /usr/local/etc/config/hvl/config.json
 cat > /usr/local/etc/config/hvl/config.json <<EOF
 {
