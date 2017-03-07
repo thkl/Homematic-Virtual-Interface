@@ -1,0 +1,18 @@
+<div class="ph">
+ <div class="row">
+          <span class="dh col-md-1">$plugin.installed$</span>
+          <span class="dh col-md-1">$plugin.active$</span>
+          <span class="dh col-md-4">$plugin.type$ <br />Local $plugin.version$ - Central: <span id ="central_version_$plugin.npm$">...</span></span>
+          <span class="dh col-md-2"><input type="button" id="inst_$plugin.npm$" $plugin.installbutton$ value="Install" onclick="install('$plugin.npm$');"/></span>
+          <span class="dh col-md-2"><input type="button" $plugin.activatebutton$  value="Activate" onclick="activate('$plugin.npm$');"/></span>
+		  <span class="dh col-md-2"><input type="button" $plugin.removebutton$ value="Deactivate" onclick="deactivate('$plugin.npm$');"/></span>  
+ </div>
+ <div class="row">
+          <span class="dh col-md-1"></span>
+          <span class="dh col-md-1"></span>
+          <span class="dh col-md-10">$plugin.description$</span>
+ </div>
+ </div>
+ <script type="text/javascript">
+	 getVersion('$plugin.npm$','$plugin.version$','$plugin.installed$','$plugin.active$')
+ </script>

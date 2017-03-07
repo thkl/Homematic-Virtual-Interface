@@ -35,6 +35,10 @@ HttpPlatform.prototype.init = function() {
 	this.log.info("initialization completed %s",this.plugin.initialized);
 }
 
+HttpPlatform.prototype.shutdown = function() {
+    this.log.info("Shutdown");
+ 	this.bridge.deleteDevicesByOwner(this.name)
+}
 
 HttpPlatform.prototype.initRemote=function(rmIndex) {
 	var that = this;

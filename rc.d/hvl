@@ -1,9 +1,10 @@
 #!/bin/sh
 HVLDIR=/usr/local/addons/hvl
-CONFIG_URL=/addons/hvl/www/
+CONFIG_URL=/addons/hvl/index.html
 CONFIG_DIR=/usr/local/etc/config
 PIDFILE=/var/run/hvl.pid
 STARTRC=/etc/init.d/S51hvl
+VER=0.0.1
 PSPID=`ps -o pid,comm,args | awk '{if ($2=="node" && $3 ~ /hvl/){print $1}}'`
 
 case "$1" in
@@ -14,6 +15,10 @@ case "$1" in
 	  ln -sf $CONFIG_DIR/rc.d/hvl $STARTRC
 	  mount -o remount,ro /
 	fi
+
+	#run postinstall if necessary
+	$HVLDIR/etc/postinstall.sh
+
 	if [ "$PSPID" = "" ]
 	then
 	  $HVLDIR/node/bin/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/ >>/dev/null &
@@ -57,13 +62,21 @@ case "$1" in
 	echo "Info: <center><b>Homematic Virtual Layer</b></center>"
 	echo "Name: HVL"
 	echo "Version: $VER"
-	echo "Operations: uninstall restart"
+	echo "Operations: uninstall"
 	echo "Config-Url: $CONFIG_URL"
-	echo "Update: "
 	;;
 
   uninstall)
 	logger -t homematic -p user.info "removing homematic virtual layer"
+	kill -KILL $PSPID 2>/dev/null
+	/usr/local/addons/hvl/etc/update_addon hvl
+	rm -R /usr/local/addons/hvl
+    rm /usr/local/etc/config/rc.d/hvl 
+	mount -o remount,rw /
+    rm /etc/init.d/S51hvl
+	sed -i /etc/config_templates/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc>//"
+	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc>//"
+	mount -o remount,ro /
 	;;
 
   *)

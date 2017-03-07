@@ -62,7 +62,6 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 			this.bridge.addDevice(this.hmDevice,false);
 		}
 		
-		
 
 		this.hmDevice.on('device_channel_value_change', function(parameter){
 			

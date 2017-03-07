@@ -4,7 +4,7 @@ var GenericAlexaHomematicService = require('./GenericService.js').GenericAlexaHo
 var util = require("util");
 
 
-function AlexaHomematicHMIPThermostatService(homematicDevice,log,hmlayer) {
+function AlexaHomematicHMIPThermostatService(homematicDevice,log,hmlayer,name) {
     AlexaHomematicHMIPThermostatService.super_.apply(this,arguments);
 	this.ccuInterface = "HmIP-RF";
 }

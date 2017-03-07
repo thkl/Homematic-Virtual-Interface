@@ -192,8 +192,13 @@ AlexaPlatform.prototype.init = function() {
 
 
 AlexaPlatform.prototype.shutdown = function() {
+	
 	this.log.debug("Alexa Plugin Shutdown");
-	this.socket.disconnect();
+	try {
+		this.socket.disconnect();
+	} catch (e){
+		
+	}
 }
 
 AlexaPlatform.prototype.processAlexaMessage = function(alx_message) {
@@ -308,8 +313,10 @@ AlexaPlatform.prototype.reconnect = function() {
 		alexaLogger.info("Reconnecting to Cloud Service");
 		var last = this.api_key.slice(-4);
 		alexaLogger.info("using API-Key : XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX" + last);
-		this.socket.disconnect();
-		this.socket.connect(); 
+		if (this.socket) {
+			this.socket.disconnect();
+			this.socket.connect(); 
+		}
 	} else {
 		alexaLogger.info("No API Key found. Get one at https://console.ksquare.de/alexa \r\n");
 	}
@@ -372,7 +379,7 @@ AlexaPlatform.prototype.add_appliance = function(id,name,hmService,virtual) {
 	  var service = require ('./service/' + hmService);
 	  
 	  // Switch RPC Client
-	  var hms = new service(id,this.log,this.hm_layer);
+	  var hms = new service(id,this.log,this.hm_layer,this.name);
 	  
 	  hms.alexaname = name;
 	  hms.server = this.server;

@@ -47,7 +47,7 @@ SonosPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
-	this.maxVolume = this.configuration.getValueForPlugin(this.name,"max_volume",20);
+	this.maxVolume = this.configuration.getValueForPlugin(this.name,"max_volume",undefined) || 20;
 	this.volumeTable = this.configuration.getValueForPlugin(this.name,"volume_table",undefined);
 	// Add Coordinator Device
 	this.coordinator = new SonosCoordinator(this)
@@ -190,10 +190,11 @@ SonosPlatform.prototype.addZonePlayer = function(host,cname,callback) {
 		  var name = cname || data.roomName;
 		  var sdevice = new SonosDevice(that ,host,1400,"SONOS_" + name);
 		  var puuid = data.UDN.substring(5)
-		  that.log.info("Add RINCON %s",puuid)
+		  that.log.info("Add RINCON %s max volume is %s",puuid,that.maxVolume)
 		  sdevice.rincon = puuid;
 		  sdevice.zonename = name;
 		  
+		  sdevice.maxVolume = that.maxVolume;
 		  that.devices.push(sdevice);
 		  that.coordinator.addZonePlayer(sdevice)
 		  if (callback) {

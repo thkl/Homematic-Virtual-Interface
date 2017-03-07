@@ -85,8 +85,8 @@ LogicalPlatform.prototype.init = function() {
     // Check Path
     
     var spath = path.join(this.configuration.storagePath() , 'scripts');
-    var util = require(path.join(appRoot, 'Util.js'));
-	util.createPathIfNotExists(spath)
+    var myutil = require(path.join(appRoot, 'Util.js'));
+	myutil.createPathIfNotExists(spath)
     
 	this.calculateSunTimes();
 	this.reInitScripts();
@@ -305,7 +305,7 @@ LogicalPlatform.prototype.fetchMessages = function(callback) {
 		   var obj = JSON.parse(result);
 		   callback(obj);
  	   } catch (e) {
-	 	   that.error(e);
+	 	   that.log.error(e);
 	   }
    });
 }
@@ -322,7 +322,7 @@ LogicalPlatform.prototype.confirmMessages = function(messages,callback) {
 	   try {
 		   callback();
  	   } catch (e) {
-	 	   that.error(e);
+	 	   that.log.error(e);
 	   }
    });
 }
@@ -505,8 +505,8 @@ LogicalPlatform.prototype.httpCall = function(method,aUrl,parameter,callback) {
   this.log.debug("HTTP CALL : %s %s %s",method,aUrl,parameter);
   
   try {
-	  var util = require(path.join(appRoot, "Util.js"));
-	  util.httpCall(method,aUrl,parameter,callback)
+	  var myutil = require(path.join(appRoot, "Util.js"));
+	  myutil.httpCall(method,aUrl,parameter,callback)
   } catch (err) {
 	  that.log.error(err.stack)
   }
@@ -680,13 +680,11 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 				
 				var tmp = source.split('.');
 				// Check first Value for hmvirtual
-			    that.log.debug("Source is %s",JSON.stringify(tmp));
-				if ((tmp.length>2) && (tmp[0].toLowerCase()=="hmvirtual")) {
-					
+				if ((tmp.length>2) && (that.isVirtualPlatformDevice(tmp[0]))) {
 				   var channel = tmp[1];
 				   // Bind to channel change events
 				   that.processLogicalBinding(channel);
-				}
+				} 
                 
                 var fn = path.basename(name)
                 that.subscriptions.push({file:fn, source: source, options: options, callback: (typeof callback === 'function') && scriptDomain.bind(callback)});
@@ -804,7 +802,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 			// third the Datapoint
 			if (tmp.length>2) {
 				
-				if (tmp[0].toLowerCase()=="hmvirtual") {
+				if (that.isVirtualPlatformDevice(tmp[0])) {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
 					var channel = that.hm_layer.channelWithAdress(adress);
@@ -844,7 +842,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 			// third the Datapoint
 			if (tmp.length>2) {
 				
-				if (tmp[0].toLowerCase()=="hmvirtual") {
+				if (that.isVirtualPlatformDevice(tmp[0])) {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
 					var channel = that.hm_layer.channelWithAdress(adress);
@@ -878,7 +876,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 			// third the Datapoint
 			if (tmp.length>2) {
 				
-				if (tmp[0].toLowerCase()=="hmvirtual") {
+				if (that.isVirtualPlatformDevice(tmp[0])) {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
 					var channel = that.hm_layer.channelWithAdress(adress);
@@ -1051,8 +1049,8 @@ LogicalPlatform.prototype.processLogicalBinding = function(source_adress) {
 	  channel.on('logicevent_channel_value_change', function(parameter){
 		  
 		 parameter.parameters.forEach(function (pp){
-		  that.log.debug("Channel was updated processing subscription ","HMVirtual."+parameter.channel,pp.name,pp.value);
 		  that.processSubscriptions("HMVirtual."+parameter.channel,pp.name,pp.value);
+		  that.processSubscriptions(that.hm_layer.getCcuInterfaceName()+"."+parameter.channel,pp.name,pp.value);
 		});
 		
 	  });	
@@ -1098,6 +1096,11 @@ try {
 	this.log.debug(err);
 	return "File not found " + scriptName;
 }
+}
+
+
+LogicalPlatform.prototype.isVirtualPlatformDevice=function(interfaceName) {
+  return ((interfaceName.toLowerCase() == "hmvirtual") || (interfaceName.toLowerCase() == this.bridge.getCcuInterfaceName().toLowerCase()));
 }
 
 LogicalPlatform.prototype.saveScript=function(data,filename) {

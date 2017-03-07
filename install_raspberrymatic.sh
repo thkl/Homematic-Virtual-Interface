@@ -88,6 +88,7 @@ cat > /usr/local/etc/config/hvl/config.json <<EOF
   "local_ip": "127.0.0.1",
   "local_rpc_port": 8301,
   "web_http_port":8300,
+  "restart_command":"/etc/init.d/S51hvl restart",
   "plugins": []
 }
 EOF

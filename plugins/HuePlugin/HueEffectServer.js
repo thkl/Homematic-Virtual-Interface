@@ -11,13 +11,12 @@
 
 var fs = require('fs');
 var path = require('path');
-var logger = require(__dirname + "/../../lib/logger.js").logger("HueEffectServer");
 
 var HueEffectServer = function (platform,name) {
 	this.name = name;
 	this.lights = [];
 	this.platform = platform;
-	logger.debug("Platform : %s Server %s" , platform,name);
+	this.platform.log.debug("Platform : %s Server %s" , platform,name);
 	this.configuration = platform.server.configuration;
 }
 
@@ -37,7 +36,7 @@ HueEffectServer.prototype.stopSceneWithLight = function(light) {
    if (this.isRunning==true) {
    	var index = this.lights.indexOf(light);
    	if (index > -1) {
-	   	logger.debug("Stop Scene");
+	   	this.platform.log.debug("Stop Scene");
 		this.stopScene(true);
    	}
    }
@@ -50,7 +49,7 @@ HueEffectServer.prototype.stopScene = function(playStopFrame) {
    clearTimeout(this.timer);
    this.isRunning = false;
    if ((this.offFrame) && (playStopFrame==true)) {
-	   logger.debug("Running the stop frame");
+	   this.platform.log.debug("Running the stop frame");
 	   this.runStaticScene(this.offFrame);
    }
    } 
@@ -77,7 +76,7 @@ HueEffectServer.prototype.listScenes = function() {
   });
 
   } catch (e) {
-	  logger.error("Error while loading Sceneslist %s",e);
+	  this.platform.log.error("Error while loading Sceneslist %s",e);
   }
   return list;
 }
@@ -97,14 +96,14 @@ HueEffectServer.prototype.persinstentData = function() {
 
 HueEffectServer.prototype.sceneData = function(sceneName) {
 	var sceneFile = __dirname +"/scenes/"+sceneName + ".json";
-	logger.info("try to load scene : %s",sceneFile);
+	this.platform.log.info("try to load scene : %s",sceneFile);
     if (fs.existsSync(sceneFile)) {		
     	return fs.readFileSync(sceneFile);
 	}
 	
 	var privateSceneDir = this.configuration.storagePath()  + "/scenes/";
 	sceneFile = privateSceneDir + sceneName + ".json";
-	logger.info("try to load scene : %s",sceneFile);
+	this.platform.log.info("try to load scene : %s",sceneFile);
     
     if (fs.existsSync(sceneFile)) {		
     	return fs.readFileSync(sceneFile);
@@ -124,8 +123,6 @@ HueEffectServer.prototype.runScene = function(sceneName) {
 		if (buffer) {
     	var scene_settings = JSON.parse(buffer.toString());
     	if (scene_settings) {
-    	  logger.debug(JSON.stringify(scene_settings));
-    	  
     	  if ((scene_settings) && (scene_settings.mode)){
 	    	  var mode = scene_settings.mode;
 	    	  var frames = scene_settings.frames;
@@ -140,11 +137,11 @@ HueEffectServer.prototype.runScene = function(sceneName) {
     	  }
     	}
     } else {
-	    logger.error("Scene not found %s",sceneName);
+	    this.platform.log.error("Scene not found %s",sceneName);
     }
 
 	} catch (e) {
-		logger.warn("Error while reading scene", e);
+		this.platform.log.warn("Error while reading scene", e);
 	}
 	// Wait 2 seconds and refresh
 	setTimeout(function(){
@@ -187,7 +184,7 @@ HueEffectServer.prototype.runStaticScene = function(frame) {
 		var isOn = (bri==0)?false:true;
 		var transition = this.getArgument(frame.transition) || 5;
 		var lightstate = {"transitiontime":transition,"bri":bri,"sat":sat,"hue":hue,"on":isOn};
-		logger.debug(lightstate);
+		this.platform.log.debug(lightstate);
 		this.lights.forEach(function (light) {
 	    		light.setLightData(lightstate);
     	});

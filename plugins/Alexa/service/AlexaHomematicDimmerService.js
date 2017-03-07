@@ -4,7 +4,7 @@ var GenericAlexaHomematicService = require('./GenericService.js').GenericAlexaHo
 var util = require("util");
 
 
-function AlexaHomematicDimmerService(homematicDevice,log,hmlayer) {
+function AlexaHomematicDimmerService(homematicDevice,log,hmlayer,name) {
     AlexaHomematicDimmerService.super_.apply(this,arguments);
 	this.ccuInterface = "BidCos-RF";
 }

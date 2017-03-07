@@ -1,30 +1,29 @@
 "use strict";
 var HomematicDevice;
-var logger = require(__dirname + "/../../lib/logger.js").logger("HueSFXDevice");
 
 var HueSFXDevice = function(plugin) {
 	this.plugin = plugin;
 	this.bridge = plugin.server.getBridge();
-	var that = this;
+	var that = this
 	
 	HomematicDevice = plugin.server.homematicDevice;
 
-	logger.info("Create one SFX Remote");
+	this.plugin.log.info("Create one SFX Remote");
 
 	var serial = "HUEFX001";
 	this.hmDevice = new HomematicDevice(this.plugin.getName());
 
 	var data = this.bridge.deviceDataWithSerial(serial);
 	if (data!=undefined) {
-		logger.info("SFX Remote Data found");
+		this.plugin.log.info("SFX Remote Data found");
 		this.hmDevice.initWithStoredData(data);
 	}
 		
 	if (this.hmDevice.initialized == false) {
-		logger.info("Build a new");
+		this.plugin.log.info("Build a new");
 		this.hmDevice.initWithType("HM-RC-Key4-2", serial);
 		this.bridge.addDevice(this.hmDevice,true);
-		logger.info("Done with the new");
+		this.plugin.log.info("Done with the new");
 	} else {
 		this.bridge.addDevice(this.hmDevice,false);
  	}

@@ -91,7 +91,7 @@
   <h4 class="ty">
     Verschiedenes
   </h4>
-   <div class="ph">Version $system.version$</div>
+   <div class="ph">Version $system.version$ <span id = 'central_version'></span></div>
  </div>
 
 
@@ -101,6 +101,8 @@
 
 </div>
 
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/bootstrap.min.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 	    
@@ -111,11 +113,22 @@
 			}
 	    }
 	    
+	    
+	    function getVersion(local) {
+		        name = 'homematic-virtual-interface'
+				$.getJSON("/plugins/?do=version&plugin=" + name, function( data ) {
+				if (local != data.result) {
+						$('#central_version').html(data.result + ' - <a href="/index/?doupdate">Aktualisieren</a>')
+				}			
+			  })
+			
+		}
+	    
+	    getVersion('$system.version$')
+	    
     </script>
 
 
-    <script src="/assets/js/jquery.min.js"></script>
-    <script src="/assets/js/bootstrap.min.js" type="text/javascript"></script>
 
 
   </body>

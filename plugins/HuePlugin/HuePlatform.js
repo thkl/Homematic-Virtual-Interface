@@ -84,6 +84,16 @@ HuePlatform.prototype.init = function() {
 }
 }
 
+HuePlatform.prototype.shutdown = function() {
+    this.log.info("Shutdown");
+ 	this.hm_layer.deleteDevicesByOwner(this.name)
+    this.lights = [];
+	this.groups = [];
+	this.effectServers={};
+	clearTimeout(this.refreshTimer)
+	clearTimeout(this.userTimer)
+}
+
 HuePlatform.prototype.myDevices = function() {
 	// return my Devices here
 	var result = [];
@@ -118,6 +128,9 @@ HuePlatform.prototype.showSettings = function(dispatched_request) {
 	var user = this.configuration.getValueForPlugin(this.name,"hue_username")
 	result.push({"control":"text","name":"hue_bridge_ip","label":"Bridge-IP","value":this.hue_ipAdress});
 	result.push({"control":"text","name":"hue_username","label":"Hue User","value":user});
+	var refreshrate = this.configuration.getValueForPluginWithDefault(this.plugin.name,"refresh",60)
+	
+	result.push({"control":"text","name":"refresh","label":"Refresh","value": refreshrate || 30});
 	return result;
 }
 
@@ -125,9 +138,24 @@ HuePlatform.prototype.saveSettings = function(settings) {
 	var that = this
 	var hue_bridge_ip = settings.hue_bridge_ip;
 	var hue_username = settings.hue_username;
-	if ((hue_bridge_ip) && (hue_username)) {
+	if (hue_bridge_ip) {
 		this.hue_ipAdress = hue_bridge_ip;
 		this.configuration.setValueForPlugin(this.name,"hue_bridge_ip",hue_bridge_ip); 
+	}
+
+	if (hue_username) {
+		this.hue_username = hue_username;
+		this.configuration.setValueForPlugin(this.name,"hue_username",hue_username); 
+	}
+
+	if (settings.refresh) {
+		this.configuration.setValueForPlugin(this.name,"refresh",settings.refresh); 
+	}
+	
+	clearTimeout(this.userTimer)
+	clearTimeout(this.refreshTimer)
+	if (that.checkUsername()==true) {
+	        	that.queryBridgeAndMapDevices()
 	}
 }
 
@@ -167,7 +195,7 @@ HuePlatform.prototype.checkUsername = function() {
           if (err && err.message == "link button not pressed") {
 		  	that.authorized = false;
             that.log.warn("Please press the link button on your Philips Hue bridge within 30 seconds.");
-            setTimeout(function() {that.checkUsername();}, 10000);
+            that.userTimer = setTimeout(function() {that.checkUsername();}, 10000);
           } else {
 	        that.authorized = true;
 	        that.configuration.setValueForPlugin(that.name,"hue_username",user); 
@@ -312,8 +340,6 @@ HuePlatform.prototype.queryLights = function() {
 			  	break;
     		 } 
     		
-    		console.log(light);
-    		
     		that.lights.push(light);
     		that.mappedDevices.push(hd);
   		});
@@ -435,7 +461,7 @@ HuePlatform.prototype.refreshAll = function() {
 		}
 	});
 	
-	setTimeout(function() {
+	this.refreshTimer = setTimeout(function() {
 		 	that.refreshAll();
 	}, refreshrate);
 	this.log.debug("Refreshed Lights Next in %s ms.",refreshrate);

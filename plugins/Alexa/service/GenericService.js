@@ -18,12 +18,13 @@ if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../..
 var regarequest = require(appRoot + "/HomematicReqaRequest.js");
 
 
-function GenericAlexaHomematicService (homematicDevice,log,hmlayer) {
+function GenericAlexaHomematicService (homematicDevice,log,hmlayer,name) {
 	this.homematicDevice = homematicDevice;
 	this.log = log;
 	this.hm_layer = hmlayer; 
 	this.alexaname = "unknow";
 	this.ccuInterface = undefined;
+	this.name = name;
 }
 
 

@@ -4,7 +4,7 @@ var GenericAlexaHomematicService = require('./GenericService.js').GenericAlexaHo
 var util = require("util");
 
 
-function AlexaHueSceneService(homematicDevice,log,hmlayer) {
+function AlexaHueSceneService(homematicDevice,log,hmlayer,name) {
     AlexaHueSceneService.super_.apply(this,arguments);
 }
 
