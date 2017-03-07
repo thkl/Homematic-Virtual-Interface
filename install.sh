@@ -64,11 +64,7 @@ fi
 info "Installing Virtual Layer Software"
 
 cd /home/pi
-git clone https://github.com/thkl/Homematic-Virtual-Interface.git
-cd /home/pi/Homematic-Virtual-Interface
-chmod +x setup.sh
-./setup.sh
-
+npm install homematic-virtual-interface
 
 
 whiptail --yesno "Would you like to start the virtual layer at boot by default?" $DEFAULT 20 60 2
