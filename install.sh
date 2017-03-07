@@ -71,7 +71,7 @@ whiptail --yesno "Would you like to start the virtual layer at boot by default?"
 RET=$?
 if [ $RET -eq 0 ]; then
 
-    sudo cp /home/pi/Homematic-Virtual-Interface/lib/hmvi /etc/init.d/
+    sudo cp /home/pi/node_modules/homematic-virtual-interface/lib/hmvi_npm /etc/init.d/hmvi
   	
   	sudo chmod 755 /etc/init.d/hmvi
 	sudo update-rc.d hmvi defaults
