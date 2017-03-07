@@ -8,6 +8,7 @@ You may add serval plugins to connect other devices to your CCU
 
 This is work in progress.
 
+
 Quick Install:
 
  ```
@@ -15,9 +16,12 @@ wget -nv -O- https://raw.githubusercontent.com/thkl/Homematic-Virtual-Interface/
  ```
 
 
+If you want to use this on an Raspberrymatic CCU, please use this CCU Addon. ( https://github.com/thkl/Homematic-Virtual-Interface/raw/master/raspberrymatic_installer/hvl-raspb-0.0.1.tar.gz ). The addon will fetch all necessary files from the web at the first launch. So please note: You will need internet access on your CCU.
+
+The Raspberrymatic Version does not need any manual setup. Just use the WebInterface to fetch new plugins and set them up.
+
+
 Configuration:
-
-
 
 
 fill the config.json ....
