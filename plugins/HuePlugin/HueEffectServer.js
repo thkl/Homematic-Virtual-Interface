@@ -141,7 +141,7 @@ HueEffectServer.prototype.runScene = function(sceneName) {
     }
 
 	} catch (e) {
-		this.platform.log.warn("Error while reading scene", e);
+		this.platform.log.warn("Error while reading scene %s", e.stack);
 	}
 	// Wait 2 seconds and refresh
 	setTimeout(function(){
