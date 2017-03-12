@@ -58,6 +58,14 @@
 		"npm" :"homematic-virtual-harmonydevice",
 		"syname":"Harmony",
 		"description":{"de-de":"Steuerung der Harmony durch die CCU und umgekehr.","en-en":"Control Harmony Activities from CCU and vise versa"}
+	  },
+	  
+	  {
+		  
+		"name":"OpenWeatherMap",
+		"npm" :"homematic-virtual-openweathermapdevice",
+		"syname":"OpenWeatherMap",
+		"description":{"de-de":"Legt ein CCU KS500 Gerät an und speist es aus aktuellen OpenWeatherMap Daten","en-en":"setup a KS500 device with data from OpenWeatherMap"}
 	  }
 	  
 	  
