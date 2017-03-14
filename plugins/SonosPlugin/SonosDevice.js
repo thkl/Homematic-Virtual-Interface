@@ -223,6 +223,18 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 						}
 						break;
 						
+						case 'setvolume':
+						{
+							if (cmds.length>1) {
+								var newVolume = cmds[1];
+								that.setVolume(newVolume,function(err){
+									channel.updateValue("TARGET_VOLUME",newVolume,true,true,true);
+									that.log.error(err)
+				    			});	
+					  		}	
+						}
+						break;
+						
 						case 'enablesub':
 						{
 							if (cmds.length>1) {

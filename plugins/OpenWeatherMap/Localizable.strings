@@ -1,0 +1,9 @@
+{"strings": {
+	"de-de": {
+		"register your app id at http://openweathermap.org/appid":"Eine APPID muss hier erstellt werden: http://openweathermap.org/appid",
+		"OpenWeatherMap AppId":"OpenWeatherMap AppId",
+		"see http://bulk.openweathermap.org/sample/city.list.json.gz for ID or you can try a name like Berlin,de":"siehe Liste auf http://bulk.openweathermap.org/sample/city.list.json.gz für die ID oder versuche als Name bsp. Berlin,de",
+		"City ID/City Name":"StadtID oder Stadtname"
+		}
+	}
+}

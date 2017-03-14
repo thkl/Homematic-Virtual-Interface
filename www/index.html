@@ -122,7 +122,7 @@
 		        name = 'homematic-virtual-interface'
 				$.getJSON("/plugins/?do=version&plugin=" + name, function( data ) {
 				if (local != data.result) {
-						$('#central_version').html(data.result + ' - <a href="/index/?doupdate">Update</a>')
+						$('#central_version').html(" |ÊNew Version : " + data.result + ' - <a href="/index/?doupdate">Update</a>')
 				}			
 			  })
 			
