@@ -29,6 +29,15 @@ OpenWeatherMapPlatform.prototype.init = function () {
   this.fetchWeather()
 }
 
+OpenWeatherMapPlatform.prototype.shutdown = function() {
+	this.log.debug("OpenWeatherMapPlatform Plugin Shutdown");
+	try {
+		clearTimeout(this.refreshTimer);
+	} catch (e) {
+		this.log.error("Shutown error %s",e.stack)
+	}
+}
+
 
 OpenWeatherMapPlatform.prototype.showSettings = function(dispatched_request) {
 	var result = []

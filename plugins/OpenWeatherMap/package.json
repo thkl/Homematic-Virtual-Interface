@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-openweathermapdevice",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Virtual Plugin - OpenWeatherMap",
   "license": "ISC",
   "keywords": [
