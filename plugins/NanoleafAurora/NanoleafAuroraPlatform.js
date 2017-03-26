@@ -225,6 +225,7 @@ NanoleafAuroraPlatform.prototype.showSettings = function(dispatched_request) {
 	this.localization.setLanguage(dispatched_request)
 	var ip = this.config.getValueForPlugin(this.name,'ip')
 	var token = this.config.getValueForPlugin(this.name,'token')
+	var refresh = this.config.getValueForPlugin(this.name,'refresh')
 	
 	result.push({'control':'text','name':'ip',
 		'label':this.localization.localize('IP Adress'),
@@ -237,6 +238,12 @@ NanoleafAuroraPlatform.prototype.showSettings = function(dispatched_request) {
 		'value':token,
 		'description':this.localization.localize('Click <a href="/'+this.name+'?do=generateToken">here</a> to get a Token')
 		})
+
+	result.push({'control':'text','name':'refresh',
+		'label':this.localization.localize('Refresh'),
+		'value':refresh,
+		'description':this.localization.localize('Refresh state every xx seconds.')
+		})
 	
 	
 	return result
@@ -247,8 +254,14 @@ NanoleafAuroraPlatform.prototype.saveSettings = function(settings) {
 	if (settings.ip) {
 		this.config.setValueForPlugin(this.name,'ip',settings.ip)
 	}
+
 	if (settings.token) {
 		this.config.setValueForPlugin(this.name,'token',settings.token)
+	}
+
+
+	if (settings.refresh) {
+		this.config.setValueForPlugin(this.name,'refresh',settings.refresh)
 	}
 
 	clearTimeout(this.refreshTimer)
@@ -318,7 +331,10 @@ NanoleafAuroraPlatform.prototype.fetchValues = function () {
 	} catch (error) {
 		this.log.error('General fetch Error %s',error)
 	} 
-	this.refreshTimer = setTimeout(function() {that.fetchValues()}, 30000);
+	
+	
+	var refreshrate = this.config.getValueForPlugin(this.name,"refresh",30)
+	this.refreshTimer = setTimeout(function() {that.fetchValues()}, (refreshrate * 1000));
 }
 
 NanoleafAuroraPlatform.prototype.buildEffectList = function(dispatched_request) {
