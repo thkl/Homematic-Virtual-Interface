@@ -75,7 +75,7 @@
 		"npm" :"homematic-virtual-nanoleafauroradevice",
 		"syname":"Aurora",
 		"description":{"de-de":"Verbindet ein NanoLeaf Aurora mit der CCU","en-en":"connects a nanoleaf aurora to your CCU"}
-	  },
+	  }
 	  
 	  
 	  
