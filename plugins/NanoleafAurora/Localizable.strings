@@ -1,0 +1,11 @@
+
+
+{"strings": {
+	"de-de": {
+		"Holding the on-off button down for 5-7 seconds until the LED starts flashing in a pattern. Please use a clock to help because pressing the button more then 7 seconds may end up an a reset to defaults action.":"Halte den Ein/Aus Button f&uuml;r 5-7 Sekunden gedr&uuml;ckt bis die LED anf&auml;ngt zu blinken. Bitte nimm eine Uhr zu Hilfe, denn wenn der Button mehr als 7 Sekunden gedr&uuml;ckt wird, k&ouml;nnte das zu einem Werksreset f&uuml;hren.",
+		"IP of your leaf":"IP Deines Leaf",
+		"IP Adress":"IP Adresse"
+
+		}
+	}
+}

@@ -46,7 +46,7 @@ CCUDutyCycle.prototype.init = function () {
 	setTimeout(function () {
 		that.clean()
 	}, 3600000)
-
+  this.clean();
   this.plugin.initialized = true;
   this.log.info('initialization completed %s', this.plugin.initialized)
 }
@@ -73,9 +73,11 @@ CCUDutyCycle.prototype.queryCCU = function () {
 	}, 60000);
 }
 
-CCUDutyCycle.prototype.clean = function(callback) {
-	var ts = new Date().getTime() - (hours*3600000)
+CCUDutyCycle.prototype.clean = function() {
+	this.log.info("Cleaning old DC entries")
 	var that = this
+	var hours = 24
+	var ts = new Date().getTime() - (hours*3600000)
 	var Database = require('nedb')
 	var logDir = path.join(this.config.storagePath(),'logs')
 	var db = new Database({ filename: path.join(logDir, "dc.db") });
@@ -83,13 +85,14 @@ CCUDutyCycle.prototype.clean = function(callback) {
 		if (err) {
 			that.log.error("Error while loading logging db %s",err)
 			return
+		} else {
+			that.log.info("DB found going ahead")		
+				db.remove({time : { $lt: new Date(ts) }}, { multi: true }, function (err, numRemoved) {
+					that.log.info("Removed %s entries from DC Table",numRemoved)
+					db.persistence.compactDatafile()
+				});
 		}
 	});
-
-	db.remove({time : { $lt: new Date(ts) }}, { multi: true }, function (err, numRemoved) {
-		that.log.info("Removed %s entries from DC Table",numRemoved)
-	});
-	db.persistence.compactDatafile()
 }
 
 CCUDutyCycle.prototype.generateChart = function(callback) {

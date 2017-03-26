@@ -70,6 +70,12 @@ HttpPlatform.prototype.initRemote=function(rmIndex) {
 			}
 		}
 	});
+	
+	hmDevice.on('device_channel_install_test', function(parameter){
+		that.log.debug("Install Test Reply on %s",parameter.channel)
+	  	var channel = hmDevice.getChannel(parameter.channel);
+		channel.endUpdating("INSTALL_TEST");
+    });
 }
 
 HttpPlatform.prototype.functionForChannel=function(channel,type) {

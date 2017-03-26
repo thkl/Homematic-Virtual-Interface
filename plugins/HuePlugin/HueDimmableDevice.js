@@ -63,7 +63,12 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 			this.bridge.addDevice(this.hmDevice,false);
 		}
 		
-		
+		this.hmDevice.on('device_channel_install_test', function(parameter){
+			that.alert();
+			var channel = that.hmDevice.getChannel(parameter.channel);
+			channel.endUpdating("INSTALL_TEST");
+		});
+
 
 		this.hmDevice.on('device_channel_value_change', function(parameter){
 			
@@ -71,12 +76,6 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 			var newValue = parameter.newValue;
 			
 			var channel = that.hmDevice.getChannel(parameter.channel);
-
-			if (parameter.name == "INSTALL_TEST") {
-				that.alert();
-				channel.endUpdating("INSTALL_TEST");
-	      	}
-
 
 			if (parameter.name == "PROGRAM") {
 				switch(newValue) {
