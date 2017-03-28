@@ -47,6 +47,9 @@ HarmonyPlatform.prototype.init = function() {
 	{
 		this.rokuServer = new HarmonyRokuServer(this)
 		this.rokuServer.init()
+
+		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
+		this.rokuServer2.init()
 	}
 }
 

@@ -35,7 +35,7 @@ var BIND;
 var socket;
 
 
-var HarmonyRokuServer = function (plugin) {
+var HarmonyRokuServer = function (plugin,port,instance) {
 
 	this.name = plugin.name
 	this.plugin = plugin
@@ -44,12 +44,12 @@ var HarmonyRokuServer = function (plugin) {
 	this.server = this.plugin.server
 	this.config = this.server.configuration
 	this.bridge = this.server.getBridge();
-	
+	this.rokuInstance = instance || ""
     this.multicast_ip = "239.255.255.250";
     this.bind = this.bridge.getLocalIpAdress();
 
     this.uuid = uuid.v1();
-    this.http_port = 9093;
+    this.http_port = port || 9093;
     this.ssdp_response = new Buffer("HTTP/1.1 200 OK\r\nCache-Control: max-age=300\r\nST: roku:ecp\r\nUSN: uuid:roku:ecp:" +
             this.uuid + "\r\nExt: \r\nServer: Roku UPnP/1.0 MiniUPnPd/1.4\r\nLOCATION: http://" +
             this.bind + ":" + this.http_port + "/\r\n\r\n"
@@ -58,9 +58,9 @@ var HarmonyRokuServer = function (plugin) {
     this.descxml = '<?xml version="1.0" encoding="UTF-8" ?><root xmlns="urn:schemas-upnp-org:device-1-0"><specVersion><major>1</major>'
     this.descxml = this.descxml + '<minor>0</minor></specVersion>'
     this.descxml = this.descxml + '<device><deviceType>urn:roku-com:device:player:1-0</deviceType>'
-    this.descxml = this.descxml + '<friendlyName>Homematic-Harmony</friendlyName><manufacturer>thkl</manufacturer>'
+    this.descxml = this.descxml + '<friendlyName>Homematic-Harmony'+ this.rokuInstance + '</friendlyName><manufacturer>thkl</manufacturer>'
     this.descxml = this.descxml + '<manufacturerURL>https://github.com/thkl/</manufacturerURL><modelDescription>HVL Fake Roku </modelDescription>'
-    this.descxml = this.descxml + '<modelName>Homematic-Harmony</modelName><modelNumber>4200X</modelNumber>'
+    this.descxml = this.descxml + '<modelName>Homematic-Harmony'+ this.rokuInstance + '</modelName><modelNumber>4200X</modelNumber>'
     this.descxml = this.descxml + '<modelURL>https://github.com/thkl/Homematic-Virtual-Interface</modelURL>'
     this.descxml = this.descxml + '<serialNumber>'+ this.uuid + '</serialNumber><UDN>uuid:roku:ecp:'+ this.uuid + '</UDN>'
     this.descxml = this.descxml + '<software-version>7.5.0</software-version><software-build>09021</software-build><power-mode>PowerOn</power-mode>'

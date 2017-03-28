@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-harmonydevice",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Virtual Harmony Device",
   "license": "ISC",
   "keywords": [
@@ -21,9 +21,8 @@
   "dependencies": {
 	  "@achingbrain/ssdp":"latest",
 	  "node-hue-api": "latest",
-	  "harmonyhubjs-client":"git://github.com/thkl/harmonyhubjs-client.git",
+	  "hvl_harmonyhubjs-client":"0.1.0",
 	  "http-headers":"latest",
-	   "uuid":"latest"
-
+	  "uuid":"latest"
   }
 }
