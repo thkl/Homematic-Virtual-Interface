@@ -77,6 +77,16 @@ if [ $RET -eq 0 ]; then
 	sudo update-rc.d hmvi defaults
 fi
 
+if [ ! -d "${USER_HOME}/.hm_virtual_interface" ]; then
+  echo "build new configuration directory and config"
+  mkdir ${USER_HOME}/.hm_virtual_interface
+  touch ${USER_HOME}/.hm_virtual_interface/config.json
+  echo "{\"ccu_ip\":\"\"}" > ${USER_HOME}/.hm_virtual_interface/config.json
+else
+  echo "Config is here skipping this step"
+fi
+
+
 info "Done. If there are no error messages you are done."
 info "Start the by typing bin/hmvi"
 info "There is an addon file named hvl_addon.tar.gz here. Install this at your ccu as additional software, to setup the ccu to use the virtual layer."
