@@ -36,10 +36,9 @@ install_package() {
 # check architecture
 sudo test "`dpkg --print-architecture`" == "armhf" || die "This Repos is only for armhf."
 
-
-info "Installing Git"
-
-install_package "git"
+# as we work with npm version we do not need git anymore
+#info "Installing Git"
+#install_package "git"
 
 
 if [ $(type -P node | grep node|wc -l) -eq 0 ]; 
@@ -77,11 +76,16 @@ if [ $RET -eq 0 ]; then
 	sudo update-rc.d hmvi defaults
 fi
 
+USER_HOME=$(eval echo ~${SUDO_USER})
+
 if [ ! -d "${USER_HOME}/.hm_virtual_interface" ]; then
+
+  CCUIP=$(whiptail --inputbox "Please enter your CCU IP" 20 60 "000.000.000.000" 3>&1 1>&2 2>&3)
+
   echo "build new configuration directory and config"
   mkdir ${USER_HOME}/.hm_virtual_interface
   touch ${USER_HOME}/.hm_virtual_interface/config.json
-  echo "{\"ccu_ip\":\"\"}" > ${USER_HOME}/.hm_virtual_interface/config.json
+  echo "{\"ccu_ip\":\"$CCUIP\"}" > ${USER_HOME}/.hm_virtual_interface/config.json
 else
   echo "Config is here skipping this step"
 fi
