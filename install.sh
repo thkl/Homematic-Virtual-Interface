@@ -85,7 +85,7 @@ if [ ! -d "${USER_HOME}/.hm_virtual_interface" ]; then
   echo "build new configuration directory and config"
   mkdir ${USER_HOME}/.hm_virtual_interface
   touch ${USER_HOME}/.hm_virtual_interface/config.json
-  echo "{\"ccu_ip\":\"$CCUIP\"}" > ${USER_HOME}/.hm_virtual_interface/config.json
+  echo "{\"ccu_ip\":\"$CCUIP\",\"plugins\":[]}" > ${USER_HOME}/.hm_virtual_interface/config.json
 else
   echo "Config is here skipping this step"
 fi
