@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-interface",
-  "version": "0.2.38",
+  "version": "0.2.40",
   "description": "Homematic Virtual Interface",
   "license": "ISC",
   "scripts": {
