@@ -2,8 +2,7 @@
 this is a virtual Interface for Homematic CCU.
 You may add serval plugins to connect other devices to your CCU
 
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EF3ZNY8CJMQZJ"><img style="padding:0;" width=74 height=21  src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Donate!" / border="0"></a>
-
+[![Donate some coins if you want](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EF3ZNY8CJMQZJ)
 
 
 This is work in progress.
@@ -40,7 +39,7 @@ web_http_port": Normally the servers Webinterface is located at port 8182. If yo
 Start:
 
  ```
-bin/hmvi
+bin/hmviservice start
  ```
 
 
