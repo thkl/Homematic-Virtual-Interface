@@ -74,7 +74,7 @@
 	      {
           "name" : "VALUES",
           "id" : "remote_ch_values",
-          "parameter" : [{"name":"INSTALL_TEST","operations":4,"tab_order":2,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_CONT","operations":4,"tab_order":3,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_LONG","operations":6,"tab_order":1,"max":"","control":"BUTTON.LONG","min":"","type":"ACTION","flags":1},{"name":"PRESS_LONG_RELEASE","operations":4,"tab_order":4,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_SHORT","operations":6,"tab_order":0,"max":"","control":"BUTTON.SHORT","min":"","type":"ACTION","flags":1}]
+          "parameter" : [{"name":"INSTALL_TEST","operations":2,"tab_order":2,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_CONT","operations":4,"tab_order":3,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_LONG","operations":6,"tab_order":1,"max":"","control":"BUTTON.LONG","min":"","type":"ACTION","flags":1},{"name":"PRESS_LONG_RELEASE","operations":4,"tab_order":4,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_SHORT","operations":6,"tab_order":0,"max":"","control":"BUTTON.SHORT","min":"","type":"ACTION","flags":1}]
 		  },
 
 

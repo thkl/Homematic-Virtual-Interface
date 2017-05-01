@@ -2,25 +2,24 @@
 
 
 var path = require('path');
-var appRoot = path.dirname(require.main.filename);
 var fs = require("fs");
-
-if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
-if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
+var util = require("util");
+var appRoot = path.dirname(require.main.filename)
+if (appRoot.endsWith('bin')) { appRoot = path.join(appRoot, '..','lib'); }
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
 appRoot = path.normalize(appRoot);
 
-var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
-var alexaLogger = require(appRoot + "/logger.js").logger("AlexaEvent");
-
-var util = require("util");
-var xmlrpc = require(appRoot + "/homematic-xmlrpc");
 var uuid = require('uuid');
 var HomematicDevice;
 var url = require("url");
+var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+var alexaLogger = require(appRoot + "/logger.js").logger("AlexaEvent");
+var xmlrpc = require(appRoot + "/homematic-xmlrpc");
 var regaRequest = require(appRoot + "/HomematicReqaRequest.js");
 
+
 function AlexaPlatform(plugin,name,server,log,instance) {
-	AlexaPlatform.super_.apply(this,arguments);
+    AlexaPlatform.super_.apply(this,arguments);
 	this.alexa_appliances = {};
 	this.server = server;
 	HomematicDevice = server.homematicDevice;
@@ -400,6 +399,7 @@ AlexaPlatform.prototype.add_appliance = function(id,name,hmService,virtual) {
   this.alexa_appliances[id] = {"alexa":al_ap,"service":hms,"id":id,"name":name,"service_name":hmService,"isVirtual":virtual || false};
   return hms;
   } catch (error) {
+  	this.log.error(error.stack);
 	this.log.error("Service %s not found",hmService);
 	return undefined;
   }

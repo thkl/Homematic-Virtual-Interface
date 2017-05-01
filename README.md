@@ -49,9 +49,9 @@ add the service to /etc/config_templates/InterfacesList.xml  at your ccu
 
  ```
  <ipc>
-    <name>HM_VirtualInterface</name>
+    <name>HVL</name>
     <url>xmlrpc://IPADRESS:7000/</url>
-    <info>HM_VirtualInterface</info>
+    <info>HVL</info>
  </ipc>
  ```
    
@@ -73,6 +73,14 @@ Current plugins:
 
 HuePlugin, LightifyPlugin, LogicPlugin, LogitechHarmony, NetAtmo, Sonos
 
+How to remove the stuff:
+
+There is currently no automated process so you have to do it step by step.
+1st make sure the hvl is still running (ccu is not able to remove objects without response from interface)
+2nd remove all your virtual devices from your ccu's device list
+3rd remove the changes in in /etc/config_templates/InterfacesList.xml
+4rd run this to remove the interface from regadom at your ccu's webinterface (Programs/Test Script): dom.DeleteObject(dom.GetObject('HVL'));
+5th reboot your ccu
 
 Trademarks:
 

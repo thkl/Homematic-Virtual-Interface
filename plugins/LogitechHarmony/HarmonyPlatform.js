@@ -16,12 +16,14 @@ var HarmonyRokuServer = require(__dirname + '/HarmonyRokuServer.js').HarmonyRoku
 
 var HarmonyClient = require(__dirname + '/HarmonyClient.js').HarmonyClient;
 var path = require('path');
-var appRoot = path.dirname(require.main.filename);
-if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
-if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
-appRoot = path.normalize(appRoot);
 
+var appRoot = path.dirname(require.main.filename)
+if (appRoot.endsWith('bin')) { appRoot = path.join(appRoot, '..','lib'); }
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
+appRoot = path.normalize(appRoot);
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
+
+
 var util = require("util");
 
 
@@ -47,9 +49,10 @@ HarmonyPlatform.prototype.init = function() {
 	{
 		this.rokuServer = new HarmonyRokuServer(this)
 		this.rokuServer.init()
-
+/*
 		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
 		this.rokuServer2.init()
+*/
 	}
 }
 
@@ -452,6 +455,7 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 	
 					// Load Lamps
 	var lighttemplatereal = dispatchedRequest.getTemplate(this.plugin.pluginPath , "list_lamp_real.html",null);
+	var activityTemplate = dispatchedRequest.getTemplate(this.plugin.pluginPath , "activity.html",null);
 	
 	var lightdevices = this.harmonyServer.getLightDevices();
 	if (lightdevices!=undefined) {
@@ -618,6 +622,13 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 		break;
 
 
+		case "activity.run":
+		{
+			var acID = queryObject['acid'];
+			this.harmonyClient.startActivity(acID);
+		}
+		break;
+		
 		case "app.js":
 		{
 			dispatchedRequest.dispatchFile(this.plugin.pluginPath , "app.js",{});
@@ -631,7 +642,7 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 	
 	var activityList = "";
 	this.harmonyClient.getActivities().forEach(function (activity){
-		activityList = activityList +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":activity.label,"lamp_index":activity.chid});
+		activityList = activityList +  dispatchedRequest.fillTemplate(activityTemplate,{"ac_name":activity.label,"ac_index":activity.chid,"ac_id":activity.id});
 	});
 	
 	var rokuList = "";

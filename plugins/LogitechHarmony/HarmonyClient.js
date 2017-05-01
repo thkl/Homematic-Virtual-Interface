@@ -48,8 +48,9 @@ HarmonyClient.prototype.init = function() {
   }
   
   var adx = 1;  
-  
+  that.log.info("Start talking to your harmony")
   harmony(this.hubIP).then(function(harmonyClient) {
+	  that.log.info("fetching activities")
 	  harmonyClient.getActivities().then(function(activities) {
 		activities.forEach(function (activity){
 			var ac = {"id":activity.id,"label":activity.label,"adress":adx};
@@ -191,7 +192,6 @@ HarmonyClient.prototype.myDevices = function() {
 	  device.controlGroup.some(function (action_group){
 		  action_group["function"].some(function (action) {
 			var ac = JSON.parse(action.action);
-			that.log.debug("EC " , action.action.replace(/\:/g, '::'));
 			var encodedAction = that.name+":" + ac["type"]+":"+ac["deviceId"] +":"+ac["command"];
 			result.push({"id":encodedAction,"name":device.label + "." + action_group.name + "." + action.name,"device":"","type":"HARMONYDEVICE"}); 
 		  });
@@ -303,7 +303,7 @@ HarmonyClient.prototype.getCurrentActivity = function() {
  harmony(this.hubIP).then(function(harmonyClient) {
 	  harmonyClient.getCurrentActivity().then(function(c_activity) {
 	  	
-	  	that.log.debug("Responze",c_activity);
+	  	that.log.debug("Responze %s",c_activity);
 
 	  	var selectedActivity = that.activities.filter(function (activity) { return activity.id == c_activity}).pop();
 	  	var channel = that.hmDevice.getChannel(that.hmDevice.serialNumber + ":19");
@@ -344,7 +344,8 @@ HarmonyClient.prototype.startActivity = function(acId) {
   harmony(this.hubIP).then(function(harmonyClient) {
 	  harmonyClient.startActivity(acId);
 	  that.log.debug("Closing");
-     harmonyClient.end();
+	  harmonyClient.end();
+	  that.log.debug("Closed");
   }).catch(function (e) {
     that.log.error(e);
   })	

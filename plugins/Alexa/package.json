@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-alexa",
-  "version": "0.0.11",
+  "version": "0.0.14",
   "description": "Virtual Alexa Bridge",
   "license": "ISC",
   "keywords": [

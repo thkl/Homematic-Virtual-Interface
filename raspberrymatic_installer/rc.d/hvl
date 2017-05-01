@@ -77,6 +77,7 @@ case "$1" in
 	sed -i /etc/config_templates/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc>//"
 	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc>//"
 	mount -o remount,ro /
+	/usr/local/addons/hvl/etc/remove_hvl_object
 	;;
 
   *)

@@ -22,8 +22,6 @@ if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../..
 appRoot = path.normalize(appRoot);
 
 
-var logger = require(appRoot + "/logger.js").logger("FakeRoku");
-
 var http = require('http');
 var dgram = require('dgram');
 var http = require('http');
@@ -39,7 +37,7 @@ var HarmonyRokuServer = function (plugin,port,instance) {
 
 	this.name = plugin.name
 	this.plugin = plugin
-	this.log = this.plugin.log
+	logger = this.plugin.log
     logger.debug("FakeRoku init")
 	this.server = this.plugin.server
 	this.config = this.server.configuration
@@ -130,7 +128,7 @@ HarmonyRokuServer.prototype.startDiscovery = function() {
         }
     );
     
-    socket.bind(1900)
+    socket.bind(8900)
 }
        
 HarmonyRokuServer.prototype.stopServer = function() {

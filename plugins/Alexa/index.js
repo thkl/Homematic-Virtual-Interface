@@ -1,8 +1,7 @@
-var AlexaPlatform = require(__dirname + '/AlexaPlatform');
 
 
 module.exports = function(server,name,logger,instance) {
-	
+    var AlexaPlatform = require(__dirname + '/AlexaPlatform')
 	this.name = name;
 	this.instance = instance;
 	this.initialized = false;

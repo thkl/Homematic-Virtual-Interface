@@ -86,9 +86,23 @@ HarmonyHueServer.prototype.init = function() {
 	  udn:  this.udn , // defaults to a random UUID
 	  signature: 'FreeRTOS/6.0.5, UPnP/1.0, IpBridge/0.1',
 	  retry : {
-	  times: 5, // how many times to attempt joining the UDP multicast group
-	  interval: 100 // how long to wait between attempts
-  	}
+	   times: 5, // how many times to attempt joining the UDP multicast group
+	   interval: 100 // how long to wait between attempts
+  	  },
+  	  
+  	sockets: [{
+    type: 'udp4', // or 'udp6'
+    broadcast: {
+      address: '239.255.255.250', // or 'FF02::C'
+      port: 1901 // SSDP broadcast port
+	},
+    bind: {
+      address: '0.0.0.0', // or '0:0:0:0:0:0:0:0'
+      port: 1901
+    },
+    	maxHops: 4 // how many network segments packets are allow to travel through (UDP TTL)
+  	}]
+  
   	});	
  	
  	var options = {};

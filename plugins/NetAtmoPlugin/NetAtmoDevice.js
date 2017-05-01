@@ -78,9 +78,30 @@ var NetAtmoDevice = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 				} else {
 					that.bridge.addDevice(hmModule,false);
 				}
+				hmModule.na_type = module["type"];
 				that.modules[mid] = hmModule;
-				that.hm_device_name = that .hm_device_name  + " / HM-WDS10-TH-O " + serialprefix + mi; 
+				that.hm_device_name = that.hm_device_name  + " / HM-WDS10-TH-O " + serialprefix + mi; 
 			}
+/*
+			if (module["type"] === "NAModule4") {
+				var hmModule = new HomematicDevice(that.plugin.getName());
+				var data = that.bridge.deviceDataWithSerial(mid);
+				if (data != undefined) {
+					hmModule.initWithStoredData(data);
+				}
+				
+				if (hmModule.initialized === false) {
+					hmModule.initWithType("HM-WDS40-TH-I-2_NA", serialprefix + mi);
+					hmModule.firmware = naDevice["firmware"];
+					hmModule.serialNumber = mid;
+					that.bridge.addDevice(hmModule,true);
+				} else {
+					that.bridge.addDevice(hmModule,false);
+				}
+				that.modules[mid] = hmModule;
+				that.hm_device_name = that.hm_device_name  + " / HM-WDS40-TH-I-2_NA" + serialprefix + mi; 
+			}
+*/
 			
 			mi = mi + 1;
 		});
@@ -149,9 +170,25 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 		// Update modules
 		
 		Object.keys(that.modules).forEach(function (module) {
-			  that.log.debug("Loading Moduledata %s",module);
-		
-			  var options = {device_id: that.naId ,module_id:module, date_end :'last', scale: 'max',type: ['Temperature','Humidity']};
+			
+			  var mo = that.modules[module];
+			  var mo_type = mo.na_type;
+			  that.log.debug("Loading Moduledata %s",mo_type);
+			  var measure_type = [];
+			  
+			  switch (mo_type) {
+				  case "NAModule1" :
+				   measure_type = ['Temperature','Humidity'];
+				   break;
+
+				  case "NAModule4" :
+				   measure_type = ['Temperature','Humidity','CO2'];
+				   break;
+				   
+			  }
+			  
+			  
+			  var options = {device_id: that.naId ,module_id:module, date_end :'last', scale: 'max',type: measure_type};
 			  
 			  that.api.getMeasure(options, function(err, measure) {
 				  if ((measure != undefined) && (measure[0]!=undefined)) {
@@ -160,14 +197,15 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 			  			var hmDevice = that.modules[module];
 			  			var channel = hmDevice.getChannelWithTypeAndIndex("WEATHER","1");
 			  			if (channel != undefined) {
-				  			var temp = lastMeasure[0][0];
-				  			var hum = lastMeasure[0][1];
-			  				channel.updateValue("TEMPERATURE",temp,true,true);
-			  				channel.updateValue("HUMIDITY",hum,true,true);
-			  				var dew_point = that.dew_point(temp, hum);
-			  				channel.updateValue("DEW_POINT",dew_point,true,true);
-			  				var absolute_humidity = that.absolute_humidity(temp, hum);
-			  				channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true);
+				  			switch (mo_type) {
+				  				case "NAModule1" :
+				  					that.parseNA1ModuleData(lastMeasure[0],channel)
+				  					break;
+				  				case "NAModule4" :
+				  					that.parseNA4ModuleData(lastMeasure[0],channel)
+				  					break;
+				   
+			  				}
 						}
 					}
 					}
@@ -212,6 +250,34 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 		 	that.refreshDevice();
 		}, refreshrate);
 }
+
+
+NetAtmoDevice.prototype.parseNA1ModuleData = function (measurement,channel) {
+	var temp = measurement[0];
+	var hum = measurement[1];
+	channel.updateValue("TEMPERATURE",temp,true,true);
+	channel.updateValue("HUMIDITY",hum,true,true);
+	var dew_point = that.dew_point(temp, hum);
+	channel.updateValue("DEW_POINT",dew_point,true,true);
+	var absolute_humidity = that.absolute_humidity(temp, hum);
+	channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true);
+}
+
+NetAtmoDevice.prototype.parseNA4ModuleData = function (measurement,channel) {
+	var temp = measurement[0];
+	var hum = measurement[1];
+	var co2 = measurement[3];
+	channel.updateValue("TEMPERATURE",temp,true,true);
+	channel.updateValue("HUMIDITY",hum,true,true);
+	var dew_point = that.dew_point(temp, hum);
+	channel.updateValue("DEW_POINT",dew_point,true,true);
+	var absolute_humidity = that.absolute_humidity(temp, hum);
+	channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true);
+	
+}
+
+
+
 
 // calculations from https://www.wetterochs.de/wetter/feuchte.html
 NetAtmoDevice.prototype.saturation_vapor_pressure =  function(temperature)

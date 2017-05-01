@@ -38,6 +38,7 @@ ${ADDON_DIR}/node/bin/node ${ADDON_DIR}/node/bin/npm  install homematic-virtual-
 #add the menu button
 cd /usr/local/addons/hvl/etc/
 chmod +x update_addon
+chmod +x remove_hvl_object
 touch /usr/local/etc/config/hm_addons.cfg
 /usr/local/addons/hvl/etc/update_addon hvl /usr/local/addons/hvl/etc/hvl_addon.cfg
 
