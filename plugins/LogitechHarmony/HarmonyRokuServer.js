@@ -37,8 +37,8 @@ var HarmonyRokuServer = function (plugin,port,instance) {
 
 	this.name = plugin.name
 	this.plugin = plugin
-	logger = this.plugin.log
-    logger.debug("FakeRoku init")
+	this.log = this.plugin.log
+    this.log.debug("FakeRoku init")
 	this.server = this.plugin.server
 	this.config = this.server.configuration
 	this.bridge = this.server.getBridge();
@@ -109,7 +109,7 @@ HarmonyRokuServer.prototype.startDiscovery = function() {
 
     socket = dgram.createSocket({type: 'udp4', reuseAddr: true});
     socket.on("error", function (error) {
-            logger.error("FakeRoku Error : %s",error)
+            that.log.error("FakeRoku Error : %s",error)
             stopDiscovery();
         }
     );
@@ -119,7 +119,7 @@ HarmonyRokuServer.prototype.startDiscovery = function() {
             if (msg.toString().match(/^(M-SEARCH) \* HTTP\/1.\d/)) {
                 var headers = httpHeaders(msg);
                 if (headers.man === '"ssdp:discover"') {
-                    logger.debug("responding to MSearch from %s:%s" , rinfo.address , rinfo.port);
+                    that.log.debug("responding to MSearch from %s:%s" , rinfo.address , rinfo.port);
                     socket.send(that.ssdp_response, 0, that.ssdp_response.length, rinfo.port, rinfo.address);
                 }
             } else if (msg.toString().match(/^(NOTIFY) \* HTTP\/1.\d/)) {
@@ -145,7 +145,7 @@ HarmonyRokuServer.prototype.parseCommand = function(command) {
     if (cmdarray = command.match(/^\/([^\/]+)\/(\S+)$/)) {
      if (cmdarray[1] == "keypress") {
         var cmd = cmdarray[2].replace(".", "_")
-        logger.debug("Roku Press Key: " + cmdarray[2])
+        this.log.debug("Roku Press Key: " + cmdarray[2])
         var snum = this.mapping[cmdarray[2]];
         if (snum) {
 	        var channel = this.hmDevice.getChannelWithTypeAndIndex("KEY",snum); 
@@ -165,7 +165,7 @@ HarmonyRokuServer.prototype.parseCommand = function(command) {
 
 HarmonyRokuServer.prototype.startServer = function(callback) {
     var that = this
-    logger.debug("FakeRoku start Server")
+    this.log.debug("FakeRoku start Server")
 
     this.rk_server = http.createServer(function (request, response) {
        
@@ -224,7 +224,7 @@ HarmonyRokuServer.prototype.startServer = function(callback) {
     });
 
     this.rk_server.listen(this.http_port, this.bind, function () {
-        logger.debug("HTTP-Server started on " + that.bind + ":" + that.http_port);
+        this.log.debug("HTTP-Server started on " + that.bind + ":" + that.http_port);
     });
     if (typeof callback === 'function') callback();
 }

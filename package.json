@@ -5,7 +5,8 @@
   "license": "ISC",
   "scripts": {
     "start": "node lib/index.js || true",
-    "dev": "DEBUG=* node lib/index.js -D || true"
+    "dev": "DEBUG=* node lib/index.js -D || true",
+    "test": "xo --space 4"
   },
   "repository": {
     "type": "git",
