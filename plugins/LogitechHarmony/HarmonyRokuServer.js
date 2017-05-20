@@ -224,7 +224,7 @@ HarmonyRokuServer.prototype.startServer = function(callback) {
     });
 
     this.rk_server.listen(this.http_port, this.bind, function () {
-        this.log.debug("HTTP-Server started on " + that.bind + ":" + that.http_port);
+        that.log.debug("HTTP-Server started on " + that.bind + ":" + that.http_port);
     });
     if (typeof callback === 'function') callback();
 }

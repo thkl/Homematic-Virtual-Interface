@@ -49,10 +49,12 @@ HarmonyPlatform.prototype.init = function() {
 	{
 		this.rokuServer = new HarmonyRokuServer(this)
 		this.rokuServer.init()
-/*
+	}
+
+	if (this.config.getValueForPluginWithDefault(this.name,"use_roku_2",false)==true)
+	{
 		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
 		this.rokuServer2.init()
-*/
 	}
 }
 
@@ -73,6 +75,11 @@ HarmonyPlatform.prototype.shutdown = function() {
 			this.rokuServer.stopServer();
 			this.rokuServer.stopDiscovery();
 	}
+	if (this.rokuServer2) {
+			this.rokuServer2.stopServer();
+			this.rokuServer2.stopDiscovery();
+	}
+	
 	this.harmonyServer.shutdown();
 	} catch (e) {
 		this.log.error("Shutown error %s",e.stack)
@@ -138,6 +145,14 @@ HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
 		     "description":this.localization.localize("Use this to enable a Fake Roku Revice.This will add a 19 key Remote to your ccu")
 	});
 
+	result.push({"control":"option",
+					"name":"use_roku_2",
+				   "label":this.localization.localize("Enable 2nd Fake Roku Service"),
+				   "value":this.use_roku_2,
+		     "description":this.localization.localize("Use this to enable a 2nd Fake Roku Revice.This will add a 19 key Remote to your ccu")
+	});
+
+
 	return result;
 }
 
@@ -181,6 +196,14 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 		this.use_roku = false
 	}
 
+	if (settings.use_roku_2) {
+		this.config.setValueForPlugin(this.name,"use_roku_2",true); 
+		this.use_roku_2 = true
+	} else {
+		this.config.setValueForPlugin(this.name,"use_roku_2",false); 
+		this.use_roku_2 = false
+	}
+
 	this.log.debug("Will shutdown now");
 	this.shutdown();
 	this.log.debug("Will restart Hue Server now");
@@ -196,6 +219,15 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 	} else {
 		this.rokuServer = null
 	}
+	
+	if (this.use_roku_2 ==true)
+	{	
+		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
+		this.rokuServer2.init()
+	} else {
+		this.rokuServer2 = null
+	}
+		
 
 }
 
