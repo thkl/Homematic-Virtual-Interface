@@ -13,6 +13,7 @@ var path = require('path');
 var url = require("url");
 var HarmonyHueServer = require(__dirname + '/HarmonyHueServer.js').HarmonyHueServer;
 var HarmonyRokuServer = require(__dirname + '/HarmonyRokuServer.js').HarmonyRokuServer;
+var HarmonyRokuManager = require(__dirname + '/HarmonyRokuManager.js').HarmonyRokuManager;
 
 var HarmonyClient = require(__dirname + '/HarmonyClient.js').HarmonyClient;
 var path = require('path');
@@ -40,22 +41,27 @@ HarmonyPlatform.prototype.init = function() {
 	this.flobjects = this.loadFakeLights()
 	this.use_roku = this.config.getValueForPluginWithDefault(this.name,"use_roku",false);
 	
+	this.rokuManger = new HarmonyRokuManager(this);
 	this.harmonyServer = new HarmonyHueServer(this)
 	this.harmonyClient = new HarmonyClient(this)
-
+	
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")
 	this.supportedChannels = ["BidCos-RF.SWITCH","BidCos-RF.DIMMER","BidCos-RF.BLIND"]
 	if (this.config.getValueForPluginWithDefault(this.name,"use_roku",false)==true)
 	{
 		this.rokuServer = new HarmonyRokuServer(this)
 		this.rokuServer.init()
+		this.rokuManger.addRoku(this.rokuServer);
 	}
 
 	if (this.config.getValueForPluginWithDefault(this.name,"use_roku_2",false)==true)
 	{
 		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
 		this.rokuServer2.init()
+		this.rokuManger.addRoku(this.rokuServer2);
 	}
+	this.log.debug("Start announcing Rokus")
+	this.rokuManger.startDiscovery();
 }
 
 HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {
@@ -73,11 +79,10 @@ HarmonyPlatform.prototype.shutdown = function() {
 	try {
 	if (this.rokuServer) {
 			this.rokuServer.stopServer();
-			this.rokuServer.stopDiscovery();
+			this.rokuManger.stopDiscovery();
 	}
 	if (this.rokuServer2) {
 			this.rokuServer2.stopServer();
-			this.rokuServer2.stopDiscovery();
 	}
 	
 	this.harmonyServer.shutdown();

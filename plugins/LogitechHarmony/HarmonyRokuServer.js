@@ -23,14 +23,12 @@ appRoot = path.normalize(appRoot);
 
 
 var http = require('http');
-var dgram = require('dgram');
 var http = require('http');
 var httpHeaders = require('http-headers');
 var uuid = require('uuid');
 
 var MULTICAST_IP;
 var BIND;
-var socket;
 
 
 var HarmonyRokuServer = function (plugin,port,instance) {
@@ -101,43 +99,13 @@ HarmonyRokuServer.prototype.init = function() {
 		this.bridge.addDevice(this.hmDevice,false);
 	}
     this.startServer()
-  	this.startDiscovery()
 }
 
-HarmonyRokuServer.prototype.startDiscovery = function() {
-    var that = this
-
-    socket = dgram.createSocket({type: 'udp4', reuseAddr: true});
-    socket.on("error", function (error) {
-            that.log.error("FakeRoku Error : %s",error)
-            stopDiscovery();
-        }
-    );
-
-    socket.on("message", function (msg, rinfo) {
-	    
-            if (msg.toString().match(/^(M-SEARCH) \* HTTP\/1.\d/)) {
-                var headers = httpHeaders(msg);
-                if (headers.man === '"ssdp:discover"') {
-                    that.log.debug("responding to MSearch from %s:%s" , rinfo.address , rinfo.port);
-                    socket.send(that.ssdp_response, 0, that.ssdp_response.length, rinfo.port, rinfo.address);
-                }
-            } else if (msg.toString().match(/^(NOTIFY) \* HTTP\/1.\d/)) {
-                //@todo
-            }
-        }
-    );
-    
-    socket.bind(8900)
-}
        
 HarmonyRokuServer.prototype.stopServer = function() {
     this.rk_server.close();
 }
 
-HarmonyRokuServer.prototype.stopDiscovery = function() {
-    if (socket && socket._bindState) socket.close();
-}
 
 HarmonyRokuServer.prototype.parseCommand = function(command) {
 	try { 
@@ -215,7 +183,7 @@ HarmonyRokuServer.prototype.startServer = function(callback) {
     });
     
     this.rk_server.on('connection', function (socket) {
-        socket.unref();
+       // socket.unref();
     });
     
     this.rk_server.on("error", function (err) {
