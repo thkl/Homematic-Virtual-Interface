@@ -89,13 +89,13 @@ HarmonyRokuServer.prototype.init = function() {
 	this.hmDevice = new HomematicDevice(this.plugin.getName());
 	
 	
-	var data = this.bridge.deviceDataWithSerial("HarmonyRoku");
+	var data = this.bridge.deviceDataWithSerial("HarmonyRoku"+this.rokuInstance);
 	if (data!=undefined) {
 		this.hmDevice.initWithStoredData(data);
 	} 
 	
 	if (this.hmDevice.initialized == false) {
-		this.hmDevice.initWithType("HM-RC-19", "HarmonyRoku");
+		this.hmDevice.initWithType("HM-RC-19", "HarmonyRoku"+this.rokuInstance);
 		this.bridge.addDevice(this.hmDevice,true);
 	} else {
 		this.bridge.addDevice(this.hmDevice,false);
