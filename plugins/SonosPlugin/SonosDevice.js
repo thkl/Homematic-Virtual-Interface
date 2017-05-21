@@ -253,6 +253,16 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 						}
 						break;
 						
+						
+						case 'playFav':
+						{
+							if (cmds.length>1) {
+							  that.playFav(cmds[1])
+					  		} else {
+						  		that.log.error("missing fav name in command")
+					  		}
+						}
+						break;
 					}
 		    	}
 		     channel.updateValue("COMMAND","");
@@ -261,6 +271,23 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	    
 	});
 }
+
+
+SonosDevice.prototype.playFav = function(title) {
+  var that = this
+  this.sonos.searchMusicLibrary('favorites','2',{start: 0, total: 100},function(err,result){
+		  var items = result.items;
+		  items.forEach(function(item){
+			if (item.title==title)	{
+				item.uri = item.uri.replace("&", "&amp;");
+				that.sonos.queueNext(item,function(err,result){
+					that.sonos.play();
+				});
+			}		  
+		  });
+	  });
+}
+
 
 SonosDevice.prototype.setPlayList = function(playlist) {
 	var that = this;

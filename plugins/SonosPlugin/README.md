@@ -18,6 +18,8 @@ TARGET_VOLUME, PLAYLIST
 you may set the PLAYLIST Parameter with a playlist url (currently spotify only is supported -> eg : spotify:user:spotify_germany:playlist:1dPjXhd0s7DBTCuaolLVSm)
 and the current queue will replaced by this playlist and the zoneplayer will play that list.
 
+
+
 Sonos Coordinator:
 
 There is a virtual device named SONOS_Coordinator.
