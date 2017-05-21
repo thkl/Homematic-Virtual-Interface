@@ -100,6 +100,14 @@ SonosCoordinator.prototype.init = function() {
 						}
 					}
 					break;
+					
+					case 'playFav':
+					{
+						if (cmds.length>2) {
+							that.playFav(cmds[1],cmds[2]);
+						}
+					}
+					break;
 				}
 			}
 			// Reset Command
@@ -140,6 +148,28 @@ SonosCoordinator.prototype.switchoff = function(playername) {
 			  })
 		  })
 	  }
+  } else {
+	this.log.error("No Device found for %s",playername)
+  }
+}
+
+
+SonosCoordinator.prototype.playFav = function(playername,title) {
+  var that = this
+  this.log.info("Search")
+  var playerDevice = this.getZonePlayerDevice(playername)
+  if (playerDevice) {
+	  playerDevice.sonos.searchMusicLibrary('favorites','2',{start: 0, total: 100},function(err,result){
+		  var items = result.items;
+		  items.forEach(function(item){
+			if (item.title==title)	{
+				item.uri = item.uri.replace("&", "&amp;");
+				playerDevice.sonos.queueNext(item,function(err,result){
+					playerDevice.sonos.play();
+				});
+			}		  
+		  });
+	  });
   } else {
 	this.log.error("No Device found for %s",playername)
   }
