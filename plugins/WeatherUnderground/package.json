@@ -1,0 +1,24 @@
+{
+  "name": "homematic-virtual-weatherundergrounddevice",
+  "version": "0.0.1",
+  "description": "Virtual Plugin - WeatherUnderground",
+  "license": "ISC",
+  "keywords": [
+    "homematic-virtual-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/"
+  },
+  "bugs": {
+    "url": "http://"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homematic-virtual-interface" : ">=0.2.43"
+  },
+  
+  "dependencies": {
+
+  }
+}
