@@ -75,7 +75,17 @@
 		"npm" :"homematic-virtual-nanoleafauroradevice",
 		"syname":"Aurora",
 		"description":{"de-de":"Verbindet ein NanoLeaf Aurora mit der CCU","en-en":"connects a nanoleaf aurora to your CCU"}
+	  },
+
+
+	  {
+		  
+		"name":"WeatherUnderground",
+		"npm" :"homematic-virtual-weatherundergrounddevice",
+		"syname":"WunderGround",
+		"description":{"de-de":"Erstellt ein KS500 Gerauml;t aus den Daten einer WeatherUnderground Station","en-en":"build a KS500 Device from data of a weatherunderground station"}
 	  }
+
 	  
 	  
 	  

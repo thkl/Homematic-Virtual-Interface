@@ -253,11 +253,12 @@ NetAtmoDevice.prototype.refreshDevice = function() {
 
 
 NetAtmoDevice.prototype.parseNA1ModuleData = function (measurement,channel) {
+	
 	var temp = measurement[0];
 	var hum = measurement[1];
 	channel.updateValue("TEMPERATURE",temp,true,true);
 	channel.updateValue("HUMIDITY",hum,true,true);
-	var dew_point = that.dew_point(temp, hum);
+	var dew_point = this.dew_point(temp, hum);
 	channel.updateValue("DEW_POINT",dew_point,true,true);
 	var absolute_humidity = that.absolute_humidity(temp, hum);
 	channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true);
@@ -269,7 +270,7 @@ NetAtmoDevice.prototype.parseNA4ModuleData = function (measurement,channel) {
 	var co2 = measurement[3];
 	channel.updateValue("TEMPERATURE",temp,true,true);
 	channel.updateValue("HUMIDITY",hum,true,true);
-	var dew_point = that.dew_point(temp, hum);
+	var dew_point = this.dew_point(temp, hum);
 	channel.updateValue("DEW_POINT",dew_point,true,true);
 	var absolute_humidity = that.absolute_humidity(temp, hum);
 	channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true);

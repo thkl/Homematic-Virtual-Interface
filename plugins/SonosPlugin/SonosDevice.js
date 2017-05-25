@@ -280,7 +280,10 @@ SonosDevice.prototype.playFav = function(title) {
 		  items.forEach(function(item){
 			if (item.title==title)	{
 				item.uri = item.uri.replace("&", "&amp;");
+// Quick and f*cking dirty
+				item.uri = item.uri.replace("sid=254&amp;flags=8224&sn=0","sid=254&amp;flags=32")
 				that.sonos.queueNext(item,function(err,result){
+					that.log.error("Result %s",err)
 					that.sonos.play();
 				});
 			}		  
