@@ -48,7 +48,7 @@ WeatherUndergroundPlatform.prototype.showSettings = function(dispatched_request)
 	result.push({'control':'text','name':'api_key',
 		'label':this.localization.localize('WeatherUnderground API Key'),
 		'value':api_key,
-		'description':this.localization.localize('register your app key at https://www.wunderground.com/')
+		'description':this.localization.localize("register your app key at <a target=_blank href='https://www.wunderground.com/?apiref=1f87d9e5008720ad'>https://www.wunderground.com/</a>")
 		})
 	
 	result.push({'control':'text','name':'locationId',

@@ -1,6 +1,6 @@
 {"strings": {
 	"de-de": {
-		"register your app key at https://www.wunderground.com/":"Ein API Key muss hier erstellt werden: https://www.wunderground.com/",
+		"register your app key at <a target=_blank  href='https://www.wunderground.com/?apiref=1f87d9e5008720ad'>https://www.wunderground.com/</a>":"Ein API Key muss hier erstellt werden: <a target=_blank href='https://www.wunderground.com/?apiref=1f87d9e5008720ad'>https://www.wunderground.com/</a>",
 		"WeatherUnderground API Key":"WeatherUnderground API Key",
 		"see https://www.wunderground.com/wundermap for StationID":"Suche die StationsID hier herraus: https://www.wunderground.com/wundermap",
 		"Station ID":"StationsID"
