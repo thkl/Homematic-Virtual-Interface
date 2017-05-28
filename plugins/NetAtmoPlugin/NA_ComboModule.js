@@ -110,7 +110,7 @@ NA_ComboModule.prototype.parseModule2Data = function (measurement,channel) {
 NA_ComboModule.prototype.parseModule3Data = function (measurement,channel) {
 	var rain = measurement[0]
 	channel.updateValue('RAIN_COUNTER',rain,true,true)
-	channel.updateValue('RAINING',false,true)
+	channel.updateValue('RAINING',(rain > 0),true)
 }
 
 
