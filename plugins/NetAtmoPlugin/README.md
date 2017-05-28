@@ -7,3 +7,5 @@ Please setup the following Credential Data in config.json
 "client_secret": ""
 "username": ""
 "password": ""
+
+This plugin will autodetect a rain or wind gauge and switch to a combo KS500 Sensor.

@@ -83,6 +83,7 @@ WeatherUndergroundPlatform.prototype.fetchWeather = function () {
 	var url = 'http://api.wunderground.com/api/%api_key%/conditions/lang:DL/q/pws:%station_id%.json'
 	var parameter
 	var myutil = require(path.join(appRoot, 'Util.js'))
+	var rainCond = ['rain','flurries','sleet','snow','tstorms']
 	
 	url = url.replace('%api_key%', api_key)
 	url = url.replace('%station_id%', locationId)
@@ -106,7 +107,7 @@ WeatherUndergroundPlatform.prototype.fetchWeather = function () {
 						channel.updateValue('RAIN_COUNTER',0,true)
 					}
 					
-					if (parseFloat(observation.precip_1hr_in)>0) {
+					if (rainCond.indexOf(observation.icon)>-1) {
 						channel.updateValue('RAINING',true,true)
 					} else {
 						channel.updateValue('RAINING',false,true)
