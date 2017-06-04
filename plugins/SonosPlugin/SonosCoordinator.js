@@ -12,13 +12,11 @@
 var HomematicDevice
 var Sonos = require('node-sonos').Sonos
 var path = require('path');
-
+const async = require('async');
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
 if (appRoot.endsWith("node_modules/daemonize2/lib")) {appRoot =  appRoot+"/../../../lib";}
 appRoot = path.normalize(appRoot);
-
-var serialize = require(path.join(appRoot,'Serialize.js'));
 
 var SonosCoordinator = function(plugin) {
 	var that = this
@@ -71,7 +69,7 @@ SonosCoordinator.prototype.init = function() {
 					case 'createmesh':
 					{
 						if (cmds.length>1) {
-							that.createMesh(undefined,cmds[1])	
+							that.createMesh(cmds[1])	
 						}
 					}
 					break
@@ -245,11 +243,7 @@ SonosCoordinator.prototype.createMesh = function(playernames) {
     var that = this
     var players = playernames.split(',')
     var newCoordinator = players[0]
-    
-    this.addGroup = serialize(this.addtogroup)
-    this.transfer = serialize(this.transfer)
-    this.removeZonePlayer = serialize(this.removeZonePlayer)
-    this.addtogroup = serialize(this.addtogroup)
+    var calls = [];
     
     var newCoordinatorDevice = this.getZonePlayerDevice(newCoordinator)
     // Get the new Coordinator Device
@@ -258,20 +252,42 @@ SonosCoordinator.prototype.createMesh = function(playernames) {
 	    // first transfer existing group coordinator
 		var groupCoordinator = newCoordinator.groupCoordinator
 		// if oldCoodinator is set groupd the devices to be able to transfer Coordinator
-		transfer(groupCoordinator,newCoordinator)
+		that.transfer(groupCoordinator,newCoordinator,function(){
 
 		// then remove all from existing Groups
 		players.some(function (player){
-	    	that.removeZonePlayer(player)
+			calls.push(function(callback) {
+				that.log.debug("Remove %s from group",player)
+		    	that.removeZonePlayer(player)
+				callback();			
+    	})
     	})
 		
+	
 		// then add all to the new coordinator
 	
 		players.some(function (player){
 			if (player != newCoordinator) {
+				that.log.debug("Add %s to group",player)
+				calls.push(function(callback) {
 				that.addtogroup(newCoordinator,player)
+				callback()
+
+			})
 			}
 		})    
+
+		that.log.debug("run all stuff async")
+		async.parallel(calls, function(err, result) {
+			if (err)
+				that.log.error(result);
+		});
+
+			
+		})
+
+    } else {
+	    that.log.error("Coordinator not found. Did you spell your players right ?")
     }
     } catch (e) {
 	    this.log.error(e.stack)
@@ -300,6 +316,7 @@ SonosCoordinator.prototype.transfer = function(fromPlayerName,newCoordinator,cal
 			}						  
 		}	
 	} else {
+		this.log.debug("New coordinator is allready set")
 		if (callback) {
 			callback()
 		}						  
