@@ -68,7 +68,6 @@ var NA_Module4 = require(__dirname + '/NA_Module4.js').NA_Module4
 var NA_ComboModule = require(__dirname + '/NA_ComboModule.js').NA_ComboModule
 
 api.getStationsData(function(err, devices) {
-	that.log.debug("JSON :%s",JSON.stringify(devices))
 	devices.forEach(function (device) {
 		var hazCombo = false
 		var nadevice = new NA_Main(that,api,device,'NAT00'+i)
@@ -166,7 +165,14 @@ NetAtmoPlatform.prototype.showSettings = function(dispatched_request) {
 	var client_secret = ''
 	var username = ''
 	var password = ''
-	
+	var ccu_rain = this.configuration.getValueForPlugin(this.name,'ccu_rain') || ''
+	var ccu_bright = this.configuration.getValueForPlugin(this.name,'ccu_bright') || ''
+	var ccu_sunshine = this.configuration.getValueForPlugin(this.name,'ccu_sunshine') || ''
+
+	var ccu_bright_factor = this.configuration.getValueForPlugin(this.name,'ccu_bright_factor') || ''
+	var ccu_sunshine_factor = this.configuration.getValueForPlugin(this.name,'ccu_sunshine_factor') || ''
+
+
 	var auth = this.configuration.getValueForPlugin(this.name,'auth')
 
 	if (auth != undefined) {
@@ -180,6 +186,16 @@ NetAtmoPlatform.prototype.showSettings = function(dispatched_request) {
 	result.push({'control':'password','name':'client_secret','label':this.localization.localize('Client Secret'),'value':client_secret,'size':30})
 	result.push({'control':'text','name':'username','label':this.localization.localize('Username'),'value':username,'size':30})
 	result.push({'control':'password','name':'password','label':this.localization.localize('Password'),'value':password,'size':30})
+
+	result.push({'control':'text','name':'var_rain','label':this.localization.localize('CCU Rain variable'),'value':ccu_rain,'size':30})
+	
+	result.push({'control':'text','name':'var_sunshine','label':this.localization.localize('CCU Sunshine variable or datapoint'),'value':ccu_sunshine,'size':30})
+	result.push({'control':'text','name':'var_sunshine_factor','label':this.localization.localize('CCU Sunshine Factor'),'value':ccu_sunshine_factor,'size':30})
+	
+	
+	result.push({'control':'text','name':'var_bright','label':this.localization.localize('CCU brightness variable or datapoint'),'value':ccu_bright,'size':30})
+	result.push({'control':'text','name':'var_bright_factor','label':this.localization.localize('CCU brightness factor'),'value':ccu_bright_factor,'size':30})
+
 	
 	return result
 }
@@ -196,6 +212,24 @@ NetAtmoPlatform.prototype.saveSettings = function(settings) {
 		this.removeMyDevices()
 		this.connectApi(auth)
 	}
+	
+	if (settings.var_rain) {
+		this.configuration.setValueForPlugin(this.name,'ccu_rain',settings.var_rain) 
+	}
+	if (settings.var_sunshine) {
+		this.configuration.setValueForPlugin(this.name,'ccu_sunshine',settings.var_sunshine) 
+	}
+	if (settings.var_bright) {
+		this.configuration.setValueForPlugin(this.name,'ccu_bright',settings.var_bright) 
+	}
+
+	if (settings.var_bright_factor) {
+		this.configuration.setValueForPlugin(this.name,'ccu_bright_factor',settings.var_bright_factor) 
+	}
+	if (settings.var_sunshine_factor) {
+		this.configuration.setValueForPlugin(this.name,'ccu_sunshine_factor',settings.var_sunshine_factor) 
+	}
+
 }
 
 NetAtmoPlatform.prototype.removeMyDevices = function() {

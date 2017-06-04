@@ -4,6 +4,12 @@ const url = require('url')
 const path = require('path')
 const util = require('util')
 
+var appRoot = path.dirname(require.main.filename)
+if (appRoot.endsWith('bin')) {appRoot =  appRoot+'/../lib'}
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
+appRoot = path.normalize(appRoot)
+
+const HomematicReqaRequest = require(appRoot + '/HomematicReqaRequest.js')
 
 
 var NA_ComboModule = function(plugin, netAtmoApi ,naDevice,module1,module2,module3,serialprefix) {
@@ -89,7 +95,55 @@ NA_ComboModule.prototype.refreshDevice = function() {
 					}
 					
 		});
+		
+		// Check the Dashboard if we have a rain varialbe
+		var rain_ccu_var = this.configuration.getValueForPlugin(this.plugin.name,'ccu_rain')
+		
+		if (rain_ccu_var) {
+			options = {device_id: this.deviceId}
+			this.api.getStationsData(options,function(err, devices) {
+				devices.some(function(device){
+					device.modules.some(function (module) {
+						if (module._id == that.naId3) {
+							var script = "dom.GetObject('"+rain_ccu_var+"').State("+module.dashboard_data.sum_rain_24+");"
+						    new HomematicReqaRequest(that.bridge,script,function(response){
+
+						    })
+						}
+					})
+				  })
+				})
 		}
+		
+		}
+		
+		var channel = that.hmModule.getChannelWithTypeAndIndex('WEATHER','1')
+		
+		// Check the Dashboard if we have a rain varialbe
+		var ccu_bright = this.configuration.getValueForPlugin(this.plugin.name,'ccu_bright')
+		var ccu_bright_factor = this.configuration.getValueForPluginWithDefault(this.plugin.name,'ccu_bright_factor',1) 
+		if (ccu_bright) { 
+			var script = "Write(dom.GetObject('"+ccu_bright+"').State());"
+				new HomematicReqaRequest(that.bridge,script,function(response){
+					var br = parseFloat(response)
+					br = br * ccu_bright_factor
+					that.log.debug("Math for brightness %s,%s",response,br)
+					channel.updateValue('BRIGHTNESS',br,true,true)
+				})
+		}
+
+		var ccu_sunshine = this.configuration.getValueForPlugin(this.plugin.name,'ccu_sunshine')
+		var ccu_sunshine_factor = this.configuration.getValueForPluginWithDefault(this.plugin.name,'ccu_sunshine_factor',1) 
+		if (ccu_sunshine) { 
+			var script = "Write(dom.GetObject('"+ccu_sunshine+"').State());"
+				new HomematicReqaRequest(that.bridge,script,function(response){
+					var sh = parseFloat(response)
+					sh = sh * ccu_sunshine_factor
+					that.log.debug("Math for sunshine %s,%s",response,sh)
+					channel.updateValue('SUNSHINEDURATION',sh,true,true)
+				})
+		}
+		
 }
 
 

@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-netatmodevice",
-  "version": "0.0.9",
+  "version": "0.0.12",
   "description": "Virtual Netatmo Device",
   "license": "ISC",
   "keywords": [
@@ -25,6 +25,10 @@
   "files": [
     "NetAtmoDevice.js",
     "NetAtmoPlatform.js",
+    "NA_ComboModule.js",
+    "NA_Main.js",
+    "NA_Module1.js",
+    "NA_Module4.js",
     "README.md",
     "index.js",
     "www/"
