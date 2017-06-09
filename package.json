@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-interface",
-  "version": "0.2.44",
+  "version": "0.2.46",
   "description": "Homematic Virtual Interface",
   "license": "ISC",
   "scripts": {
@@ -13,7 +13,7 @@
     "url": "git://github.com/thkl/Homematic-Virtual-Interface.git"
   },
   "engines": {
-    "node": ">=0.12.0"
+    "node": ">=4.5.0"
   },
   "bin": {
     "hmvi": "bin/hmvi"
@@ -31,7 +31,8 @@
     "group-array":"0.3.1",
     "nedb-logger":"0.1.0",
     "qs":"6.3.1",
-    "xml2js":"0.4.17"
+    "xml2js":"0.4.17",
+    "pem":"latest"
   },
   
   "files": [

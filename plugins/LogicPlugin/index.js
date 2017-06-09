@@ -16,6 +16,12 @@ module.exports = function(server,name,logger,instance) {
 	this.name = name;
 	this.instance = instance;
 
+
+this.handleConfigurationRequest = function(dispatched_request) {
+		this.platform.handleConfigurationRequest(dispatched_request);
+    };
+
+
 	function init() {
 	
 	var dependencies = server.configuration.getValueForPlugin(name,"dependencies");
@@ -40,6 +46,7 @@ module.exports = function(server,name,logger,instance) {
 	setTimeout(function() {
 			init();
 		}, 1);
+	
 	
 }
 

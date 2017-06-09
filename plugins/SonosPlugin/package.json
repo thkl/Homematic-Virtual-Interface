@@ -19,7 +19,7 @@
   },
   
   "dependencies": {
-    "node-sonos":"^0.12.5",
+    "node-sonos":"0.12.5",
     "async":"latest",
     "underscore":"latest"
   }

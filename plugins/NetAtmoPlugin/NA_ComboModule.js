@@ -126,9 +126,9 @@ NA_ComboModule.prototype.refreshDevice = function() {
 			var script = "Write(dom.GetObject('"+ccu_bright+"').State());"
 				new HomematicReqaRequest(that.bridge,script,function(response){
 					var br = parseFloat(response)
-					br = br * ccu_bright_factor
-					that.log.debug("Math for brightness %s,%s",response,br)
-					channel.updateValue('BRIGHTNESS',br,true,true)
+					var nbr = (br * ccu_bright_factor).toFixed();
+					that.log.debug("Math for brightness %s * %s = %s",br,response,nbr)
+					channel.updateValue('BRIGHTNESS',nbr,true,true)
 				})
 		}
 
@@ -138,8 +138,8 @@ NA_ComboModule.prototype.refreshDevice = function() {
 			var script = "Write(dom.GetObject('"+ccu_sunshine+"').State());"
 				new HomematicReqaRequest(that.bridge,script,function(response){
 					var sh = parseFloat(response)
-					sh = sh * ccu_sunshine_factor
-					that.log.debug("Math for sunshine %s,%s",response,sh)
+					var shr = (sh * ccu_sunshine_factor).toFixed();
+					that.log.debug("Math for sunshine %s,%s",response,shr)
 					channel.updateValue('SUNSHINEDURATION',sh,true,true)
 				})
 		}
