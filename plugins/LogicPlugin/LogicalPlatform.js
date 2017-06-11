@@ -66,7 +66,7 @@ LogicalPlatform.prototype.init = function() {
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
 	this.log.info("Init %s",this.name);
-	var localIP = this.hm_layer.getIPAddress();
+	var localIP = this.configuration.getIPAddress();
 	
 	logicLogger.info("Logical Bridge is starting");
 	
