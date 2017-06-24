@@ -38,6 +38,7 @@ AlexaPlatform.prototype.init = function() {
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 	this.ramp_time  = this.configuration.getValueForPluginWithDefault(this.name,"ramp_time",0);
 
+	alexaLogger.clean();
 	alexaLogger.info("Alexa Plugin launched ..");
 
 	if (this.api_key == undefined) {
@@ -80,12 +81,14 @@ AlexaPlatform.prototype.init = function() {
         that.log.info('Connection changed: CONNECTED');
 	    that.authenticated = false;
         that.socket.emit('authentication', {token: that.api_key});
+        alexaLogger.info('Connection changed: CONNECTED');
+
 	});
     
     this.socket.on('authenticated', function() {
 	    that.authenticated = true;
 	    that.log.info('Connection changed: AUTHENTICATED');
-	    alexaLogger.info("Authentication Passed");
+	    alexaLogger.info('Connection changed: AUTHENTICATED');
 	});
 
     this.socket.on('unauthorized', function() {
@@ -97,6 +100,7 @@ AlexaPlatform.prototype.init = function() {
     this.socket.on('disconnect', function () {
  	    that.authenticated = false;
         that.log.info('Connection changed: DISCONNECTED');
+	    alexaLogger.info('Connection changed: DISCONNECTED');
     });
 
     this.socket.on('error', function (error){
@@ -309,6 +313,7 @@ AlexaPlatform.prototype.saveSettings = function(settings) {
 AlexaPlatform.prototype.reconnect = function() {
 	var that = this;
 	if (this.api_key != undefined) {
+		alexaLogger.clean();
 		alexaLogger.info("Reconnecting to Cloud Service");
 		var last = this.api_key.slice(-4);
 		alexaLogger.info("using API-Key : XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX" + last);

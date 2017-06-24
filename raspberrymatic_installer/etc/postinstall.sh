@@ -19,10 +19,11 @@ mv node-v6.10.0-linux-armv7l node
 # since the settingsfile of npm is located in /root/.npm we need rw on the root filesystem
 mount -o remount,rw /
 
-${ADDON_DIR}/node/bin/node ${ADDON_DIR}/node/bin/npm set cache=${ADDON_DIR}/.npm
-${ADDON_DIR}/node/bin/node ${ADDON_DIR}/node/bin/npm set init-module=${ADDON_DIR}/.npm-init.js
-${ADDON_DIR}/node/bin/node ${ADDON_DIR}/node/bin/npm set userconfig=${ADDON_DIR}/.npmrc
-${ADDON_DIR}/node/bin/node ${ADDON_DIR}/node/bin/npm set path=${ADDON_DIR}/.npm
+echo "cache=/usr/local/addons/hvl/.npm" > /root/.npmrc
+echo "init-module=/usr/local/addons/hvl/.npm-init.js" >> /root/.npmrc
+echo "userconfig=/usr/local/addons/hvl/.npmrc" >> /root/.npmrc
+echo "path=/usr/local/addons/hvl/.npm" >> /root/.npmrc
+
 
 # Add Interface Template
 if [ $(cat /etc/config_templates/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
