@@ -30,6 +30,9 @@ if [ $(cat /etc/config_templates/InterfacesList.xml | grep '<name>HVL</name>' | 
 	sed -i /etc/config_templates/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 fi
 
+#install log rotator
+cp ${ADDON_DIR}/etc/hvl.conf /etc/logrotate.d/hvl.conf
+
 #switch back to read only
 mount -o remount,ro /
 
