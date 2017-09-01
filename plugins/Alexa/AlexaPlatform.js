@@ -37,8 +37,7 @@ AlexaPlatform.prototype.init = function() {
 	this.authenticated = false;
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 	this.ramp_time  = this.configuration.getValueForPluginWithDefault(this.name,"ramp_time",0);
-
-	alexaLogger.clean();
+	
 	alexaLogger.info("Alexa Plugin launched ..");
 
 	if (this.api_key == undefined) {
@@ -172,7 +171,7 @@ AlexaPlatform.prototype.init = function() {
 			
 		}
 		} catch (e) {
-			that.log.error("Event Error",e,e.stack);
+			that.log.error("Event Error %s %s",e,e.stack);
 			that.socket.send(JSON.stringify({"key":that.api_key,"result":"error"}), function (data) {
 				console.log(data); // data will be 'woot'
 			});
@@ -215,6 +214,7 @@ AlexaPlatform.prototype.processAlexaMessage = function(alx_message) {
 			if (hms) {
 				hms.handleEvent(alx_message,function(responseNameSpace,responseName,response_payload){
 				var result = that.generateResponse(responseNameSpace,responseName, response_payload);
+					that.log.debug(JSON.stringify({"key":that.api_key,"result":result}))
 					that.socket.send(JSON.stringify({"key":that.api_key,"result":result}), function (data) {});
 				});
 			}
@@ -313,7 +313,6 @@ AlexaPlatform.prototype.saveSettings = function(settings) {
 AlexaPlatform.prototype.reconnect = function() {
 	var that = this;
 	if (this.api_key != undefined) {
-		alexaLogger.clean();
 		alexaLogger.info("Reconnecting to Cloud Service");
 		var last = this.api_key.slice(-4);
 		alexaLogger.info("using API-Key : XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX" + last);
@@ -362,7 +361,7 @@ AlexaPlatform.prototype.generateResponse = function(nameSpace,cmdname, response_
 
   
   var payload = response_payload || {};
-  
+ 
   return {"header":header,"payload":payload};
 }
 
@@ -761,13 +760,16 @@ AlexaPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 			
 			case "showlog": {
 				var LoggerQuery = require(path.join(appRoot , 'logger.js')).LoggerQuery
-				new LoggerQuery("AlexaEvent").query(function (err, result) {
+				var alxlog = new LoggerQuery("AlexaEvent");
+				alxlog.clean(5)
+				alxlog.query(function (err, result) {
 					var str = "";
 					result.some(function (msg){
 							str = str + msg.time  + "  [" + msg.level + "] - " + msg.msg + "\n";
 					})
 	 				dispatched_request.dispatchFile(that.plugin.pluginPath , "log.html" ,{"logData":str});
  			  	});
+
 
 			  return;		  
 			}

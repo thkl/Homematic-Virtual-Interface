@@ -13,12 +13,12 @@ util.inherits(AlexaHueService, GenericAlexaHomematicService);
 
 
 AlexaHueService.prototype.getType = function() {
-	return "Hue Dimmer";
+	return "Hue ColorDevice";
 }
 
 
 AlexaHueService.prototype.getActions = function() {
-	return ["turnOn","turnOff","setPercentage","incrementPercentage","decrementPercentage"];
+	return ["turnOn","turnOff","setPercentage","incrementPercentage","decrementPercentage","setColor"];
 }
 
 
@@ -74,7 +74,16 @@ AlexaHueService.prototype.handleEvent = function(event,callback) {
 			
 		break;
 		
-		
+		case "SetColorRequest": {
+			var newValue = event.payload.color.hue;
+				var co_channel = device.getChannelWithTypeAndIndex("RGBW_COLOR","2");
+				let col = Math.round((newValue/360)*199)
+				this.setColorChannelValue(co_channel,col);
+				callback("Alexa.ConnectedHome.Control","SetColorConfirmation",{"achievedState":{"color":{"hue":newValue,"saturation":1.000,"brightness":1.000}}});
+			}
+			
+
+		break;
 			default:{
 				callback("Alexa.ConnectedHome.Control","NoSuchTargetError");
 			}
@@ -97,5 +106,14 @@ AlexaHueService.prototype.setChannelValue = function(sw_channel,newLevel) {
 	} 
 }
 
+
+AlexaHueService.prototype.setColorChannelValue = function(sw_channel,newLevel) {
+	var parameter = sw_channel.getParameterObject("COLOR");
+	if (parameter) {
+		parameter.newValue = newLevel;
+		parameter["channel"] = sw_channel.adress;
+		sw_channel.emit('channel_value_change', parameter);
+	} 
+}
 
 module.exports = AlexaHueService; 

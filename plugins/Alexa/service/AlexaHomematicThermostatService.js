@@ -17,7 +17,7 @@ AlexaHomematicThermostatService.prototype.getType = function() {
 
 
 AlexaHomematicThermostatService.prototype.getActions = function() {
-	return ["incrementTargetTemperature","decrementTargetTemperature","setTargetTemperature"];
+	return ["incrementTargetTemperature","decrementTargetTemperature","setTargetTemperature","getTemperatureReading","getTargetTemperature"];
 }
 
 

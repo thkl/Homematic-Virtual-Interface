@@ -102,8 +102,18 @@ SonosCoordinator.prototype.init = function() {
 					case 'playFav':
 					{
 						if (cmds.length>2) {
-							that.playFav(cmds[1],cmds[2]);
+							if (cmds[2].toLowerCase() == "random") {
+								that.playRandomFavPlayList(cmds[1])
+							} else {
+								that.playFav(cmds[1],cmds[2]);
+							}
 						}
+					}
+					break;
+					
+					case 'autoVolume':
+					{
+						that.rampToAutoVolume()
 					}
 					break;
 				}
@@ -114,6 +124,15 @@ SonosCoordinator.prototype.init = function() {
 	})
 
 }
+
+SonosCoordinator.prototype.rampToAutoVolume = function() {
+  Object.keys(this.zonePlayer).forEach(function (playername) {
+  	   this.log.info("Ramp To Auto Volume %s",playername)
+	   var player = that.zonePlayer[playername]
+       player.rampAutoVolume(false)
+  })
+}
+
 
 SonosCoordinator.prototype.toggle = function(playername) {
   // Remove from group if playing
@@ -154,12 +173,15 @@ SonosCoordinator.prototype.switchoff = function(playername) {
 
 SonosCoordinator.prototype.playFav = function(playername,title) {
   var that = this
-  this.log.info("Search")
+  this.log.info("Search for Playlist %s",title)
   var playerDevice = this.getZonePlayerDevice(playername)
   if (playerDevice) {
 	  playerDevice.sonos.searchMusicLibrary('favorites','2',{start: 0, total: 100},function(err,result){
 		  var items = result.items;
 		  items.forEach(function(item){
+			
+			
+			
 			if (item.title==title)	{
 				item.uri = item.uri.replace("&", "&amp;");
 // Quick and f*cking dirty
@@ -174,6 +196,41 @@ SonosCoordinator.prototype.playFav = function(playername,title) {
 	this.log.error("No Device found for %s",playername)
   }
 }
+
+SonosCoordinator.prototype.playRandomFavPlayList = function(playername) {
+  var that = this
+  this.log.info("play random list")
+  var plitems = []
+  var playerDevice = this.getZonePlayerDevice(playername)
+  if (playerDevice) {
+	  playerDevice.sonos.searchMusicLibrary('favorites','2',{start: 0, total: 100},function(err,result){
+		  var items = result.items;
+		  items.forEach(function(item){
+			
+			if (item.uri.startsWith('x-rincon-cpcontainer')) {
+				plitems.push(item)
+			}
+		  })
+		  
+		  var ln = plitems.length
+		  var sl = parseInt(Math.random() * (ln))
+		  var selItem = plitems[sl]
+		  that.log.debug("%s items Selected (%s) %s",ln,sl,JSON.stringify(selItem))
+		  	
+		  selItem.uri = selItem.uri.replace("&", "&amp;");
+// Quick and f*cking dirty
+				selItem.uri = selItem.uri.replace("sid=254&amp;flags=8224&sn=0","sid=254&amp;flags=32")
+				playerDevice.sonos.queueNext(selItem,function(err,result){
+					that.log.info("List %s selected send play",selItem)
+					playerDevice.sonos.play();
+			});
+		  
+	  });
+  } else {
+	this.log.error("No Device found for %s",playername)
+  }
+}
+
 
 
 SonosCoordinator.prototype.switchon = function(playername) {

@@ -423,6 +423,7 @@ SonosDevice.prototype.setTransportStream = function(newStream) {
 
 SonosDevice.prototype.rampAutoVolume = function(increase) {
    // If user has set a autovolume table setup the volume
+   this.log.info("Set new Volume Ramp %",this.playername);
    if (this.plugin.volumeTable) {
 	   var hour = new Date().getHours()
 	   var vt = this.plugin.volumeTable.split(',')

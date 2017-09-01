@@ -20,8 +20,8 @@ function WeatherUndergroundPlatform (plugin, name, server, log, instance) {
 util.inherits(WeatherUndergroundPlatform, HomematicVirtualPlatform)
 
 WeatherUndergroundPlatform.prototype.init = function () {
-  this.hmDevice = new HomematicDevice(this.getName())
-  this.hmDevice.initWithType('KS500', 'WeatherUnderground')
+  this.hmDevice = new HomematicDevice('Wunderground')
+  this.hmDevice.initWithType('KS500', 'Wunderground')
   this.bridge.addDevice(this.hmDevice)
   this.plugin.initialized = true
   this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")

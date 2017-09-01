@@ -9,6 +9,15 @@
 	  }	,
 
 	  {
+		"name":"IkeaTradfri Plugin",
+		"npm" :"homematic-virtual-tradfridevice",
+		"syname":"IkeaTradfri",
+		"description":{"de-de":"Steuert Ikea Tradfri Lampen","en-en":"Control IKEA Tradfri bulbs"}
+	  }	,
+
+
+
+	  {
 		"name":"Duty Cycle Plugin",
 		"npm" :"homematic-virtual-ccudutycylcle",
 		"syname":"DutyCycle",

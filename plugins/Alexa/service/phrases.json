@@ -39,5 +39,11 @@
 	"setTargetTemperature" : {
 		"en-en": "Alexa, set the $device$ to XX degrees.",
 		"de-de": "Alexa, stelle $device$ auf XX Grad."
-	}
+	},
+	
+    "setColor": {
+		"en-en": "Alexa, set the $device$ to red",
+		"de-de": "Alexa, setze $device$ auf rosa"
+	    
+    }	
 }
