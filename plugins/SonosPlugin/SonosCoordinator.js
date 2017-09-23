@@ -51,8 +51,11 @@ SonosCoordinator.prototype.init = function() {
 		var channel = that.hmDevice.getChannel(parameter.channel)
 		
 		if (parameter.name == 'COMMAND') {
+			
+			var cmdList = parameter.newValue.split('*')
+			cmdList.forEach(function (command){
 			    
-			var cmds = parameter.newValue.split('|')
+			var cmds = command.split('|')
 			if (cmds.length>0) {
 				var cmd = cmds[0]
 				that.log.info("Coordinator Command %s set (%s)",cmd,cmds[1])
@@ -116,8 +119,17 @@ SonosCoordinator.prototype.init = function() {
 						that.rampToAutoVolume()
 					}
 					break;
+					
+					
+					case 'volume':
+					{
+						if (cmds.length>1) {that.rampToVolume(cmds[1])}
+					}
+					break;
+
 				}
 			}
+			})
 			// Reset Command
 			channel.updateValue('COMMAND','');
 		}
@@ -126,10 +138,21 @@ SonosCoordinator.prototype.init = function() {
 }
 
 SonosCoordinator.prototype.rampToAutoVolume = function() {
+  var that = this 
   Object.keys(this.zonePlayer).forEach(function (playername) {
-  	   this.log.info("Ramp To Auto Volume %s",playername)
+  	   that.log.info("Ramp To Auto Volume %s",playername)
 	   var player = that.zonePlayer[playername]
        player.rampAutoVolume(false)
+  })
+}
+
+
+SonosCoordinator.prototype.rampToVolume = function(newVolume) {
+  var that = this 
+  Object.keys(this.zonePlayer).forEach(function (playername) {
+  	   that.log.info("Ramp To  Volume %s %s",playername,newVolume)
+	   var player = that.zonePlayer[playername]
+       player.rampToVolume(newVolume)
   })
 }
 
@@ -183,9 +206,8 @@ SonosCoordinator.prototype.playFav = function(playername,title) {
 			
 			
 			if (item.title==title)	{
-				item.uri = item.uri.replace("&", "&amp;");
+				selItem.uri = selItem.uri.split("&").join("&amp;");
 // Quick and f*cking dirty
-				item.uri = item.uri.replace("sid=254&amp;flags=8224&sn=0","sid=254&amp;flags=32")
 				playerDevice.sonos.queueNext(item,function(err,result){
 					playerDevice.sonos.play();
 				});
@@ -217,14 +239,16 @@ SonosCoordinator.prototype.playRandomFavPlayList = function(playername) {
 		  var selItem = plitems[sl]
 		  that.log.debug("%s items Selected (%s) %s",ln,sl,JSON.stringify(selItem))
 		  	
-		  selItem.uri = selItem.uri.replace("&", "&amp;");
+		  selItem.uri = selItem.uri.split("&").join("&amp;");
+
 // Quick and f*cking dirty
-				selItem.uri = selItem.uri.replace("sid=254&amp;flags=8224&sn=0","sid=254&amp;flags=32")
-				playerDevice.sonos.queueNext(selItem,function(err,result){
-					that.log.info("List %s selected send play",selItem)
+		  playerDevice.sonos.stop(function(){
+			playerDevice.sonos.flush(function(){
+				playerDevice.sonos.queue(selItem,function(err,result){
 					playerDevice.sonos.play();
-			});
-		  
+			})
+  		   })
+		  })
 	  });
   } else {
 	this.log.error("No Device found for %s",playername)
