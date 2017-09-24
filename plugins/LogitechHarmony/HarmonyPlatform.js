@@ -22,6 +22,8 @@ var appRoot = path.dirname(require.main.filename)
 if (appRoot.endsWith('bin')) { appRoot = path.join(appRoot, '..','lib'); }
 if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
 appRoot = path.normalize(appRoot);
+
+
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
 
 
@@ -119,7 +121,7 @@ HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
 	var result = [];
 	
 	var localPort = this.config.getValueForPluginWithDefault(this.name,"port",7000);
-    var localHostIP = this.config.getValueForPluginWithDefault(this.name,"host",this.hm_layer.getIPAddress());
+	var localHostIP = this.config.getValueForPluginWithDefault(this.name,"host",this.config.getIPAddress());
 	var hub_ip = this.config.getValueForPluginWithDefault(this.name,"hub_ip","");
 	var hue_plugin_name = this.config.getValueForPluginWithDefault(this.name,"hue_plugin_name","");
  	

@@ -32,7 +32,7 @@ HarmonyClient.prototype.init = function() {
   var that = this;
   HomematicDevice = this.server.homematicDevice;
   this.hmDevice = new HomematicDevice(this.name);
-  var serial = "HarmonyActivities";
+  var serial = "HarmonyAct";
   var data = this.bridge.deviceDataWithSerial(serial);
   if (data!=undefined) {
 		this.hmDevice.initWithStoredData(data);
