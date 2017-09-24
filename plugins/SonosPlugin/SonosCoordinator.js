@@ -205,13 +205,19 @@ SonosCoordinator.prototype.playFav = function(playername,title) {
 			
 			
 			
-			if (item.title==title)	{
-				selItem.uri = selItem.uri.split("&").join("&amp;");
+			if (item.title === title)	{
+				that.log.debug("Selected %s",JSON.stringify(item))
+				item.uri = item.uri.split("&").join("&amp;");
+				item.uri = item.uri.replace("sid=254&flags=8224&sn=0","sid=254&amp;flags=32")
 // Quick and f*cking dirty
-				playerDevice.sonos.queueNext(item,function(err,result){
+playerDevice.sonos.stop(function(){
+			playerDevice.sonos.flush(function(){
+				playerDevice.sonos.queue(item,function(err,result){
 					playerDevice.sonos.play();
-				});
-			}		  
+			})
+  		   })
+		  })
+		  }		  
 		  });
 	  });
   } else {
