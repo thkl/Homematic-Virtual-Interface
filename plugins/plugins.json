@@ -93,9 +93,16 @@
 		"npm" :"homematic-virtual-weatherundergrounddevice",
 		"syname":"WeatherUnderground",
 		"description":{"de-de":"Erstellt ein KS500 Ger&auml;t aus den Daten einer WeatherUnderground Station","en-en":"build a KS500 Device from data of a weatherunderground station"}
+	  },
+
+	  	  {
+		  
+		"name":"Pioneer AVR Remote",
+		"npm" :"homematic-virtual-pioneeravrdevice",
+		"syname":"PioneerAVR",
+		"description":{"de-de":"Erstellt eine 19er FB zur Steuerung eines PioneerAVR","en-en":"build a 19 key remote to control a Pioneer AVR"}
 	  }
 
-	  
 	  
 	  
 	  
