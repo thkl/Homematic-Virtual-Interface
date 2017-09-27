@@ -20,29 +20,95 @@ function DummyPlatform (plugin, name, server, log, instance) {
 util.inherits(DummyPlatform, HomematicVirtualPlatform)
 
 DummyPlatform.prototype.init = function () {
+ 
   var that = this
 
+  // your need a device file which is not bundled in core system. copy data like this 
+  // as an example the HM-Sen-Wa-Od.json should be located in your plugin root
+  
+  /* 
+   var devfile = path.join(__dirname,'HM-Sen-Wa-Od.json');
+   var buffer = fs.readFileSync(devfile);
+   var devdata = JSON.parse(buffer.toString());
+   this.server.transferHMDevice('HM-Sen-Wa-Od',devdata);
+  */
+  var serial = 'Dum_1234'
+  
   // create a Device like this :
-
   this.hmDevice = new HomematicDevice(this.getName())
-  this.hmDevice.initWithType('HM-LC-RGBW-WM', 'Dummy Device')
-
-  this.bridge.addDevice(this.hmDevice)
+  // first check if you have a persistent data file for your device serial
+  var data = this.bridge.deviceDataWithSerial(serial)
+  if (data!=undefined) {
+  // if there is a persistent file with data create the device from that data
+	this.hmDevice.initWithStoredData(data)
+  }
+  
+  if (this.hmDevice.initialized === false) {
+	  // if not build a new device from template
+	  this.hmDevice.initWithType("HM-LC-RGBW-WM",serial)
+	  this.hmDevice.serialNumber = serial
+	  this.bridge.addDevice(this.hmDevice,true)
+  } else {
+      // device was initalized from persistent data just add it to the interface
+	  this.bridge.addDevice(this.hmDevice,false)
+  }
+  
 
   // this will trigered when a value of a channel was changed by the ccu
   this.hmDevice.on('device_channel_value_change', function (parameter) {
     var newValue = parameter.newValue
     var channel = that.hmDevice.getChannel(parameter.channel)
 
-// sample do something when level was changed
+    // sample do something when parameter with name level was changed
     if (parameter.name === 'LEVEL') {
-// new level is in "newValue"
-      console.log('Channel %s update with %s', channel, newValue)
+		// new level is in "newValue"
+        console.log('Channel %s update with %s', channel, newValue)
+        // place your own logic here to send this value to your physical device ....
+        
+        ....
+        
+        
+        //
     }
   })
 
+  // if you want to periodical check the state of your physical device you may use something like that
+  
+  setTimeout(function (){
+	  // check value
+	that.loadValues()	  
+  }, 6000)
+  
+
   this.plugin.initialized = true
   this.log.info('initialization completed %s', this.plugin.initialized)
+}
+
+// ask your physical device for state etc ...
+
+DummyPlatform.prototype.loadValues = function (dispatchedRequest) {
+	let that = this
+	// demo only so it will compile
+	let value = 1;
+	// insert real query here
+	
+    //	let value = myPhysicalDevice.getData()
+	
+	
+	// change the virtual homematic device data
+	// first get the channel - in this example the dimmer channel with number 1
+	let channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1")
+	if (channel) {
+		  // Channel was found .. update the value paramset for parameter LEVEL and send it to the ccu (,true,true)
+		  channel.updateValue("LEVEL",value,true,true);
+	}
+	
+// do it again i about 6 seconds	 
+  setTimeout(function (){
+	  // check value
+	that.loadValues()	  
+  }, 6000)
+
 }
 
 DummyPlatform.prototype.handleConfigurationRequest = function (dispatchedRequest) {
