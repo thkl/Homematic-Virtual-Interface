@@ -413,10 +413,15 @@ SonosDevice.prototype.enableSub = function(enable) {
 SonosDevice.prototype.setTransportStream = function(newStream) {
 	var newTs = "x-rincon-stream:" + newStream
     var that = this
-    this.sonos.queue({uri: newTs,metadata: ""}, function (error,data) {
+    this.log.debug("Set Transport Stream of %s to %s",this.playername,newTs)
+    this.sonos.flush(function (){
+  	  that.sonos.queueNext({uri: newTs,metadata: ""}, function (error,data) {
 		if (!error) {
 			that.sonos.play(function (err, playing) {})
+		} else {
+			that.log.error("set Transport Stream error %s",error)
 		}
+	})
 	})
 }
 

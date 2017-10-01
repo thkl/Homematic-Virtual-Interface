@@ -58,7 +58,7 @@ SonosCoordinator.prototype.init = function() {
 			var cmds = command.split('|')
 			if (cmds.length>0) {
 				var cmd = cmds[0]
-				that.log.info("Coordinator Command %s set (%s)",cmd,cmds[1])
+				that.log.info("Coordinator Command %s set (%s %s)",cmd,cmds[1],cmds[2])
 				switch (cmd) {
 
 					case 'standalone':
@@ -127,6 +127,11 @@ SonosCoordinator.prototype.init = function() {
 					}
 					break;
 
+					case 'settransportstream':
+					{
+						if (cmds.length>2) {that.setTransportStream(cmds[1],cmds[2])}
+					}
+					break;
 				}
 			}
 			})
@@ -144,6 +149,17 @@ SonosCoordinator.prototype.rampToAutoVolume = function() {
 	   var player = that.zonePlayer[playername]
        player.rampAutoVolume(false)
   })
+}
+
+
+SonosCoordinator.prototype.setTransportStream = function(playername,newStream) {
+	var newTs = "x-rincon-stream:" + newStream
+    var that = this
+	var playerDevice = this.getZonePlayerDevice(playername)
+	if (playerDevice) {
+	   this.log.debug("Player %s found. Set Ts to %s",playername,newStream)
+	   playerDevice.setTransportStream(newStream)
+	}
 }
 
 
@@ -270,28 +286,26 @@ SonosCoordinator.prototype.switchon = function(playername) {
   var playerDevice = this.getZonePlayerDevice(playername)
   if (playerDevice) {
 	if (playerDevice.transportState != "PLAYING") {
-		  this.log.info("TransportState of %s is not Playing",playername)
+		  this.log.debug("TransportState of %s is not Playing",playername)
 		  var playing = this.findPlayingDevice()
 		  if (playing) {
-		  	  this.log.info("There is Music playing -> adding %s to %s",playername,playing)
+		  	  this.log.debug("There is Music playing -> adding %s to %s",playername,playing)
 		  	  this.addtogroup(playing,playername)
   			  this.fadeIn(playername)
 		  } else {
 			  // Set a Default Playlist
-		  	  this.log.info("There is silence check default playlist")
+		  	  this.log.debug("There is silence check default playlist")
 			  var default_playlist = this.configuration.getValueForPlugin(this.plugin.name,"default_playlist",undefined);
 			  if (default_playlist) {
-			  	  this.log.info("%s found. Set Playlist",default_playlist)
+			  	  this.log.debug("%s found. Set Playlist",default_playlist)
 				  playerDevice.setPlayList(default_playlist)
 			  }
 			  // If the user set a autovolume table fade in to that volume
-		  	  this.log.info("Set fading and start playing")
+		  	  this.log.debug("Set fading and start playing")
 			  this.fadeIn(playername)
 			  playerDevice.play()
 		  }
-	} else {
-		this.log.error("Player %s is already on",playername)
-	}
+	} 
   } else {
 	this.log.error("No Device found for %s",playername)
   }

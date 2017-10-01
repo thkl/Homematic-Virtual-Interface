@@ -51,8 +51,10 @@ HarmonyRokuManager.prototype.startDiscovery = function() {
     
     this.log.debug("RokuManager start DGram")
     this.socket.bind(1900, "0.0.0.0", function () {
-        this.socket.addMembership("239.255.255.250");
-        that.log.debug("listening on 0.0.0.0:1900");
+	    if (that.socket != undefined) {
+	        that.socket.addMembership("239.255.255.250");
+			that.log.debug("listening on 0.0.0.0:1900");
+        }
     });
     this.log.debug("RokuManager gtfo")
 }

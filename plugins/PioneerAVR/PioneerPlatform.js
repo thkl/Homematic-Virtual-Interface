@@ -35,7 +35,7 @@ PioneerPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     var numOfRemotes = this.configuration.getPersistValueForPluginWithDefault(this.name,"numOfRemotes",1);	
-    this.log.debug("Init Pioneer Remotes. Number of remotes to use %s",numOfRemotes);
+    this.log.info("Init Pioneer Remotes. Number of remotes to use %s",numOfRemotes);
     this.hm_layer = this.server.getBridge();
     
     for(var i = 0; i < numOfRemotes ; i++) { 
@@ -60,6 +60,7 @@ PioneerPlatform.prototype.reconnect = function(command) {
 	var hop = this.configuration.getValueForPlugin(this.name,"options");
 	if (hop != undefined) {
 		var options = {port: hop["port"],host: hop["host"],log: false};
+	    this.log.info("Connecting to AVR %s:%s",options.host,options.port);
 		this.receiver = new avr.VSX(options);
 		
 		this.receiver.on("connect", function() {
@@ -72,7 +73,7 @@ PioneerPlatform.prototype.reconnect = function(command) {
         });
         
         this.receiver.on("error", function () {
-        	that.log.debug("Error Reconnecting in 60 seconds");
+        	that.log.error("Error Reconnecting in 60 seconds");
 			setTimeout(function() {that.reconnect()},60000);
         });
     }
@@ -94,7 +95,7 @@ PioneerPlatform.prototype.sendCommand = function(command) {
 		this.log.debug("try force quit and reinit");
 		this.reInit();
 	} else {
-		this.log.debug("Sending Command (%s )",command);
+		this.log.info("Sending Command (%s )",command);
 		this.receiver.sendCommand(command);
 	}
   } catch (err) {that.log.error("Error while sending command %s",err)}
@@ -108,6 +109,32 @@ PioneerPlatform.prototype.setVolume = function(newVolume) {
  } catch (err) {that.log.error("Error while sending command %s",err)}
 }
 
+PioneerPlatform.prototype.showSettings = function(dispatched_request) {
+	var result = [];
+	var ipadr = "";
+	var port = "";
+	
+	var hop = this.configuration.getValueForPlugin(this.name,"options");
+	if (hop != undefined) {
+	 port = hop["port"]
+	 ipadr = hop["host"]
+	}	
+	
+	result.push({"control":"text","name":"avr_host","label":"AVR Host -IP","value":ipadr});
+	result.push({"control":"text","name":"avr_port","label":"AVR Port","value":port});
+	return result;
+}
+
+PioneerPlatform.prototype.saveSettings = function(settings) {
+	var that = this
+	var host = settings.avr_host;
+	var port = settings.avr_port;
+	if ((host) && (port)) {
+		let hop = {"host":host,"port":port}
+		this.configuration.setValueForPlugin(this.name,"options",hop)
+		this.reconnect()
+	}
+}
 
 
 

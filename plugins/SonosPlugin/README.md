@@ -32,3 +32,5 @@ groups players : createmesh|player1,player2...
 toggle group : toggle|playername
 
 there is also a command to select and play on of your Sonos favs: playFav|Playername|FavName 
+
+you may also combine commands with a * as separator, so the coordinator will execute them in a row. 
