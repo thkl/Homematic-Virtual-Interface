@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-sonosdevice",
-  "version": "0.0.22",
+  "version": "0.0.24",
   "description": "Virtual Sonos Device",
   "license": "ISC",
   "keywords": [

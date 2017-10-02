@@ -10,15 +10,29 @@
 "use strict";
 
 
-var path = require('path');
+
+var path = require('path')
+var fs = require('fs')
+
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
-if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
+
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { 
+	appRoot = path.join(appRoot,'..','..','..','lib')
+	
+	if (!fs.existsSync(path.join(appRoot,'HomematicVirtualPlatform.js'))) {
+	   appRoot = path.join(path.dirname(require.main.filename),'..','..','..','node_modules','homematic-virtual-interface','lib')
+	}
+}
+
 appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
 var logicLogger = require(appRoot + "/logger.js").logger("LogicLogger");
 var xmlrpc = require(appRoot + "/homematic-xmlrpc");
+
+var _global = {};
+
 
 var modules = {
     'fs': require('fs'),
@@ -47,9 +61,6 @@ var regarequest = modules.regarequest;
 var Promise = modules.promise;
 var moment = modules.moment;
 const util = require('util');
-
-
-var _global = {};
 
 function LogicalPlatform(plugin,name,server,log,instance) {
 	LogicalPlatform.super_.apply(this,arguments);
@@ -645,11 +656,15 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
             }
         },
         
-        link: function Sandbox_link(source, target, /* optional */ value) {
+        link: function Sandbox_link(source, target, /* optional */ value,offset) {
             Sandbox.subscribe(source, function (source, val) {
                 val = (typeof value === 'undefined') ? val : value;
                 that.log.debug('logic-link', source, target, val);
-                Sandbox.setValue(target, val);
+                if (typeof offset === 'undefined') {
+                	Sandbox.setValue(target, val);
+                } else {
+	                Sandbox.setValue(target, val + offset);
+                }
             });
         },
         

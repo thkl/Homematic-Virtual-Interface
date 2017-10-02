@@ -9,8 +9,11 @@
 
 "use strict";
 
-var HueApi = require("node-hue-api").HueApi;
-var url = require("url");
+const HueApi = require('node-hue-api').HueApi
+const url = require('url')
+const fs = require('fs')
+const path = require('path')
+
 var HueColorDevice = require(__dirname + "/HueColorDevice.js").HueColorDevice;
 var HueDimmableDevice = require(__dirname + "/HueDimmableDevice.js").HueDimmableDevice;
 var HueDeviceOsramPlug = require(__dirname + "/HueDeviceOsramPlug.js").HueDeviceOsramPlug;
@@ -18,10 +21,17 @@ var HueSceneManager = require(__dirname + "/HueSceneManager.js").HueSceneManager
 var HueGroupManager = require(__dirname + "/HueGroupManager.js").HueGroupManager;
 var HueEffectServer = require(__dirname + "/HueEffectServer.js").HueEffectServer;
 var HueSFXDevice = require(__dirname + "/HueSFXDevice.js").HueSFXDevice;
-var path = require('path');
 var appRoot = path.dirname(require.main.filename);
+
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
-if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
+
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { 
+	appRoot = path.join(appRoot,'..','..','..','lib')
+	if (!fs.existsSync(path.join(appRoot,'HomematicVirtualPlatform.js'))) {
+	   appRoot = path.join(path.dirname(require.main.filename),'..','..','..','node_modules','homematic-virtual-interface','lib')
+	}
+}
+
 appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');

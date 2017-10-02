@@ -1,0 +1,35 @@
+{"paramsets":[{"name":"MASTER","id":"remote_dev_master","parameter":[{"unit":"s","vdefault":255,"min":0,"tab_order":0,"flags":1,"max":255,"name":"DISPLAY_ENERGYOPTIONS","type":"FLOAT"},{"flags":1,"tab_order":1,"name":"DISPLAY_BRIGHTNESS","type":"ENUM","valuelist":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"]},{"flags":1,"tab_order":2,"name":"LOCAL_RESET_DISABLE","type":"BOOL","vdefault":0}]}],
+"channels":[
+	{"flags":3,
+	 "paramsets":[
+	 {"name":"MASTER","id":"maint_ch_master","parameter":[]},
+	 {"name":"VALUES","id":"maint_ch_values","parameter":[
+	 	{"flags":9,"operations":5,"name":"UNREACH","type":"BOOL","tab_order":0},
+	 	{"flags":24,"operations":7,"name":"STICKY_UNREACH","type":"BOOL","tab_order":1},
+	 	{"flags":9,"operations":5,"name":"CONFIG_PENDING","type":"BOOL","tab_order":2},
+	 	{"flags":1,"operations":5,"name":"RSSI_DEVICE","type":"INTEGER","tab_order":3},
+	 	{"flags":1,"operations":5,"name":"RSSI_PEER","type":"INTEGER","tab_order":4},
+	 	{"flags":1,"control":"NONE","operations":2,"name":"LED_STATUS","type":"INTEGER","tab_order":5},
+	 	{"type":"INTEGER","max":127,"min":0,"flags":0,"tab_order":6,"name":"AES_KEY","operations":1},
+	 	{"flags":9,"operations":5,"name":"DEVICE_IN_BOOTLOADER","type":"BOOL","tab_order":7},
+	 	{"flags":9,"operations":5,"name":"UPDATE_PENDING","type":"BOOL","tab_order":8}]}
+	 	],
+	 "type":"MAINTENANCE","adress":"0","direction":2
+	},
+	 
+	{"flags":1,"paramsets":[
+	  {"name":"MASTER","id":"remote_ch_master","parameter":[
+	  {"flags":3,"tab_order":0,"name":"AES_ACTIVE","type":"BOOL","vdefault":0}]},
+	  {"name":"VALUES","id":"remote_ch_values","parameter":[
+	  	{"flags":1,"control":"BTN_SHORT_ONLY.SHORT","operations":6,"name":"PRESS_SHORT","type":"","tab_order":0},
+	  	{"operations":7,"type":"ENUM","valuelist":["OFF","RED","GREEN","ORANGE"],"flags":1,"tab_order":1,"name":"LED_STATUS","control":"NONE"},
+	  	{"flags":1,"control":"NONE","operations":2,"name":"ALL_LEDS","type":"STRING","tab_order":2},
+	  	{"operations":2,"type":"ENUM","valuelist":["OFF","ON"],"flags":1,"tab_order":3,"name":"LED_SLEEP_MODE","control":"NONE"},
+	  	{"flags":3,"operations":6,"name":"INSTALL_TEST","type":"","tab_order":4}]}],
+	  "type":"KEY",
+	  "adress":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"],
+	  "direction":2
+	}
+],
+	"type":"HM-OU-LED16","version":41
+}

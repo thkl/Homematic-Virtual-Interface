@@ -1,0 +1,16 @@
+[Unit]
+Description=Homematic Virtual Layer
+After=multi-user.target
+
+[Service]
+Type=idle
+User=pi
+ExecStart=/home/pi/node_modules/homematic-virtual-interface/bin/hmvi 1> /var/s_hvl.log 2>&1 &
+Restart=on-failure
+RestartSec=10
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+
+

@@ -1,0 +1,158 @@
+{
+	"channels": [
+		{
+			"adress": "0",
+			"direction": 2,
+			"flags": 3,
+			"paramsets": [
+				{
+					"id": "maint_ch_master",
+					"name": "MASTER",
+					"parameter": [
+					]
+				},
+				{
+					"id": "maint_ch_values",
+					"name": "VALUES",
+					"parameter": [
+						{
+							"flags": 9,
+							"name": "UNREACH",
+							"operations": 5,
+							"tab_order": 0,
+							"type": "BOOL"
+						},
+						{
+							"flags": 24,
+							"name": "STICKY_UNREACH",
+							"operations": 7,
+							"tab_order": 1,
+							"type": "BOOL"
+						},
+						{
+							"flags": 9,
+							"name": "CONFIG_PENDING",
+							"operations": 5,
+							"tab_order": 2,
+							"type": "BOOL"
+						},
+						{
+							"flags": 9,
+							"name": "LOWBAT",
+							"operations": 5,
+							"tab_order": 3,
+							"type": "BOOL"
+						},
+						{
+							"flags": 1,
+							"name": "RSSI_DEVICE",
+							"operations": 5,
+							"tab_order": 4,
+							"type": "INTEGER"
+						},
+						{
+							"flags": 1,
+							"name": "RSSI_PEER",
+							"operations": 5,
+							"tab_order": 5,
+							"type": "INTEGER"
+						},
+						{"flags":9,"operations":5,"name":"LOWBAT","type":"BOOL","tab_order":6}
+					]
+				}
+			],
+			"type": "MAINTENANCE"
+		},
+		{
+			"adress": "1",
+			"direction": 2,
+			"flags": 1,
+			"paramsets": [
+				{
+					"id": "wds40_th_ch_master",
+					"name": "MASTER",
+					"parameter": [
+						{
+							"flags": 3,
+							"name": "AES_ACTIVE",
+							"tab_order": 0,
+							"type": "BOOL",
+							"vdefault": 0
+						}
+					]
+				},
+				{
+					"id": "wds40_th_ch_values",
+					"name": "VALUES",
+					"parameter": [
+						{
+							"flags": 1,
+							"max": 80,
+							"min": -40,
+							"name": "TEMPERATURE",
+							"operations": 5,
+							"tab_order": 0,
+							"type": "FLOAT",
+							"unit": "C"
+						},
+						{
+							"flags": 1,
+							"max": 100,
+							"min": 0,
+							"name": "SOILMOISTURE",
+							"operations": 5,
+							"tab_order": 1,
+							"type": "FLOAT",
+							"unit": "%"
+						},
+						{
+							"flags": 1,
+							"max": 6,
+							"min": 0,
+							"name": "FERTILISER",
+							"operations": 5,
+							"tab_order": 2,
+							"type": "FLOAT",
+							"unit": "dS/m"
+						},
+						{
+							"type":"INTEGER","max":255,"min":0,"flags":1,"tab_order":3,"name":"BRIGHTNESS","operations":5
+							
+						},{"name":"INSTALL_TEST","operations":2,"tab_order":7,"max":"","min":"","type":"ACTION","vdefault":"","flags":3}
+					]
+				},
+				{
+					"id": "wds40_th_ch_link",
+					"name": "LINK",
+					"parameter": [
+					]
+				}
+			],
+			"type": "WEATHER"
+		}
+	],
+	"paramsets": [
+		{
+			"id": "wds40_th_dev_master",
+			"name": "MASTER",
+			"parameter": [
+				{
+					"flags": 1,
+					"name": "BURST_RX",
+					"tab_order": 0,
+					"type": "BOOL",
+					"vdefault": 0
+				},
+				{
+					"flags": 1,
+					"name": "LOCAL_RESET_DISABLE",
+					"tab_order": 1,
+					"type": "BOOL",
+					"vdefault": 0
+				}
+			]
+		}
+	],
+	"type": "HM-WDS40-TH-I-2",
+	"version": 41
+}

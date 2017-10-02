@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-PhilipsTV",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "Virtual Hue Device",
   "license": "ISC",
   "keywords": [

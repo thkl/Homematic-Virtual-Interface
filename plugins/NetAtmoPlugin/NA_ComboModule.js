@@ -3,10 +3,18 @@ const NetAtmoDevice = require(__dirname + '/NetAtmoDevice.js').NetAtmoDevice
 const url = require('url')
 const path = require('path')
 const util = require('util')
+const fs = require('fs')
 
 var appRoot = path.dirname(require.main.filename)
 if (appRoot.endsWith('bin')) {appRoot =  appRoot+'/../lib'}
-if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { 
+
+	appRoot = path.join(appRoot,'..','..','..','lib')
+
+	if (!fs.existsSync(path.join(appRoot,'HomematicVirtualPlatform.js'))) {
+	   appRoot = path.join(path.dirname(require.main.filename),'..','..','..','node_modules','homematic-virtual-interface','lib')
+	}
+}
 appRoot = path.normalize(appRoot)
 
 const HomematicReqaRequest = require(appRoot + '/HomematicReqaRequest.js')

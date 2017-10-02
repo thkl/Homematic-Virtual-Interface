@@ -11,6 +11,7 @@
 
 var path = require('path');
 var url = require("url");
+var fs = require("fs");
 var HarmonyHueServer = require(__dirname + '/HarmonyHueServer.js').HarmonyHueServer;
 var HarmonyRokuServer = require(__dirname + '/HarmonyRokuServer.js').HarmonyRokuServer;
 var HarmonyRokuManager = require(__dirname + '/HarmonyRokuManager.js').HarmonyRokuManager;
@@ -20,7 +21,15 @@ var path = require('path');
 
 var appRoot = path.dirname(require.main.filename)
 if (appRoot.endsWith('bin')) { appRoot = path.join(appRoot, '..','lib'); }
-if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
+
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { 
+	appRoot = path.join(appRoot,'..','..','..','lib')
+	
+	if (!fs.existsSync(path.join(appRoot,'HomematicVirtualPlatform.js'))) {
+	   appRoot = path.join(path.dirname(require.main.filename),'..','..','..','node_modules','homematic-virtual-interface','lib')
+	}
+}
+
 appRoot = path.normalize(appRoot);
 
 

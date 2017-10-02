@@ -1,7 +1,7 @@
 {
-  "name": "homematic-virtual-pioneeravrdevice",
-  "version": "0.0.5",
-  "description": "Virtual Pioneer Device",
+  "name": "homematic-virtual-flowerpowerdevice",
+  "version": "0.0.3",
+  "description": "Virtual Plugin - Parot FlowerPower",
   "license": "ISC",
   "keywords": [
     "homematic-virtual-plugin"
@@ -19,5 +19,7 @@
   },
   
   "dependencies": {
+  	"flower-power":"0.3.0",
+  	"async": "^1.4.2"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-bmwconnect",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Virtual Plugin - BMW Connect",
   "license": "ISC",
   "keywords": [

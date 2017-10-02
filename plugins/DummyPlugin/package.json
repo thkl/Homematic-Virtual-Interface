@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-huedevice",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Virtual Plugin - Dummy",
   "license": "ISC",
   "keywords": [

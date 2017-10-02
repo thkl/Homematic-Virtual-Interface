@@ -15,7 +15,11 @@ var url = require('url')
 var path = require('path')
 var appRoot = path.dirname(require.main.filename)
 if (appRoot.endsWith('bin')) {appRoot =  appRoot+'/../lib'}
-if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { 
+	//appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')
+	appRoot = path.join(appRoot,'..','..','..','lib')
+}
+
 appRoot = path.normalize(appRoot)
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')

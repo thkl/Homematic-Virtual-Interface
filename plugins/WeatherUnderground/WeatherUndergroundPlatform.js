@@ -1,9 +1,18 @@
 'use strict'
 
 var path = require('path')
+var fs = require('fs')
 var appRoot = path.dirname(require.main.filename)
 if (appRoot.endsWith('bin')) { appRoot = appRoot + '/../lib' }
-if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot,'..','..','..','node_modules','homematic-virtual-interface','lib')}
+
+if (appRoot.endsWith('node_modules/daemonize2/lib')) { 
+	appRoot = path.join(appRoot,'..','..','..','lib')
+	
+	if (!fs.existsSync(path.join(appRoot,'HomematicVirtualPlatform.js'))) {
+	   appRoot = path.join(path.dirname(require.main.filename),'..','..','..','node_modules','homematic-virtual-interface','lib')
+	}
+}
+
 appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')
@@ -95,6 +104,7 @@ WeatherUndergroundPlatform.prototype.fetchWeather = function () {
 			 try {
 				var jso = JSON.parse(result)
 				var observation = jso.current_observation
+				that.log.info("Result %s",JSON.stringify(observation))
 				var channel = that.hmDevice.getChannelWithTypeAndIndex('WEATHER','1')
 				if (channel) {
 					channel.updateValue('TEMPERATURE',observation.temp_c,true)

@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-httpdevice",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "Virtual Plugin - HttpPlatform",
   "license": "ISC",
   "keywords": [

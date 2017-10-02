@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-lightifydevice",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "Virtual Lightify Device",
   "license": "ISC",
   "keywords": [
