@@ -1,0 +1,45 @@
+string stdout;string stderr;string cmd;
+cmd = 'cat > /usr/local/etc/config/rc.d/ccu_hvl <<EOF
+#!/bin/sh
+	case \"\$1\" in
+  \"\"|start)
+  	  if [ \$(cat /usr/local/etc/config/InterfacesList.xml | grep \"<name>HVL</name>\" | wc -l ) -eq 0 ]
+        then
+		sed -i /usr/local/etc/config/InterfacesList.xml -e \"s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/myIP:7000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/\"
+	  fi
+   ;;
+   stop)
+   ;;
+   restart)
+   ;;
+   info)
+        echo \"Info: <center><b>Homematic Virtual Layer</b></center>\"
+		echo \"Info: <center><br>Aufruf:<br><a href=\'/addons/hvl\' target=\'_blank\'>http://IPAdressederCCU/addons/hvl</a></center>\"
+		echo \"Name: Homematic Virtual Layer\"
+        echo \"Version: 0.6\"
+        echo \"Operations: uninstall\"
+    ;;
+   uninstall)
+	logger -t homematic -p user.info \"removing homematic virtual layer\"
+	rm -r /usr/local/etc/config/addons/www/hvl
+	rm -r /usr/local/etc/config/rc.d/ccu_hvl
+	mount -o remount,rw /
+	rm -r /etc/init.d/S59hvl
+	mount -o remount,ro /
+	sed -i /usr/local/etc/config/InterfacesList.xml -e \"s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/myIP:7000<\/url><info>HVL<\/info><\/ipc>//\"
+	;;
+  *)
+	echo \"Usage: $0 {start|stop|restart|info|uninstall}\" >&2
+	exit 1
+	;;
+esac
+exit 0
+EOF
+chmod +x /usr/local/etc/config/rc.d/ccu_hvl
+mkdir /usr/local/etc/config/addons/www/hvl
+echo \"<meta http-equiv=\'refresh\' content=\'0; url=myProt://myIP:myPort/\'>\" > /usr/local/etc/config/addons/www/hvl/index.html
+mount -o remount,rw /
+ln -s /usr/local/etc/config/rc.d//ccu_hvl /etc/init.d/S59hvl
+mount -o remount,ro /
+';
+system.Exec(cmd);

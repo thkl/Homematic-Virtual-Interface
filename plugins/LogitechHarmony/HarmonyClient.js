@@ -48,6 +48,11 @@ HarmonyClient.prototype.init = function() {
   }
   
   var adx = 1;  
+  if (this.hubIP == undefined) {
+	  this.log.info("There is no hubIP .. skipping Harmony Client")
+	  return;
+  }
+  
   that.log.info("Start talking to your harmony")
   harmony(this.hubIP).then(function(harmonyClient) {
 	  that.log.info("fetching activities")

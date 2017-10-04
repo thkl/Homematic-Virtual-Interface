@@ -97,7 +97,7 @@
   <h4 class="ty">
     CCU Info
   </h4>
-   <div class="ph">$system.ipccu$</div>
+   <div class="ph">$system.ipccu$ <span class="dy dh"><input type="button" value="Bearbeiten" onclick="editccuip();"/></span></div>
    <div class="ph">$consumer$ aktive Verbindungen ($consumer.detail$)<br />$consumer.zeromessage$</div>
    <div class="ph">$message$ <a href="javascript:clean()">Alle Verbindungen entfernen</a></div>
 </div>
@@ -136,6 +136,10 @@
 			}
 	    }
 	    
+	    function editccuip() {
+			var ccuip = prompt("Neue CCU IP","");
+			window.location.href = "/settings/?ccu="+ccuip;
+	    }
 	    
 	    function getVersion(local) {
 		        name = 'homematic-virtual-interface'

@@ -21,10 +21,6 @@ var http = require('http');
 const EventEmitter = require('events');
 const util = require('util');
 var url = require("url");
-var ssdp = require('@achingbrain/ssdp')
-
-
-
 
 var Method = {
   Service_Lights : require(__dirname + '/methods/lights.js')
@@ -36,8 +32,13 @@ var HarmonyHueServer = function (plugin) {
 	this.log = this.plugin.log;
 	this.server = this.plugin.server;
 	this.config = this.server.configuration;
-	this.initFake = false;
-	this.myId = "00178823c4bb";  // Secure Random Number -> https://xkcd.com/221/
+	this.initFake = false
+
+	let tmpId = crypto.randomBytes(5).toString('hex')
+
+	this.myId = this.config.getValueForPluginWithDefault(this.name,"myId",tmpId)
+	
+	this.config.setValueForPlugin(this.name,"myId",this.myId)
 	this.bridge = this.server.getBridge();
     this.lights = [];
 	this.init();
@@ -63,6 +64,7 @@ HarmonyHueServer.prototype.init = function() {
 	
 	try  {
 	//Create a server
+	
 	this.hue_server = http.createServer(handleRequest);
 	
 	
@@ -80,37 +82,11 @@ HarmonyHueServer.prototype.init = function() {
 		that.log.error("Cannot init Harmony Server at Port %s Error: %s",that.localPort , e);
 	}
  
- 	this.udn =  "uuid:2f402f80-da50-11e1-9b23-"+this.myId;
- 	
- 	this.bus = ssdp({
-	  udn:  this.udn , // defaults to a random UUID
-	  signature: 'FreeRTOS/6.0.5, UPnP/1.0, IpBridge/0.1',
-	  retry : {
-	   times: 5, // how many times to attempt joining the UDP multicast group
-	   interval: 100 // how long to wait between attempts
-  	  },
-  	  
-  	sockets: [{
-    type: 'udp4', // or 'udp6'
-    broadcast: {
-      address: '239.255.255.250', // or 'FF02::C'
-      port: 1901 // SSDP broadcast port
-	},
-    bind: {
-      address: '0.0.0.0', // or '0:0:0:0:0:0:0:0'
-      port: 1901
-    },
-    	maxHops: 4 // how many network segments packets are allow to travel through (UDP TTL)
-  	}]
-  
-  	});	
- 	
- 	var options = {};
- 	options["usn"]='urn:schemas-upnp-org:device:Basic:1';
- 	options["udn"]='uuid:totaly-unique';
- 	options["location"] =  {udp4: "http://"+ this.hostName + ":" + this.localPort + "/description.xml"};
- 	this.bus.advertise(options);
- 	
+	this.udn = "uuid:2f402f80-da50-11e1-9b23-" + this.myId
+	this.log.debug("Adding Hue Bridge SSDP Info to manager")
+	this.server.addSSDPService({"owner":"hue","st":"urn:schemas-upnp-org:device:basic:1","payload":"HTTP/1.1 200 OK\r\nHOST: 239.255.255.250:1900\r\nNT: urn:schemas-upnp-org:device:Basic:1\r\nExt: \r\nNTS: ssdp:alive\r\nUSN: urn:schemas-upnp-org:device:Basic:1::uuid:35fa7248-2d2f-4eaf-aefc-fc496af2a589\r\nCACHE-CONTROL: max-age=1800\r\nSERVER: Linux/3.14.0 UPnP/1.0 IpBridge/1.19.0\r\nST: urn:schemas-upnp-org:device:basic:1\r\nLOCATION: http://"+ this.hostName + ':' + this.localPort + '/description.xml\r\n\r\n'})
+
+
   // Build the Lights
   
   // Check existing Hue Bridge .. Init and Add Real Lights
@@ -320,9 +296,7 @@ HarmonyHueServer.prototype.shutdown = function() {
 	var that = this
 	try {		
 		this.hue_server.close();
-		this.bus.stop(function (error) {
-			that.log.error("BUS Error %s",error)
-		});
+		this.server.removeSSDPServiceByOwner('hue');
     } catch (e) {
 	    
     }
@@ -341,7 +315,6 @@ HarmonyHueServer.prototype.handleRequest = function(dispatched_request) {
 
 HarmonyHueServer.prototype.internalhandleRequest = function(dispatched_request) {
 	var that = this;
-
 	if (dispatched_request.queryPath == "/description.xml") {
 		dispatched_request.sendXMLResponse(this.sendDescription());
 		return;

@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-interface",
-  "version": "0.2.50",
+  "version": "0.2.53",
   "description": "Homematic Virtual Interface",
   "license": "ISC",
   "scripts": {
@@ -32,7 +32,8 @@
     "nedb-logger":"0.1.0",
     "qs":"6.3.1",
     "xml2js":"0.4.17",
-    "pem":"latest"
+    "pem":"latest",
+	"http-headers":"latest"
   },
   
   "files": [

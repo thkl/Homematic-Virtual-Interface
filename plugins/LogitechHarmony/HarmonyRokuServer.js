@@ -53,10 +53,10 @@ var HarmonyRokuServer = function (plugin,port,instance) {
 
     this.uuid = uuid.v1();
     this.http_port = port || 9093;
-    this.ssdp_response = new Buffer("HTTP/1.1 200 OK\r\nCache-Control: max-age=300\r\nST: roku:ecp\r\nUSN: uuid:roku:ecp:" +
+    this.ssdp_response = "HTTP/1.1 200 OK\r\nCache-Control: max-age=300\r\nST: roku:ecp\r\nUSN: uuid:roku:ecp:" +
             this.uuid + "\r\nExt: \r\nServer: Roku UPnP/1.0 MiniUPnPd/1.4\r\nLOCATION: http://" +
             this.bind + ":" + this.http_port + "/\r\n\r\n"
-    );
+
     
     this.descxml = '<?xml version="1.0" encoding="UTF-8" ?><root xmlns="urn:schemas-upnp-org:device-1-0"><specVersion><major>1</major>'
     this.descxml = this.descxml + '<minor>0</minor></specVersion>'
@@ -162,7 +162,6 @@ HarmonyRokuServer.prototype.startServer = function(callback) {
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'text/xml; charset=utf-8');
                 response.setHeader('Connection', 'close');
-                that.log.debug("sending service description");
                 response.end(that.descxml, function () {
                     request.connection.unref();
                 });

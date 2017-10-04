@@ -129,7 +129,7 @@ HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
 	this.localization.setLanguage(dispatched_request);
 	var result = [];
 	
-	var localPort = this.config.getValueForPluginWithDefault(this.name,"port",7000);
+	var localPort = this.config.getValueForPluginWithDefault(this.name,"port",7001);
 	var localHostIP = this.config.getValueForPluginWithDefault(this.name,"host",this.config.getIPAddress());
 	var hub_ip = this.config.getValueForPluginWithDefault(this.name,"hub_ip","");
 	var hue_plugin_name = this.config.getValueForPluginWithDefault(this.name,"hue_plugin_name","");
@@ -143,7 +143,7 @@ HarmonyPlatform.prototype.showSettings = function(dispatched_request) {
 					"name":"localPort",
 				   "label":this.localization.localize("Local Port"),
 				   "value":localPort,
-		     "description":this.localization.localize("If you want to change the local port from 7000")
+		     "description":this.localization.localize("If you want to change the local port from 7001")
 	});
 
 	result.push({"control":"text",

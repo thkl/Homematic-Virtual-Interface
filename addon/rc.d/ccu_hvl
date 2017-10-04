@@ -35,11 +35,13 @@ case "$1" in
    
    uninstall)
 	logger -t homematic -p user.info "removing homematic virtual layer"
+	my_url=$(cat /usr/local/etc/config/addons/www/hvl/ip)
+	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/${my_url}<\/url><info>HVL<\/info><\/ipc>//"
 	rm -r /usr/local/etc/config/addons/www/hvl
 	rm -r /usr/local/etc/config/rc.d/ccu_hvl
-	rm -f /etc/config/InterfacesList.xml
-	rm -f /etc/init.d/S59hvl
-	;;
+	mount -o remount,rw /
+	rm -r /etc/init.d/S59hvl
+	mount -o remount,ro /
 
   *)
 	echo "Usage: $0 {start|stop|restart|info|uninstall}" >&2
