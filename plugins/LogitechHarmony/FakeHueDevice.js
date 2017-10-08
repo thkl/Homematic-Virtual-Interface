@@ -43,6 +43,7 @@ FakeHueDevice.prototype.init = function() {
 }
 
 FakeHueDevice.prototype.initHMDevice = function() {
+  var that = this
   var deviceSerial = "Harmony_"  + this.light.uniqueid
   HomematicDevice = this.bridge.homematicDevice
   
@@ -65,16 +66,16 @@ FakeHueDevice.prototype.initHMDevice = function() {
 		this.hmDevice.initWithStoredData(data);
     }
 
-	this.log.debug("HM Device %s - %s with type",this.hmDevice,this.hmDevice.initialized,this.hmType['type']);
-	if (this.hmDevice.initialized == false) {
+  this.log.debug("HM Device %s - %s with type",this.hmDevice,this.hmDevice.initialized,this.hmType['type']);
+  if (this.hmDevice.initialized == false) {
 		this.hmDevice.initWithType(this.hmType['type'], deviceSerial );
 		this.hmDevice.firmware = "0.0.1";
 		this.bridge.addDevice(this.hmDevice,true);
-  	} else {
+  } else {
 	    this.bridge.addDevice(this.hmDevice,false);
-  	}
+  }
   	
-    this.light.on("harmony_device_value_change", function(lightid,parameter,state){
+  this.light.on("harmony_device_value_change", function(lightid,parameter,state){
 	  that.log.debug("Event -> Set %s to %s",parameter,state);
 
 	  if ((parameter=="bri") && (state > 0)) {
@@ -89,7 +90,7 @@ FakeHueDevice.prototype.initHMDevice = function() {
 			  
 			  case "DIMMER": {
 			  	var sw_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-			  	sw_channel.updateValue("LEVEL",{"explicitDouble":(state/255)},true,true);
+			  	sw_channel.updateValue("LEVEL",(state/255),true,true);
 			  }
 		  }
 
@@ -108,7 +109,7 @@ FakeHueDevice.prototype.initHMDevice = function() {
 			  case "DIMMER": {
 			  	if (state == false) {
 			  		var sw_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-			  		sw_channel.updateValue("LEVEL",{"explicitDouble":0},true,true);
+			  		sw_channel.updateValue("LEVEL",0,true,true);
 			  	}
 			  }
 		  }

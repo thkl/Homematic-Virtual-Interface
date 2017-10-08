@@ -80,10 +80,14 @@ Fakelight.prototype.setOn = function (state) {
 
 Fakelight.prototype.setBrightness = function (brightness) {
 	//  Check if we have new State and make a call if
+	   this.log.debug("Set brightness command",this.uniqueid ,brightness);
+	
    if (this.bri != brightness) {
 	   this.emit("harmony_device_value_change", this.id , "bri",brightness);
 	   this.bri = brightness;
 	   this.log.debug("Set brightness for Light %s to %s",this.uniqueid , this.bri);
+   } else {
+	   this.log.debug("not changed")
    }	
 }
 

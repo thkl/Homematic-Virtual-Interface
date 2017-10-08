@@ -35,14 +35,13 @@
 
     <title>
       
-        Homematic Virtual Layer Service
+        Homematic Virtual Interface Core
       
     </title>
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
-    <link href="../assets/css/bootstrap.css" rel="stylesheet">
-    <link href="../assets/css/toolkit-inverse.css" rel="stylesheet">
-    <link href="../assets/css/application.css" rel="stylesheet">
+    <link href="/assets/css/toolkit-inverse.css" rel="stylesheet">
+    <link href="/assets/css/application.css" rel="stylesheet">
 
     <style>
       /* note: this is a hack for ios iframe for bootstrap themes shopify page */
@@ -72,11 +71,10 @@
           <div class="collapse and" id="nav-toggleable-sm">
             <ul class="nav of nav-stacked">
               <li class="tq">Plugins</li>
-              <li>
+              <li class="active">
                 <a href="/">Home</a>
               </li>
-              <li><a  class="active" href="service.html">Service Mode</a></li>
-              <li><a href="security/">Sicherheit</a></li>
+
             </ul>
             <hr class="rw aky">
           </div>
@@ -85,69 +83,50 @@
       <div class="hc aps">
         <div class="apa">
   <div class="apb">
-    <h6 class="apd">Homematic Virtual Layer</h6>
-    <h2 class="apc">Service</h2>
+    <h6 class="apd">Homematic Virtual Interface</h6>
+    <h2 class="apc">a note from the flightdeck</h2>
   </div>
 </div>
 
 <hr class="aky">
-
-<div class="by row">
-   <span class="ph row"> 
-   	<h4 class="col-md-12">Service</h4>
-   </span>
-
-   <a class="ph row" href="#">
-          <span class="dh col-md-3">Install Mode einschalten</span>
-          <span class="dh col-md-6"><input type="button" value="Install Mode" onclick="window.location.href='/index/?installmode'"/></span>  
-   </a>
-<!--
-   <a class="ph row" href="#">
-          <span class="dh col-md-3">Update</span>
-          <span class="dh col-md-6"><input type="button" value="Auf Update pr&uuml;fen" onclick="window.location.href='/index/?checkupdate'"/></span>  
-   </a>
-   -->
-      <a class="ph row" href="#">
-          <span class="dh col-md-3"></span>
-          <span class="dh col-md-6"><input type="button" value="Boot options" onclick="window.location.href='/index/?daemon'"/></span>  
-   </a>
-
-
-   <a class="ph row" href="#">
-          <span class="dh col-md-3">Log anzeigen</span>
-          <span class="dh col-md-6"><input type="button" value="Anzeigen" onclick="window.location.href='/index/?showlog'"/></span>  
-   </a>
-
-   <a class="ph row" href="#">
-	  <form action="/device/" method="get"> 
-	   		<input type="hidden" name = "do" value="remove" />	   
-
-          <span class="dh col-md-3">Ger&auml;t aus der CCU entfernen:</span>
-
-          <span class="dh col-md-6"><input name = "adr" /></span>
-		  <span class="dh col-md-3"><input type="submit" value="L&ouml;schen"/></span>  
-      </form>
-   </a>
-      <a class="ph row" href="#">
-          <span class="dh col-md-3">gel&ouml;schte Ger&auml;te</span>
-          <span class="dh col-md-6"><input type="button" value="Anzeigen" onclick="window.location.href='/device/'"/></span>  
-   </a>
-
-   <a class="ph row" href="#">
-          <span class="dh col-md-3"></span>
-          <span class="dh col-md-6"><input type="button" value="Neustart" onclick="window.location.href='/index/?restart'"/></span>  
-   </a>
-
-
+<div class="by">
+  <h4 class="ty">
+    System
+  </h4>
+   <a class="ph" href="#">$message$</a>
+    
 </div>
-
-
-</div>
-  </div>
+      </div>
     </div>
   </div>
 
 </div>
+
+    <script type="text/javascript">
+	    
+	    function alive() {
+			$.ajax({
+				url: "/",
+				type: "GET",
+				timeout: 1000,
+				success: function(response) { window.location.href="/"},
+				error: function(x, t, m) {
+					if(t==="timeout") {
+						setTimeout(function() {
+							alive();
+						}, 30000);
+					}
+				}
+		});
+		    
+	    }
+	    
+	    setTimeout(function() {
+							alive();
+		}, 20000);
+	    
+	    
+    </script>
 
 
     <script src="/assets/js/jquery.min.js"></script>

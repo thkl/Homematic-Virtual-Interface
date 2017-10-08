@@ -136,18 +136,18 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 				  bri = data['brightness'] / 255;
 				  that.curLevel = data['brightness']
 			  }
-			  di_channel.updateValue('LEVEL',bri,true);
+			  di_channel.updateValue('LEVEL',bri,true,false);
 			  
 			  if (data.color=='efd275') { // 'warm'
-				  di_channel.updateValue('WHITE','2000',true)
+				  di_channel.updateValue('WHITE','2000',true,false)
 			  }
 			  
 			  if (data.color=='f1e0b5') {
-				  di_channel.updateValue('WHITE','4250',true)
+				  di_channel.updateValue('WHITE','4250',true,false)
 			  }
 			  
 			  if (data.color=='f5faf6') {
-				  di_channel.updateValue('WHITE','6500',true)
+				  di_channel.updateValue('WHITE','6500',true,false)
 			  }
 			}		
 	  });

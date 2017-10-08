@@ -1,0 +1,24 @@
+{
+  "name": "homematic-virtual-cleanomat980",
+  "version": "0.0.18",
+  "description": "Virtual Plugin - CleanOMat980",
+  "license": "ISC",
+  "keywords": [
+    "homematic-virtual-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/"
+  },
+  "bugs": {
+    "url": "http://"
+  },
+  "engines": {
+    "node": ">=4.5.0",
+    "homematic-virtual-interface" : ">=0.2.50"
+  },
+  
+  "dependencies": {
+     "dorita980":">=3.0.11"
+  }
+}

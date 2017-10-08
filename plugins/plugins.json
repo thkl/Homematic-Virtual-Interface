@@ -101,6 +101,14 @@
 		"npm" :"homematic-virtual-pioneeravrdevice",
 		"syname":"PioneerAVR",
 		"description":{"de-de":"Erstellt eine 19er FB zur Steuerung eines PioneerAVR","en-en":"build a 19 key remote to control a Pioneer AVR"}
+	  },
+	  
+	  {
+		  
+		"name":"Roomba 980",
+		"npm" :"homematic-virtual-cleanomat980",
+		"syname":"Roomba 980",
+		"description":{"de-de":"Verbindet den Roomba 980 mit der CCU","en-en":"connects your roomba 980 to the ccu"}
 	  }
 
 	  

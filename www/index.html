@@ -141,7 +141,7 @@
 	    
 	    function editccuip() {
 			var ccuip = prompt("New CCU IP", "");
-			window.location.href = "/settings/?ccu="+ ccuip;
+			if (ccuip != null) {window.location.href = "/settings/?ccu="+ccuip;}
 	    }
 
 	    

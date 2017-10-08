@@ -75,13 +75,13 @@ Service_Lights.prototype.setLightState = function (lightId) {
 					that.log.debug("This is a real lamp");
 					light.sendStates(newStates);		
 			} else {
-			
-				that.log.debug("This is a fake lamp");
+				that.log.debug("This is a fake lamp %s State Key %s",light.name,JSON.stringify(newStateKeys));
 				newStateKeys.forEach(function (stateKey){
 				var value = newStates[stateKey];
 				var status = {};
 				
 				if (stateKey == "on") {
+				  that.log.debug("Set Lamp On State %s",value)
 				  light.setOn(value);
 				  status["/lights/" + lightId + "/state/" + stateKey] = light.isOn;
 				} else
