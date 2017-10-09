@@ -17,7 +17,14 @@ cd ${ADDON_DIR}
 
 echo "[Installer]Installing node" >>/var/log/hvl.log
 
-wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -Onode.tar.xz --no-check-certificate
+
+if $(uname -m | grep -Eq ^armv6); then
+ wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv6l.tar.xz -Onode.tar.xz --no-check-certificate
+else
+ wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -Onode.tar.xz --no-check-certificate
+fi
+
+
 tar xf node.tar.xz
 rm node.tar.xz
 mv node-v6.10.0-linux-armv7l node

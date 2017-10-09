@@ -1,3 +1,3 @@
-# Homematic-Virtual-Interface  - Dummy
+# Homematic-Virtual-Interface  - CleanOMat980
 
-this is a good way to start writing a plugin
+this plugin allows you to connect a RoomBa980 to your CCU
