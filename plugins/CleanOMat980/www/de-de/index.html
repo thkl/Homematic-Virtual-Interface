@@ -56,7 +56,7 @@
                 <a href="/">Home</a>
               </li>
               <li class="active">
-                <a href="index.html">CleanOMat980 Plugin</a>
+                <a href="index.html">Roomba980 Plugin</a>
               </li>
             </ul>
             <hr class="rw aky">
@@ -67,16 +67,27 @@
         <div class="apa">
   <div class="apb">
     <h6 class="apd">Homematic Virtual Layer</h6>
-    <h2 class="apc">CleanOMat980 Plugin</h2>
+    <h2 class="apc">Roomba980 Plugin</h2>
   </div>
 </div>
 
 <hr class="aky">
 
 <div class="by">
-  <h4 class="ty">
+   Dieses Plugin generiert eine 4 Tasten Fernbedienung in der CCU. Das Ger&auml;t heisst dort Cleo980.<br />
+   Nachdem die Zugangsdaten zum Roboter in den Einstellungen dieses Plugins gesetzt worden, kann der Roboter &uuml;ber die 4er FB gesteuert werden. <br />
    
-  </h4>
+  <br />
+  Kanal 1 : Kurzer Tastendruck = Start des Roboters<br />
+  Kanal 2 : Kurzer Tastendruck = Stop des Roboters<br />
+  Kanal 3 : Kurzer Tastendruck = Docking  des Roboters<br />
+  <br />
+  Kanal 4 hat 3 Datenfelder, die regelm&auml;ssig aktualisiert werden.<br />
+  Feld : CUR_STATE = Aktueller Status des Roboters<br />
+  Feld : BATTERIE = Aktueller Batteriestand<br />
+  Feld : BIN = true wenn Staubbeh&auml;lter voll ist<br />
+  <br /><br />
+  Das Aktualisierungsintervall liegt normal bei 2 Minuten. Dies kann in den Plugin Einstellungen ver&auml;ndert werden. 
       </div>
     </div>
   </div>

@@ -108,7 +108,7 @@
           "id" : "",
           "parameter" : [
           	{"name": "CUR_STATE","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 1,"type": "STRING"},
-          	{"name": "BIN","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 2,"type": "BOOL"},
+          	{"name": "BIN","flags": 1,"max": "","min": "","operations": 3,"tab_order": 2,"type": "BOOL"},
           	{"name": "BATTERIE","vdefault": "","flags": 1,"max": 100,"min": 0,"operations": 5,"unit":"%","tab_order": 3,"type": "FLOAT"}
           ]
 		 }
