@@ -58,9 +58,14 @@ HarmonyPlatform.prototype.init = function() {
 	
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")
 	this.supportedChannels = ["BidCos-RF.SWITCH","BidCos-RF.DIMMER","BidCos-RF.BLIND"]
+	
+	var localHostIP = this.config.getValueForPluginWithDefault(this.name,"host",this.config.getIPAddress());
+
+	
 	if (this.config.getValueForPluginWithDefault(this.name,"use_roku",false)==true)
 	{
 		this.rokuServer = new HarmonyRokuServer(this)
+		this.rokuServer.bind(localHostIP,9093)
 		this.rokuServer.init()
 		this.rokuManger.addRoku(this.rokuServer);
 	}
@@ -68,6 +73,7 @@ HarmonyPlatform.prototype.init = function() {
 	if (this.config.getValueForPluginWithDefault(this.name,"use_roku_2",false)==true)
 	{
 		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
+		this.rokuServer2.bind(localHostIP,9093)
 		this.rokuServer2.init()
 		this.rokuManger.addRoku(this.rokuServer2);
 	}

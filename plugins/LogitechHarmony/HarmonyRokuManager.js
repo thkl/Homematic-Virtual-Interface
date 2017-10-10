@@ -19,7 +19,7 @@ var HarmonyRokuManager = function (plugin) {
 }
 
 HarmonyRokuManager.prototype.addRoku = function(roku) {
-   this.log.debug("RokuManager add Roku %s",roku.rokuInstance)
+   this.log.info("RokuManager add Roku %s",roku.rokuInstance)
    this.server.addSSDPService({"owner":"hue","st":"urn:schemas-upnp-org:device:basic:1","payload":roku.ssdp_response})
 }
 
