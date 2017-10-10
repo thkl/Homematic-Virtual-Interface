@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-tradfridevice",
-  "version": "0.0.4",
+  "version": "0.0.7",
   "description": "Virtual Plugin - Ikea Tradfri",
   "license": "ISC",
   "keywords": [
@@ -19,6 +19,6 @@
   },
   
   "dependencies": {
-    "node-tradfri-argon" : "1.0.12"
+    "node-tradfri-argon" : "https://github.com/nidayand/node-tradfri-argon.git"
   }
 }

@@ -84,9 +84,6 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 		  that.setWhite(newValue)
 	    }
 
-		if (parameter.name == 'RGBW') {
-	       that.setColor(newValue);
-	    }
     })
 
 	     this.updateTimer = setTimeout(function() {
@@ -95,28 +92,7 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 
 	}
 	
-	TradfriDevice.prototype.setColor = function(newColor) {
-	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')
-		if (co_channel != undefined) {
-			
-			var regex = /(\s*[0-9]{1,3}),(\s*[0-9]{1,3}),(\s*[0-9]{1,3})/
-			var result = newColor.match(regex);
-			var r = parseInt(result[1].trim()).toString(16);
-			var g = parseInt(result[2].trim()).toString(16);
-			var b = parseInt(result[3].trim()).toString(16);
-			let color = this.pad(r,2)+this.pad(g,2)+this.pad(b,2);
-			let devData = {state:'on', brightness:this.curLevel, color: color, transitionTime: this.transitiontime}
-			this.log.debug('Color %s command %s',newColor,JSON.stringify(devData))
-			this.api.setDeviceState(this.id,devData ).then(
-			)
-		}
-	}
-
-    TradfriDevice.prototype.pad = function (n, width, z) {
-		z = z || '0';
-		n = n + '';
-		return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-	}
+	
 
 	TradfriDevice.prototype.setWhite = function(newTemp) {
 	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')

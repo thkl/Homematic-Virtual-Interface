@@ -20,14 +20,17 @@ echo "[Installer]Installing node" >>/var/log/hvl.log
 
 if $(uname -m | grep -Eq ^armv6); then
  wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv6l.tar.xz -Onode.tar.xz --no-check-certificate
+ tar xf node.tar.xz
+ rm node.tar.xz
+ mv node-v6.10.0-linux-armv6l node
 else
  wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -Onode.tar.xz --no-check-certificate
+ tar xf node.tar.xz
+ rm node.tar.xz
+ mv node-v6.10.0-linux-armv7l node
 fi
 
 
-tar xf node.tar.xz
-rm node.tar.xz
-mv node-v6.10.0-linux-armv7l node
 
 echo "[Installer]Switch Root FS to RW" >>/var/log/hvl.log
 
