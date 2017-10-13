@@ -48,13 +48,12 @@ AlexaPlatform.prototype.init = function() {
 	this.ramp_time  = this.configuration.getValueForPluginWithDefault(this.name,"ramp_time",0);
 	
 	alexaLogger.info("Alexa Plugin launched ..");
-
+	this.hm_layer = this.server.getBridge();
+	
 	if (this.api_key == undefined) {
 		this.log.error("Missing api_key ... you can get one from https://console.ksquare.de/alexa");
 	} else {
 
-	this.hm_layer = this.server.getBridge();
-	
 	    // Publish Server to CCU
     var ccuIP =  this.hm_layer.ccuIP;
     this.log.debug("CCU is at %s",ccuIP);

@@ -64,7 +64,7 @@ HarmonyPlatform.prototype.init = function() {
 	
 	if (this.config.getValueForPluginWithDefault(this.name,"use_roku",false)==true)
 	{
-		this.rokuServer = new HarmonyRokuServer(this)
+		this.rokuServer = new HarmonyRokuServer(this,9094)
 		this.rokuServer.bind(localHostIP,9093)
 		this.rokuServer.init()
 		this.rokuManger.addRoku(this.rokuServer);
@@ -236,8 +236,9 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 	if (this.use_roku ==true)
 	{
 		this.log.debug("Will restart RokuService now");
-		this.rokuServer = new HarmonyRokuServer(this)
+		this.rokuServer = new HarmonyRokuServer(this,9093)
 		this.rokuServer.init()
+		this.rokuServer.bind(localHostIP,9093)
 	} else {
 		this.rokuServer = null
 	}
@@ -246,6 +247,7 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 	{	
 		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
 		this.rokuServer2.init()
+		this.rokuServer.bind(localHostIP,9094)
 	} else {
 		this.rokuServer2 = null
 	}
@@ -693,24 +695,23 @@ HarmonyPlatform.prototype.handleConfigurationRequest = function(dispatchedReques
 		default:
 		break;
 	}
-	
-	var activityList = "";
+		var activityList = "";
 	this.harmonyClient.getActivities().forEach(function (activity){
 		activityList = activityList +  dispatchedRequest.fillTemplate(activityTemplate,{"ac_name":activity.label,"ac_index":activity.chid,"ac_id":activity.id});
 	});
 	
 	var rokuList = "";
-	
 	if (this.use_roku == true ) {
 		
 		var rokuElements = ""
 		var rokutmp = dispatchedRequest.getTemplate(this.plugin.pluginPath , "roku.html",null);
 
 		var cmdMap = this.rokuServer.getMapping()
+		if (cmdMap) {
 		Object.keys(cmdMap).forEach(function (m) { 
 			rokuElements = rokuElements +  dispatchedRequest.fillTemplate(lighttemplatereal,{"lamp_name":cmdMap[m],"lamp_index":m});
 		})
-		
+		}
 		rokuList = dispatchedRequest.fillTemplate(rokutmp,{"rokuList":rokuElements});
 	} 
 	
