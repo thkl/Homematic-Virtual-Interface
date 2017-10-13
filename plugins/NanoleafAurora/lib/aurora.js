@@ -206,7 +206,7 @@ AuroraApi.prototype.setEffect = function (effect) {
 };
 
 AuroraApi.prototype.listEffects = function () {
-  const requestOptions = this.makeGetRequestOptions('/effects/list');
+  const requestOptions = this.makeGetRequestOptions('/effects/effectsList');
 
   return this.doRequest(requestOptions);
 };
@@ -236,7 +236,7 @@ AuroraApi.prototype.getToken = function () {
     return new Promise((resolve, reject) => {
 	let requestTokenOptions = {
     	method: 'POST',
-		url: 'http://' + this.host +':'+ this.port + '/api/beta/new',
+		url: 'http://' + this.host +':'+ this.port + '/api/v1/new',
     };
 
     request(requestTokenOptions, function(error, response, body) {
