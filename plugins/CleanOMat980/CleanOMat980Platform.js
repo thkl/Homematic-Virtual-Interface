@@ -148,9 +148,9 @@ CleanOMat980Platform.prototype.command = function (command) {
 					that.myRobotViaLocal.end()
 					if ((actualState.batPct) && (actualState.bin) && (actualState.cleanMissionStatus)) {
 						var di_channel = that.hmDevice.getChannelWithTypeAndIndex('KEY','4')
-						di_channel.updateValue('CUR_STATE',actualState.cleanMissionStatus.phase,true);
-						di_channel.updateValue('BATTERIE',actualState.batPct,true);
-						di_channel.updateValue('BIN',actualState.bin.full,true);
+						di_channel.updateValue('CUR_STATE',actualState.cleanMissionStatus.phase,true,true);
+						di_channel.updateValue('BATTERIE',actualState.batPct,true,true);
+						di_channel.updateValue('BIN',actualState.bin.full,true,true);
 					}
 					clearTimeout(that.timer)
 					that.timer = setTimeout(function() {
