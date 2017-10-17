@@ -97,9 +97,11 @@ HarmonyPlatform.prototype.shutdown = function() {
 	if (this.rokuServer) {
 			this.rokuServer.stopServer();
 			this.rokuManger.stopDiscovery();
+			this.server.removeSSDPServiceByOwner('hue');
 	}
 	if (this.rokuServer2) {
 			this.rokuServer2.stopServer();
+			this.server.removeSSDPServiceByOwner('hue');
 	}
 	
 	this.harmonyServer.shutdown();
@@ -233,21 +235,24 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 	this.log.debug("Will restart Client");
 	this.harmonyClient = new HarmonyClient(this);
 	
-	if (this.use_roku ==true)
+	if (this.use_roku == true)
 	{
-		this.log.debug("Will restart RokuService now");
+		this.log.info("Will restart RokuService now on %s 9093",localHostIP);
 		this.rokuServer = new HarmonyRokuServer(this,9093)
-		this.rokuServer.init()
 		this.rokuServer.bind(localHostIP,9093)
+		this.rokuServer.init()
+		this.rokuManger.addRoku(this.rokuServer);
 	} else {
 		this.rokuServer = null
 	}
 	
-	if (this.use_roku_2 ==true)
+	if (this.use_roku_2 == true)
 	{	
+		this.log.info("Will restart 2.nd RokuService now on %s 9094",localHostIP);
 		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
-		this.rokuServer2.init()
 		this.rokuServer.bind(localHostIP,9094)
+		this.rokuServer2.init()
+		this.rokuManger.addRoku(this.rokuServer2);
 	} else {
 		this.rokuServer2 = null
 	}

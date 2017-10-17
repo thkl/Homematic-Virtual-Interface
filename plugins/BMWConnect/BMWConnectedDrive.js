@@ -71,7 +71,7 @@ BMWConnectedDrive.prototype.get_request = function(path,callback) {
       method: 'GET',
       headers: {
           'Authorization': 'Bearer ' + this.token,
-          'User-Agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1'
+          'User-Agent':'MCVApp/1.5.2 (iPhone; iOS 9.1; Scale/2.00)'
      }
   };
   
@@ -124,7 +124,7 @@ BMWConnectedDrive.prototype.post_request = function(path,post_data,callback) {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Content-Length': Buffer.byteLength(post_data),
           'Authorization': 'Basic ' + this.auth,
-          'User-Agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1'
+          'User-Agent':'MCVApp/1.5.2 (iPhone; iOS 9.1; Scale/2.00)'
       }
   };
   

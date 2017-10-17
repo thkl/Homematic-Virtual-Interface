@@ -83,8 +83,8 @@ NA_Module4.prototype.parseModuleData = function (measurement,channel,co2channel)
 	channel.updateValue("HUMIDITY",hum,true,true)
 
 
-	var lvlAdded = this.configuration.getPersistValueForPluginWithDefault(that.name,"CO2_ADDED",1000)
-	var lvlStrong = this.configuration.getPersistValueForPluginWithDefault(that.name,"CO2_ADDED_STRONG",1400)
+	var lvlAdded = this.configuration.getPersistValueForPluginWithDefault(this.name,"CO2_ADDED",1000)
+	var lvlStrong = this.configuration.getPersistValueForPluginWithDefault(this.name,"CO2_ADDED_STRONG",1400)
 				
 	if (co2 > lvlAdded) {
 		 co2State = 1

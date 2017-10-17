@@ -200,7 +200,11 @@ HarmonyRokuServer.prototype.startServer = function(callback) {
         that.log.error(err);
         that.stopServer();
     });
-
+	
+	if (this.http_port == undefined) {
+		this.http_port = 9093
+	}
+	
     this.rk_server.listen(this.http_port, this.bind, function () {
         that.log.debug("HTTP-Server started on " + that.bind + ":" + that.http_port);
     });
