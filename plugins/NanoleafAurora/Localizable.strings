@@ -6,7 +6,7 @@
 		"IP of your leaf":"IP Deines Leaf",
 		"IP Adress":"IP Adresse",
 		"Refresh":"Aktualisierung",
-		"Refresh state every xx seconds.":"Status aller xx Sekunden aktualisieren."
+		"Refresh state every xx seconds.":"Status alle xx Sekunden aktualisieren."
 		}
 	}
 }
