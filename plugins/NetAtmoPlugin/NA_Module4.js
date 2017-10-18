@@ -79,28 +79,31 @@ NA_Module4.prototype.parseModuleData = function (measurement,channel,co2channel)
 	var hum = measurement[1]
 	var co2 = measurement[3]
 	var co2State = 0
-	channel.updateValue("TEMPERATURE",temp,true,true)
-	channel.updateValue("HUMIDITY",hum,true,true)
+	
+	if (channel != undefined) {
+		channel.updateValue("TEMPERATURE",temp,true,true)
+		channel.updateValue("HUMIDITY",hum,true,true)
+		var dew_point = this.dew_point(temp, hum)
+		channel.updateValue("DEW_POINT",dew_point,true,true)
+		var absolute_humidity = this.absolute_humidity(temp, hum)
+		channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true)
+	}
 
-
-	var lvlAdded = this.configuration.getPersistValueForPluginWithDefault(this.name,"CO2_ADDED",1000)
-	var lvlStrong = this.configuration.getPersistValueForPluginWithDefault(this.name,"CO2_ADDED_STRONG",1400)
+	if (co2channel != undefined) {
+		var lvlAdded = this.configuration.getPersistValueForPluginWithDefault(this.name,"CO2_ADDED",1000)
+		var lvlStrong = this.configuration.getPersistValueForPluginWithDefault(this.name,"CO2_ADDED_STRONG",1400)
 				
-	if (co2 > lvlAdded) {
-		 co2State = 1
-	}
+		if (co2 > lvlAdded) {
+			co2State = 1
+		}
 	
-	if (co2 > lvlStrong) {
-		co2State = 2
-	}
+		if (co2 > lvlStrong) {
+			co2State = 2
+		}
 	
-	co2channel.updateValue("STATE",co2State,true,true)
-	co2channel.updateValue("CO2_LEVEL",co2,true,true)
-
-	var dew_point = this.dew_point(temp, hum)
-	channel.updateValue("DEW_POINT",dew_point,true,true)
-	var absolute_humidity = this.absolute_humidity(temp, hum)
-	channel.updateValue("ABS_HUMIDITY",absolute_humidity,true,true)
+		co2channel.updateValue("STATE",co2State,true,true)
+		co2channel.updateValue("CO2_LEVEL",co2,true,true)
+	}
 }
 
 
