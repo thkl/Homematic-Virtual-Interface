@@ -109,6 +109,14 @@
 		"npm" :"homematic-virtual-cleanomat980",
 		"syname":"Roomba980",
 		"description":{"de-de":"Verbindet den Roomba 980 mit der CCU","en-en":"connects your roomba 980 to the ccu"}
+	  } ,
+
+	  {
+		  
+		"name":"Lightify",
+		"npm" :"homematic-virtual-lightifydevice",
+		"syname":"Lightify",
+		"description":{"de-de":"Verbindet ein Lightify System mit der CCU","en-en":"connects your lightify to the ccu"}
 	  }
 
 	  
