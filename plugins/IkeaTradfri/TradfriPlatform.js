@@ -17,7 +17,7 @@ if (appRoot.endsWith('node_modules/daemonize2/lib')) {
 appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')
-const tradfri = require('node-tradfri-argon')
+const tradfri = require('node-tradfri-thkl')
 var util = require('util')
 var HomematicDevice
 var url = require('url')
@@ -35,7 +35,7 @@ TradfriPlatform.prototype.init = function () {
   this.configuration = this.server.configuration
   this.securityID = this.configuration.getValueForPlugin(this.name,'tradfri_securityid')
   this.bridgeIp = this.configuration.getValueForPlugin(this.name,'tradfri_ip')
-  this.coapPath = this.configuration.getValueForPluginWithDefault(this.name,'path_to_coap',path.join(__dirname,'node_modules','node-tradfri-argon','lib','coap-client-raspbian'))
+  this.coapPath = this.configuration.getValueForPluginWithDefault(this.name,'path_to_coap',path.join(__dirname,'node_modules','node-tradfri-thkl','lib','coap-client-raspbian'))
   
   
   if (this.bridgeIp!=undefined) {
