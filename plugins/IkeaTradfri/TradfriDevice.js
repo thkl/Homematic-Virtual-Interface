@@ -17,19 +17,22 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 		this.onTime = 0
 		this.lastLevel = 0
 		this.curLevel = 0
-		this.log.debug('Setup new Tradfri %s',serialprefix)
 		this.transitiontime = 4
 		
 		this.hmDevice = new HomematicDevice(this.plugin.getName())
+		this.serial = 'Tradfri'+this.id
+		this.ikeaName = light.name
+		this.ikeaType = light.type
+		this.log.debug('Setup new Tradfri %s',this.serial)
 
-		var data = this.bridge.deviceDataWithSerial('ITFD'+this.id)
+		var data = this.bridge.deviceDataWithSerial(this.serial)
 		if (data!=undefined) {
 			this.hmDevice.initWithStoredData(data)
 		}
 		
 		if (this.hmDevice.initialized === false) {
-			this.hmDevice.initWithType('VIR-LG-RGBW-DIM', 'Tradfri ' + this.id)
-			this.hmDevice.serialNumber = 'ITFD'+this.id
+			this.hmDevice.initWithType('VIR-LG-RGBW-DIM', this.serial)
+			this.hmDevice.serialNumber = this.serial
 			this.bridge.addDevice(this.hmDevice,true)
 		} else {
 			this.bridge.addDevice(this.hmDevice,false)

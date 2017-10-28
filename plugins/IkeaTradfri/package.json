@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-tradfridevice",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Virtual Plugin - Ikea Tradfri",
   "license": "ISC",
   "keywords": [

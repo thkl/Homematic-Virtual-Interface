@@ -61,15 +61,45 @@ TradfriPlatform.prototype.reconnect = function() {
     devices.forEach((device) => {
         this.log.debug('Devices %s',JSON.stringify(device));
         if (device['brightness'] != undefined) {
-			var tdevice = new TradfriDevice(this,this.gateway,device,device.id)
-			that.lights.push(tdevice)        
+	        if (that.hazLampWithId(device.id) === false) {
+				var tdevice = new TradfriDevice(this,this.gateway,device,device.id)
+				that.lights.push(tdevice) 
+				that.log.info('Lamp %s added',device.id)       
+			} else {
+				that.log.debug('Skip adding %s because lamp is here',device.id)
+			}
         }
-        
     });
   }).catch((error) => {
     // Manage the error
     this.log.error('Error %s,',error);
   });
+  
+  setTimeout(function(){
+	  that.reconnect()
+  }, 30000)
+}
+
+TradfriPlatform.prototype.hazLampWithId = function(lampId) {
+	var result = false	
+		this.lights.some(function (light){
+			if (light.id === lampId) {
+				result = true
+			}
+		})
+	return result
+}
+
+
+TradfriPlatform.prototype.myDevices = function() {
+	// return my Devices here
+	var result = [];
+	result.push({"id":"sep-trad","name":"--------- Tradfri Devices ---------","type":"seperator"});
+
+	this.lights.forEach(function(light){
+		result.push({"id":light.serial,"name":light.ikeaName,"udn":light.serial,"type":"TRADFRI"});
+	});
+	return result;	
 }
 
 
@@ -111,7 +141,9 @@ TradfriPlatform.prototype.handleConfigurationRequest = function (dispatchedReque
   var requesturl = dispatchedRequest.request.url
   var queryObject = url.parse(requesturl, true).query
   var deviceList = ''
-
+  var devtemplate = dispatchedRequest.getTemplate(this.plugin.pluginPath , "list_device_tmp.html",null);
+  var cfg_handled = false
+  
   if (queryObject['do'] !== undefined) {
     switch (queryObject['do']) {
 
@@ -123,6 +155,11 @@ TradfriPlatform.prototype.handleConfigurationRequest = function (dispatchedReque
 
     }
   }
+  
+  	this.lights.some(function (light){
+		deviceList = deviceList +  dispatchedRequest.fillTemplate(devtemplate,{"device_name":light.ikeaName,"device_hmdevice":light.serial,"device_type":light.ikeaType});
+	
+	});
 
   dispatchedRequest.dispatchFile(this.plugin.pluginPath, template, {'listDevices': deviceList})
 }
