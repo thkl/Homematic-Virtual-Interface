@@ -163,7 +163,7 @@ RaumfeldPlatform.prototype.saveSettings = function(settings) {
 RaumfeldPlatform.prototype.myDevices = function() {
 	// return my Devices here
 	var result = [];
-	result.push({"id":"sep-son","name":"--------- Raumfeld Devices ---------","type":"seperator"});
+	result.push({"id":"sep-rmf","name":"--------- Raumfeld Devices ---------","type":"seperator"});
 
 	this.players.forEach(function(player){
 		result.push({"id":player.serial,"name":player.deviceName,"udn":player.serial,"type":"Raumfeld"});
