@@ -15,7 +15,8 @@
 	"AlexaHueSceneService",
 	"AlexaHomematicHMIPSwitchService",
 	"AlexaHomematicHMIPDimmerService",
-	"AlexaHomematicHMIPThermostatService"
+	"AlexaHomematicHMIPThermostatService",
+	"AlexaTradfriDimmerService"
 	],
 	
 	"hm_device_settings" : {
@@ -31,6 +32,7 @@
 		"SONOS" : "AlexaSonosService",
 		"HARMONY" : "AlexaHarmonyActivityService",
 		"HARMONYDEVICE" : "AlexaHarmonyDeviceService",
+		"TRADFRI":"AlexaTradfriDimmerService",
 		"BidCos-Wired.DIGITAL_OUTPUT" : "AlexaHomematicWiredSwitchService",
 		"BidCos-Wired.DIGITAL_ANALOG_OUTPUT" : "AlexaHomematicWiredSwitchService",
 		"BidCos-Wired.SWITCH" : "AlexaHomematicWiredSwitchService",
