@@ -117,7 +117,15 @@
 		"npm" :"homematic-virtual-lightifydevice",
 		"syname":"Lightify",
 		"description":{"de-de":"Verbindet ein Lightify System mit der CCU","en-en":"connects your lightify to the ccu"}
-	  }
+	  } ,
+	  
+	  {
+		  
+		"name":"Raumfeld",
+		"npm" :"homematic-virtual-raumfelddevice",
+		"syname":"Raumfeld",
+		"description":{"de-de":"Verbindet Deine Raumfeld Lautsprecher mit der CCU","en-en":"Put your Raumfeld players into your CCU and control them"}
+	  } 
 
 	  
 	  

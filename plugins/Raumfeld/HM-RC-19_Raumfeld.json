@@ -107,13 +107,14 @@
           "id" : "",
           "parameter" : [
           	{"name": "TARGET_VOLUME","vdefault": "","flags": 1,"max": 100,"min": 0,"operations": 7,"control":"NONE","unit":"","tab_order": 0,"type": "STRING"},
-          	{"name": "CURRENT_TRACK","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 1,"type": "STRING"},
-          	{"name": "NEXT_TRACK","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 3,"type": "STRING"},
-          	{"name": "COMMAND","vdefault": "","flags": 1,"max": "","min": "","operations": 7,"control":"NONE","unit":"","tab_order": 4,"type": "STRING"},
-          	{"name": "TRANSPORT_STATE","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 5,"type": "STRING"},
-          	{"name": "PLAY_MODE","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 6,"type": "STRING"},
-          	{"name": "COORDINATOR","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 7,"type": "STRING"},
-          	{"name": "ZONEGROUPID","vdefault": "","flags": 1,"max": "","min": "","operations": 5,"unit":"","tab_order": 8,"type": "STRING"}
+          	{"name": "PLAYLIST","vdefault": "","flags": 1,"operations": 7,"control":"NONE","unit":"","tab_order": 1,"type": "STRING"},
+          	{"name": "POWERSTATE","vdefault": "","flags": 1,"operations": 5,"control":"NONE","unit":"","tab_order": 2,"type": "STRING"},
+          	{"name": "PLAYMODE","vdefault": "","flags": 1,"operations": 5,"control":"NONE","unit":"","tab_order": 3,"type": "STRING"},
+          	{"name": "CURRENT_TRACK","vdefault": "","flags": 1,"operations": 5,"control":"NONE","unit":"","tab_order": 4,"type": "STRING"},
+          	{"name": "CURRENT_VOLUME","vdefault": "","flags": 1,"max": 100,"min": 0,"operations": 5,"control":"NONE","unit":"","tab_order": 5,"type": "STRING"},
+          	{"name": "TITLE","vdefault": "","flags": 1,"operations": 5,"control":"NONE","unit":"","tab_order": 6,"type": "STRING"},
+          	{"name": "ARTIST","vdefault": "","flags": 1,"operations": 5,"control":"NONE","unit":"","tab_order": 7,"type": "STRING"},
+          	{"name": "ALBUMARTURL","vdefault": "","flags": 1,"operations": 5,"control":"NONE","unit":"","tab_order": 8,"type": "STRING"}
           ]
 		 }
       ]

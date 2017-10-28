@@ -43,6 +43,13 @@ DummyPlatform.prototype.init = function () {
   */
   var serial = 'Dum_1234'
   
+  // this is new Call since Core Version 0.2.58
+  // bridge.initDevice(pluginName,serialNum,Type)
+  // if the device was initialized before stored data will be used. If not, the core system builds up a new device
+  this.hmDevice = this.bridge.initDevice(this.getName(),serial,"HM-LC-RGBW-WM")  
+
+  // the old implementation : 
+  /**
   // create a Device like this :
   this.hmDevice = new HomematicDevice(this.getName())
   // first check if you have a persistent data file for your device serial
@@ -61,8 +68,9 @@ DummyPlatform.prototype.init = function () {
       // device was initalized from persistent data just add it to the interface
 	  this.bridge.addDevice(this.hmDevice,false)
   }
+  */
   
-
+  
   // this will trigered when a value of a channel was changed by the ccu
   this.hmDevice.on('device_channel_value_change', function (parameter) {
     var newValue = parameter.newValue

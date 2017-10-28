@@ -1,0 +1,25 @@
+{
+  "name": "homematic-virtual-raumfelddevice",
+  "version": "0.1.0",
+  "description": "Virtual Plugin - Raumfeld",
+  "license": "ISC",
+  "keywords": [
+    "homematic-virtual-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thkl/Homematic-Virtual-Interface/plugins/Raumfeld"
+  },
+  "bugs": {
+    "url": "https://github.com/thkl/Homematic-Virtual-Interface/issues"
+  },
+  "engines": {
+    "node": ">=7.6.0",
+    "homematic-virtual-interface" : ">=0.2.56"
+  },
+  
+  "dependencies": {
+  	"node-raumkernel": ">=1.1.8",
+  	"xml2js": "0.4.17"
+  }
+}

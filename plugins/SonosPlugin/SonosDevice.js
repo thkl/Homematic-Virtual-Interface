@@ -1,4 +1,6 @@
 
+"use strict";
+
 var HomematicDevice;
 var Sonos = require('node-sonos').Sonos;
 
@@ -73,6 +75,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 							that.currentPlayMode = event.currentPlayMode
 							channel.updateValue("PLAY_MODE",that.currentPlayMode,true);
 						}
+						
 					} 	
 	  		}
 	  		
