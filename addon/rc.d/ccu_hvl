@@ -42,6 +42,8 @@ case "$1" in
 	mount -o remount,rw /
 	rm -r /etc/init.d/S59hvl
 	mount -o remount,ro /
+	
+	;;
 
   *)
 	echo "Usage: $0 {start|stop|restart|info|uninstall}" >&2

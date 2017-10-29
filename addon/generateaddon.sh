@@ -12,3 +12,4 @@ cd tmp
 tar --exclude=.* -czvf ../hvl_addon.tar.gz *
 cd ..
 rm -rf tmp
+mv hvl_addon.tar.gz ..
