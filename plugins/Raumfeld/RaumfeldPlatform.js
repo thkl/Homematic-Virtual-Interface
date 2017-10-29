@@ -125,7 +125,7 @@ RaumfeldPlatform.prototype.updatePlayerState = function (_deviceUdn,key,newValue
 	  this.log.debug('Player found will update status for key %s',key)
 	  player.update(key,newValue)
   } else {
-	  this.log.error('No player with %s found try virtual renderer',_deviceUdn)
+	  this.log.debug('No player with %s found try virtual renderer',_deviceUdn)
 	  let playerz = this.getPlayersForVirtualRenderer(_deviceUdn)
 	  playerz.some(function(player) {
 		  player.update(key,newValue)

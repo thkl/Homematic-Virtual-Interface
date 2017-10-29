@@ -52,7 +52,7 @@ then
     rm node-v4.0.0-linux-armv7l.tar.gz
     rm node-v4.0.0-linux-armv7l -R
   else
-    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
     sudo apt-get install -y nodejs >/dev/null
   fi
 else

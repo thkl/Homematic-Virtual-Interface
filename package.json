@@ -13,7 +13,7 @@
     "url": "git://github.com/thkl/Homematic-Virtual-Interface.git"
   },
   "engines": {
-    "node": ">=4.5.0"
+    "node": ">=7.6.0"
   },
   "bin": {
     "hmvi": "bin/hmvi"
