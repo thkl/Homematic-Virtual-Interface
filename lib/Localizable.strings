@@ -14,7 +14,9 @@
 		"Enable HVL launch at boot":"HVL beim Sytemstart starten",
 		"Disable HVL launch at boot":"HVL Start beim Sytemstart deaktivieren",
 		"Added as service":"... als Service hinzugef&uuml;gt",
-		"removed service":"... Service wurde entfernt"
+		"removed service":"... Service wurde entfernt",
+		"Your ccu reboots now.. Time to get a coffee...":"Die CCU startet neu. Zeit für einen Kaffee..",
+		"<a href=\'/settings/?rebootCCU\'>Please reboot your ccu</a>","<a href=\'/settings/?rebootCCU\'>Bitte CCU hier neu starten</a>"
 	}
   }
 }

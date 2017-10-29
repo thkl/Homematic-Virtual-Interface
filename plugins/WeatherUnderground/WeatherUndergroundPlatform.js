@@ -104,7 +104,7 @@ WeatherUndergroundPlatform.prototype.fetchWeather = function () {
 			 try {
 				var jso = JSON.parse(result)
 				var observation = jso.current_observation
-				that.log.info("Result %s",JSON.stringify(observation))
+				that.log.debug("Result %s",JSON.stringify(observation))
 				var channel = that.hmDevice.getChannelWithTypeAndIndex('WEATHER','1')
 				if (channel) {
 					channel.updateValue('TEMPERATURE',observation.temp_c,true)

@@ -29,8 +29,11 @@ fi
 	
 	# make it run early
 	
-	ln -s $RCD_DIR/ccu_hvl /etc/init.d/S59hvl
+	ln -s $RCD_DIR/ccu_hvl /mnt/etc/init.d/S59hvl
 
-
+	/usr/local/etc/config/addons/www/hvl/update_addon hvl /usr/local/etc/config/addons/www/hvl/hvl_addon.cfg
+	
+	sync
+	
 	umount /usr/local
 	umount /mnt

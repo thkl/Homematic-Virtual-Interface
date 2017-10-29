@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-weatherundergrounddevice",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Virtual Plugin - WeatherUnderground",
   "license": "ISC",
   "keywords": [
