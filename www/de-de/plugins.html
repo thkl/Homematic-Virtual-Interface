@@ -85,21 +85,21 @@
 				
 			} else {
 				$.getJSON("/plugins/?do=version&plugin=" + name, function( data ) {
-				if (local != data.result) {
+				if (local != data.result.version) {
 				   if (active !="[X]") {
-						$("#central_version_"+name).html(data.result + " - nicht aktiv -")
+						$("#central_version_"+name).html(data.result.version + " - nicht aktiv -")
 					} else {
-						$("#central_version_"+name).html(data.result + ' - <a href="javascript:update(\''+name+'\')">Aktualisieren</a>')
+						$("#central_version_"+name).html(data.result.version + ' - <a href="javascript:update(\''+name+'\')">Aktualisieren</a>')
 					}
+					
 				} else {
-					$("#central_version_"+name).html(data.result + ' - ist aktuell')
+					$("#central_version_"+name).html(data.result.version + ' - ist aktuell')
 				}
+					$("#plugin_remark_"+name).html(data.result.remark)
 				})
-				
 			}
 			
 		}
-
 		function refreshList() {
 			$.getJSON("/plugins/?do=refresh&plugin=all", function( data ) {
 					window.location.reload()

@@ -91,19 +91,19 @@
 				
 			} else {
 				$.getJSON("/plugins/?do=version&plugin=" + name, function( data ) {
-				if (local != data.result) {
+				if (local != data.result.version) {
 				   if (active !="[X]") {
-						$("#central_version_"+name).html(data.result + " - not aktive -")
+						$("#central_version_"+name).html(data.result.version + " - not aktive -")
 					} else {
-						$("#central_version_"+name).html(data.result + ' - <a href="javascript:update(\''+name+'\')">Update</a>')
+						$("#central_version_"+name).html(data.result.version + ' - <a href="javascript:update(\''+name+'\')">Update</a>')
 					}
 				} else {
-					$("#central_version_"+name).html(data.result + ' - is up to date')
-				}
-				})
+					$("#central_version_"+name).html(data.result.version + ' - is up to date')
+				}				
+				$("#plugin_remark_"+name).html(data.result.remark)
+			})
 				
 			}
-			
 		}
 
 		function refreshList() {

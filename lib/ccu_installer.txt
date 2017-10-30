@@ -1,0 +1,9 @@
+wget http://myIP:myPort/settings/?addInterfaceScript --no-check-certificate -O/usr/local/etc/config/rc.d/ccu_hvl
+chmod +x /usr/local/etc/config/rc.d/ccu_hvl
+mkdir /usr/local/etc/config/addons/www/hvl
+echo "<meta http-equiv=\'refresh\' content=\'0; url=myProt://myIP:myPort/\'>" > /usr/local/etc/config/addons/www/hvl/index.html
+mount -o remount,rw /
+rm /etc/init.d/S59hvl
+ln -s /usr/local/etc/config/rc.d/ccu_hvl /etc/init.d/S59hvl
+mount -o remount,ro /
+ls /usr/local/etc/config/rc.d/
