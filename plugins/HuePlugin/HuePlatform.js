@@ -506,6 +506,12 @@ HuePlatform.prototype.getConfiguredEffectServer = function() {
 	return [];	
 } 
 
+HuePlatform.prototype.removeEffectServer = function(selSrv) {
+	delete this.effectServers[selSrv];
+	this.saveEffectScenes();
+} 
+
+
 HuePlatform.prototype.saveConfiguredScenes = function(publishedscenes) {
 	var s = JSON.stringify(publishedscenes);
 	this.configuration.setPersistValueForPlugin(this.name,"PublishedScenes",s);
@@ -622,6 +628,17 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 
 			}
 			break;
+			
+			
+			case "efxs.removeServer":
+				var servername = queryObject["efxs.name"];
+				if (servername) {
+					this.removeEffectServer(servername)
+				} else {
+					this.log.warn("Servername not provided %s",servername);
+				}
+			break;
+			
 			
 			case "efxs.createserver":
 			{

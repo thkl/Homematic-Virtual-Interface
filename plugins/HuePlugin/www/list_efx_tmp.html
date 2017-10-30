@@ -1,23 +1,32 @@
- <a name="$efxs.name$" />
- <div name="$efxs.name$" class="ph" >
-          $efxs.name$
- </div>
- <div class="ty">Start scene 
- <form action="index.html" method="get">
-	 <input type="hidden" name="do" value="efxs.play" />
-	 <input type="hidden" name="efxs.name" value="$efxs.name$" />
+<div class="ph row">
+ 	<span name="$efxs.name$"  class="dh col-md-12"><h4>$efxs.name$</h4></span>
+</div>
+<div class="ph row">
+ 	<span class="dh col-md-2" class="ty">Start scene</span>
+ 	<span class="dh col-md-3" class="ty">
+	 		<form action="index.html" method="get">
+	 		<input type="hidden" name="do" value="efxs.play" />
+	 		<input type="hidden" name="efxs.name" value="$efxs.name$" />
 	 
-	 <select name="efxs.scene">
-		 $efxs.scenes$
-	 </select>
-	 <input type="submit" value="Run" />
- </form>
- <form action="index.html" method="get">
-	 <input type="hidden" name="do" value="efxs.stop" />
-	 <input type="hidden" name="efxs.name" value="$efxs.name$" />
-	 <input type="submit" value="Stop" />
- </form>
+	 		<select name="efxs.scene">$efxs.scenes$</select>
+	 		<input style="color: black" type="submit" value="Start" />
+	 		</form>
+	 </span>
+	 <span class="dh col-md-2" class="ty">		
+	 		<form action="index.html" method="get">
+	 			<input type="hidden" name="do" value="efxs.stop" />
+	 			<input type="hidden" name="efxs.name" value="$efxs.name$" />
+	 			<input style="color: black" type="submit" value="Stop" />
+ 			</form>
+	 </span>
+ 	<span class="dh col-md-3"><a style="color: gray"  href="index.html?do=efxs.removeServer&efxs.name=$efxs.name$">Remove Server<a></span>
+ 	<span class="dh col-md-2"></span>
+</div>
 
- </span>
- </div>
+<div class="ph row">
+	<span class="dh col-md-12" class="ty">Lampen</span>
+</div>
+
 $efxs.lights$
+
+<hr />

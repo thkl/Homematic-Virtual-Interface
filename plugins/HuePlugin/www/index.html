@@ -20,7 +20,8 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
     
       <link href="../assets/css/toolkit-inverse.css" rel="stylesheet">
-    
+        <link href="../assets/css/bootstrap.css" rel="stylesheet">
+
     
     <link href="../assets/css/application.css" rel="stylesheet">
 
@@ -116,13 +117,16 @@
     $listEfxS$
   <form action="index.html" method="get"> 
   <input type="hidden" name="do" value="efxs.createserver" />
-	   <div class="ty">Server Name 
-		   <input  name="efxs.newname" />
-	   <input class="dy" type="submit" value="Create new Server" />
-		   
-	   </div>
+  <div class="ph row">
+  	New
+  </div>
+  <div class="ph row">
+  	<span class="dh col-md-3">Server Name</span>
+  	<span class="dh col-md-3"><input class="dy dh" style="color: black" name="efxs.newname" /></span>
+	<span class="dh col-md-3"><input class="dy" style="color: black" type="submit" value="Create new Server" /></span>
+	<span class="dh col-md-3"></span>
+  </div>
   </form>   
-  
 </div>
 
 
@@ -130,8 +134,8 @@
 	<input type="hidden" name="do" value="settings.save" >
 <div class="by">
 	  <h4 class="ty">Settings</h4>
-	  <div class="ty">Refresh (sek)<input class="dy dh" name="refresh" value="$refresh$" /></div>
-	  <div class="ty"><input style="color: black" type="submit" value="Save" /></div>
+	  <div class="ty">refresh (sek)<input class="dy dh" name="refresh" value="$refresh$" /></div>
+	  <div class="ty"><input style="color: black" type="submit" value="Speichern" /></div>
     </div>       
 </form>
 
