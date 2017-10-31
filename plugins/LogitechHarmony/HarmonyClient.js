@@ -306,6 +306,8 @@ HarmonyClient.prototype.getCurrentActivity = function() {
  try {
 	 
  harmony(this.hubIP).then(function(harmonyClient) {
+	  
+	  if (harmonyClient) {
 	  harmonyClient.getCurrentActivity().then(function(c_activity) {
 	  	
 	  	that.log.debug("Responze %s",c_activity);
@@ -318,15 +320,13 @@ HarmonyClient.prototype.getCurrentActivity = function() {
 		  	channel.updateValue("CURRENT_ACTIVITY","Unknow Activity",true);
 	  	}
 	  	harmonyClient.end();
-   });
+	  
+   	});
    
-   harmonyClient.on("error",function(error){
+   	harmonyClient.on("error",function(error){
 	   that.log.error("Harmony Client Exception %s",error);
-   });
-   
-   harmony.on("error",function(error){
-	   that.log.error("Harmony Client Exception %s",error);
-   });
+   	});
+   }
  });
  
 
