@@ -144,8 +144,8 @@
 	    function getVersion(local) {
 		        name = 'homematic-virtual-interface'
 				$.getJSON("/plugins/?do=version&plugin=" + name, function( data ) {
-				if (local != data.result) {
-						$('#central_version').html(" | Neue Version : " + data.result + ' - <a href="/index/?doupdate">Aktualisieren</a>')
+				if (local != data.result.version) {
+						$('#central_version').html(" | Neue Version : " + data.result.version + ' - <a href="/index/?doupdate">Aktualisieren</a>')
 				}			
 			  })
 			
