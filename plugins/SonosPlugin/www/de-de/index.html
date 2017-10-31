@@ -104,15 +104,98 @@
     <form action="index.html" name="addplayer" method="get"> 
 		<input type="hidden" name = "do" value="addplayer" />	   
 		<input type="hidden" name = "host" id ="host" value="" />	   
+		<input type="hidden"  name="name" id="name" value="" />
 
     <div class="ph row">
-          <span class="dh col-md-4">SONOS_<input type="text" name="name" id="name" value="" /></span>
-          <span class="dh col-md-1"></span>
+          <span class="dh col-md-5" id="serial"></span>
+          <span class="dh col-md-5" id="sname"></span>
 		  <span class="dh col-md-2"><input type="button" value="Player hinzuf&uuml;gen" onclick="saveplayer()"/></span>  
-          <span class="dh col-md-4"></span>
     </div>
     </form>
+
+
    
+   <div class="by row">
+   <span class="ph row"><h4 class="col-md-12">Player Fernbedienung</h4></span>
+    <span class="ph row">
+    	<span class="dh col-md-5">Taste</span>
+        <span class="dh col-md-7">Funktion</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">1</span>
+        <span class="dh col-md-7">Play</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">2</span>
+        <span class="dh col-md-7">Pause</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">3</span>
+        <span class="dh col-md-7">Stop</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">4</span>
+        <span class="dh col-md-7">Zur&uuml;ck</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">5</span>
+        <span class="dh col-md-7">Weiter</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">6</span>
+        <span class="dh col-md-7">Lauter</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">7</span>
+        <span class="dh col-md-7">Leiser</span>
+    </span>
+    </div>
+
+       <div class="by row">
+   <span class="ph row"><h4 class="col-md-12">Coordinator Kommandos</h4></span>
+    <span class="ph row">
+    	<span class="dh col-md-5">Kommando</span>
+        <span class="dh col-md-7">Funktion</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">createmesh|player1,player2...</span>
+        <span class="dh col-md-7">erzeugt eine Gruppe aus player1 und player2 ....</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">standalone|player1</span>
+        <span class="dh col-md-7">entfernt player1 aus der Gruppe</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">toggle|player1</span>
+        <span class="dh col-md-7">schaltet player1 ein oder aus (wenn der Player in einer Gruppe ist wird er entfernt)</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">switchon|player1</span>
+        <span class="dh col-md-7">schaltet player1 ein (wenn ein anderer Player Musik spielt wird player1 mit diesem gruppiert)</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">switchoff|player1</span>
+        <span class="dh col-md-7">schaltet player1 aus</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">playFav|player1|FavName</span>
+        <span class="dh col-md-7">Spielt den Sonso Favoriten 'FavName' auf player1 ab. (Wenn FavName 'random' ist wird ein zuf&auml;lliger Favorit gespielt)</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">volume|player1|volume</span>
+        <span class="dh col-md-7">setzt die Lautst&auml;ke von player1</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5">settransportstream|player1|TSName</span>
+        <span class="dh col-md-7">setzt den transportstream auf player1 (TSName muss RINCON..... sein)</span>
+    </span>
+    <span class="ph row">
+    	<span class="dh col-md-5"></span>
+        <span class="dh col-md-7">mehrere Kommandos k&ouml;nnen * getrennt angegeben werden. (Bitte keine Leerzeichen für Player oder fav Namen verwenden)</span>
+    </span>
+       </div>
+
+
 </div>
       </div>
     </div>
@@ -121,9 +204,22 @@
 </div>
 	
 	<script type="text/javascript">
-		function select_player(name,host) {
+		
+				
+		
+		function removePlayer(serial) {
+		    var answer = confirm("Das entfernt den Player auch aus der CCU. Sicher ??")
+			if (answer){
+				window.location.href = "index.html?do=deletePlayer&serial="+serial
+			}
+	    }
+	    
+		
+		function select_player(name,host,serial) {
 			document.getElementById("host").value = host
+			document.getElementById("serial").innerHTML = "SO_" + serial
 			document.getElementById("name").value = name
+			document.getElementById("sname").innerHTML = name
 		}
 		
 		function search() {
@@ -151,8 +247,9 @@
 			$('.overlay').show();
 
 			var host = document.getElementById("host").value
+			var serial = document.getElementById("serial").value
 			var name = document.getElementById("name").value
-			$.getJSON( "index.html?do=addplayer&name=" + name + "&host=" + host , function( data ) {
+			$.getJSON( "index.html?do=addplayer&name="+name+"&serial=" + serial + "&host=" + host , function( data ) {
 				setTimeout(function() {
 					window.location.reload()
 				}, 2000)

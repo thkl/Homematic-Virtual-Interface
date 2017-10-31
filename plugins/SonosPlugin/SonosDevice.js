@@ -4,7 +4,7 @@
 var HomematicDevice;
 var Sonos = require('node-sonos').Sonos;
 
-var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
+var SonosDevice = function(plugin ,sonosIP,sonosPort,playername,serial) {
 
 	var that = this;
 	this.log = plugin.log;
@@ -24,6 +24,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	this.currentPlayMode
 	this.transportState
 	this.currentVolume
+	this.serial = serial
 // Add Event Handler
     
     
@@ -89,15 +90,14 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername) {
 	
 	HomematicDevice = plugin.server.homematicDevice;
 	this.hmDevice = new HomematicDevice(this.plugin.getName());
-	
-	
-	var data = this.bridge.deviceDataWithSerial(playername);
+
+	var data = this.bridge.deviceDataWithSerial(this.serial);
 	if (data!=undefined) {
 		this.hmDevice.initWithStoredData(data);
 	} 
 	
 	if (this.hmDevice.initialized == false) {
-		this.hmDevice.initWithType("HM-RC-19_Sonos", playername);
+		this.hmDevice.initWithType("HM-RC-19_Sonos", this.serial);
 		this.bridge.addDevice(this.hmDevice,true);
 	} else {
 		this.bridge.addDevice(this.hmDevice,false);
@@ -348,6 +348,7 @@ SonosDevice.prototype.say = function(text) {
 			 
 			 if (data[0]) {
 			  	that.cur_track = data[0]['Track']
+			  	that.log.debug('setting current track to %s',that.cur_track)
 			 }
 			 
 			 that.sonos.currentTrack(function (err,data){
@@ -362,12 +363,13 @@ SonosDevice.prototype.say = function(text) {
 		 	var parentID = "R:0/0"
 		 	var id = "R:0/0/0"
 		 	var uri = 'x-rincon-mp3radio://' + location;
-		 	
+		 	that.log.debug('Mp3 for say url is %s',uri)
 		 	var meta = "&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;"+id+"&quot; parentID=&quot;"+parentID+"&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;"+name+"&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;SA_RINCON65031_&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;"
 
 		 	that.sonos.queue({uri:uri,meta:meta} ,function (err, data) {
 				if ((data) && (data[0])) {
 					var tnum = data[0]['FirstTrackNumberEnqueued'];
+					
 					that.returnToOldPositionAndDeleteTrack = tnum
 
 					that.sonos.selectTrack(tnum,function(err,success){

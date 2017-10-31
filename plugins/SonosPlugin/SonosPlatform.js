@@ -66,8 +66,12 @@ SonosPlatform.prototype.init = function() {
 		this.log.info('Adding defined devices ...')
 		players.forEach(function (host){
 			if (typeof host == 'object') {
-				var zname = Object.keys(host)[0]
-				that.addZonePlayer(host[zname],zname)			
+				if (host.serial) {
+					that.addZonePlayer(host.host,host.name)			
+				} else {
+					var zname = Object.keys(host)[0]
+					that.addZonePlayer(host[zname],zname)			
+				}
 			} else {
 				that.addZonePlayer(host);
 			}
@@ -193,20 +197,23 @@ SonosPlatform.prototype.addZonePlayer = function(host,cname,callback) {
   this.log.debug("Try to add %s with Name %s",host,cname)
   var zp = new ZonePLayer(host);
   zp.deviceDescription( function (error,data) {
-	  that.log.debug("ZonePlayer name(%s), UDN(%s) Error(%s)",data.roomName,data.UDN,error)
 	  try {
+		  if (data != undefined) {
+		  that.log.debug(data.UDN);
+		  let serial = data.UDN.substring(16, 26)
+		  that.log.debug("ZonePlayer name(%s), UDN(%s) Serial(%s) Error(%s)",data.roomName,data.UDN,serial,error)
 		  var name = cname || data.roomName;
-		  var sdevice = new SonosDevice(that ,host,1400,"SONOS_" + name);
+		  var sdevice = new SonosDevice(that ,host,1400,name,"SO_" + serial);
 		  var puuid = data.UDN.substring(5)
 		  that.log.info("Add RINCON %s max volume is %s",puuid,that.maxVolume)
-		  sdevice.rincon = puuid;
-		  sdevice.zonename = name;
-		  
+		  sdevice.rincon = puuid
+		  sdevice.zonename = name
 		  sdevice.maxVolume = that.maxVolume;
 		  that.devices.push(sdevice);
 		  that.coordinator.addZonePlayer(sdevice)
 		  if (callback) {
 			  callback()
+		  }
 		  }
 	  } catch (e) {
 		  that.log.error(e.stack)
@@ -218,7 +225,9 @@ SonosPlatform.prototype.savePlayers = function() {
    var pts = []
    this.devices.some(function(device){
 	   var ele = {}
-	   ele[device.zonename] = device.ip
+	   ele['name'] = device.playername
+	   ele['serial'] = device.serial
+	   ele['host'] = device.ip
 	   pts.push(ele)
    })
    this.log.debug("Player to save %s",JSON.stringify(pts))
@@ -243,7 +252,7 @@ SonosPlatform.prototype.myDevices = function() {
 	result.push({"id":"sep-son","name":"--------- Sonos Devices ---------","type":"seperator"});
 
 	this.devices.forEach(function(device){
-		result.push({"id":device["playername"],"name":device["playername"],"udn":device["rincon"],"type":"SONOS"});
+		result.push({"id":device["serial"],"name":device["playername"],"udn":device["rincon"],"serial":device["serial"],"type":"SONOS"});
 	});
 
 	return result;	
@@ -258,6 +267,25 @@ SonosPlatform.prototype.getPlayer = function(name) {
 		}
 	});
 	return result;	
+}
+
+
+SonosPlatform.prototype.deletePlayer = function(serial) {
+	// return my Devices here
+	var idx = 0;
+	var index = -1;
+	this.devices.some(function(device){
+		if (device.serial == serial) {
+			index = idx
+		}
+		idx = idx+1
+	});
+	
+    if (index > -1) {
+	   this.devices.splice(index, 1);
+	   this.savePlayers();
+	   this.hm_layer.deleteDeviceWithAdress(serial)
+    }
 }
 
 
@@ -307,7 +335,8 @@ SonosPlatform.prototype.search = function() {
    		 if (coordinator !== undefined) {
 	   		 that.log.info(JSON.stringify(coordinator));
 	   		 if (that.zonePlayerWithRincon(coordinator.uuid)==undefined) {
-		   		 that.discoveredDevices.push({"name":coordinator.CurrentZoneName,"host":coordinator.ip,"rincon":coordinator.uuid})
+		   		 let serial = coordinator.uuid.substring(16, 26)
+		   		 that.discoveredDevices.push({"name":coordinator.CurrentZoneName,"host":coordinator.ip,"rincon":coordinator.uuid,"serial":serial})
 	   		 }
 	   	 }
   	})
@@ -371,12 +400,19 @@ SonosPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 		     dispatched_request.dispatchMessage('{"result":"OK"}')
 		     cfg_handled = true
 		     break; 
+		    
+		   case "deletePlayer":
+			   var serial = queryObject['serial']
+			   if (serial) {
+			    this.deletePlayer(serial)
+			   }
+		     break;
 		     
 		   case "addplayer":
-		    {
 			    var host = queryObject['host']
 			    var name = queryObject['name']
-			    if ((host) && (name)) {
+			    var serial = queryObject['serial']
+			    if ((host) && (serial) && (name)) {
 				   this.addZonePlayer(host,name,function (){
 					   that.savePlayers()
 					   for(var i = that.discoveredDevices.length - 1; i >= 0; i--) {
@@ -389,19 +425,18 @@ SonosPlatform.prototype.handleConfigurationRequest = function(dispatched_request
 				} else {
 					dispatched_request.dispatchMessage('{"result":"FAIL"}')
 				}
-		    } 
 		     cfg_handled = true
 		     break;   
 		}
 	}
 
 	if (cfg_handled == false) {
-	this.myDevices().some(function (device){
-		listDevices = listDevices +  dispatched_request.fillTemplate(devtemplate,{"device_name":device["name"],"device_hmdevice":device['udn']});
+	this.devices.some(function (device){
+		listDevices = listDevices +  dispatched_request.fillTemplate(devtemplate,{"device_name":device.playername,"device_hmdevice": device.serial});
 	});
-	
+
 	this.discoveredDevices.some(function (device){
-		newDevices = newDevices +  dispatched_request.fillTemplate(newdevtemplate,{"device_name":device["name"],"host":device['host']});
+		newDevices = newDevices +  dispatched_request.fillTemplate(newdevtemplate,{"device_name":device["name"],"host":device['host'],"serial":device['serial']});
 	});
 
 	dispatched_request.dispatchFile(this.plugin.pluginPath , "index.html",{"listDevices":listDevices,"newDevices":newDevices});
