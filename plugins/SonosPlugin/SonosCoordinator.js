@@ -155,20 +155,20 @@ SonosCoordinator.prototype.init = function() {
 
 SonosCoordinator.prototype.rampToAutoVolume = function() {
   var that = this 
-  Object.keys(this.zonePlayer).forEach(function (playername) {
-  	   that.log.info("Ramp To Auto Volume %s",playername)
-	   var player = that.zonePlayer[playername]
+  Object.keys(this.zonePlayer).forEach(function (deviceSerial) {
+  	   that.log.info("Ramp To Auto Volume %s",deviceSerial)
+	   var player = that.zonePlayer[deviceSerial]
        player.rampAutoVolume(false)
   })
 }
 
 
-SonosCoordinator.prototype.setTransportStream = function(playername,newStream) {
+SonosCoordinator.prototype.setTransportStream = function(deviceSerial,newStream) {
 	var newTs = "x-rincon-stream:" + newStream
     var that = this
-	var playerDevice = this.getZonePlayerDevice(playername)
+	var playerDevice = this.getZonePlayerDevice(deviceSerial)
 	if (playerDevice) {
-	   this.log.debug("Player %s found. Set Ts to %s",playername,newStream)
+	   this.log.debug("Player %s found. Set Ts to %s",deviceSerial,newStream)
 	   playerDevice.setTransportStream(newStream)
 	}
 }
@@ -176,39 +176,39 @@ SonosCoordinator.prototype.setTransportStream = function(playername,newStream) {
 
 SonosCoordinator.prototype.rampToVolume = function(newVolume) {
   var that = this 
-  Object.keys(this.zonePlayer).forEach(function (playername) {
-  	   that.log.info("Ramp To  Volume %s %s",playername,newVolume)
-	   var player = that.zonePlayer[playername]
+  Object.keys(this.zonePlayer).forEach(function (deviceSerial) {
+  	   that.log.info("Ramp To  Volume %s %s",deviceSerial,newVolume)
+	   var player = that.zonePlayer[deviceSerial]
        player.rampToVolume(newVolume)
   })
 }
 
 
-SonosCoordinator.prototype.toggle = function(playername) {
+SonosCoordinator.prototype.toggle = function(deviceSerial) {
   // Remove from group if playing
-  this.log.debug("Toggeling %s",playername)
-  var playerDevice = this.getZonePlayerDevice(playername)
+  this.log.debug("Toggeling %s",deviceSerial)
+  var playerDevice = this.getZonePlayerDevice(deviceSerial)
   if (playerDevice) {
 	  if (playerDevice.transportState == "PLAYING") {
-		  this.switchoff(playername)
+		  this.switchoff(deviceSerial)
 	  } else {
-   		  this.switchon(playername)
+   		  this.switchon(deviceSerial)
 		}
 	  
   } else {
-	this.log.error("No Device found for %s",playername)
+	this.log.error("No Device found for %s",deviceSerial)
   }
 }
 
 
-SonosCoordinator.prototype.switchoff = function(playername) {
+SonosCoordinator.prototype.switchoff = function(deviceSerial) {
   // Remove from group if playing
   var that = this
-  this.log.info("SwitchOff %s",playername)
-  var playerDevice = this.getZonePlayerDevice(playername)
+  this.log.info("SwitchOff %s",deviceSerial)
+  var playerDevice = this.getZonePlayerDevice(deviceSerial)
   if (playerDevice) {
 	  if (playerDevice.transportState == "PLAYING") {
-		  this.removeZonePlayer(playername,function(result){
+		  this.removeZonePlayer(deviceSerial,function(result){
 			  that.log.info("Zone Player is now Standalone %s",result)
 			  playerDevice.stop(function(error){
 			  	that.log.info("Zone Player is now Off %s",error)
@@ -216,47 +216,30 @@ SonosCoordinator.prototype.switchoff = function(playername) {
 		  })
 	  }
   } else {
-	this.log.error("No Device found for %s",playername)
+	this.log.error("No Device found for %s",deviceSerial)
   }
 }
 
 
-SonosCoordinator.prototype.playFav = function(playername,title) {
+SonosCoordinator.prototype.playFav = function(deviceSerial,title) {
   var that = this
   this.log.info("Search for Playlist %s",title)
-  var playerDevice = this.getZonePlayerDevice(playername)
+  var playerDevice = this.getZonePlayerDevice(deviceSerial)
   if (playerDevice) {
-	  playerDevice.sonos.searchMusicLibrary('favorites','2',{start: 0, total: 100},function(err,result){
-		  var items = result.items;
-		  items.forEach(function(item){
-			
-			
-			
-			if (item.title === title)	{
-				that.log.debug("Selected %s",JSON.stringify(item))
-				item.uri = item.uri.split("&").join("&amp;");
-				item.uri = item.uri.replace("sid=254&flags=8224&sn=0","sid=254&amp;flags=32")
-// Quick and f*cking dirty
-playerDevice.sonos.stop(function(){
-			playerDevice.sonos.flush(function(){
-				playerDevice.sonos.queue(item,function(err,result){
-					playerDevice.sonos.play();
-			})
-  		   })
-		  })
-		  }		  
-		  });
-	  });
+	  this.log.debug('Player found ...')
+	  playerDevice.playFav(title)
   } else {
-	this.log.error("No Device found for %s",playername)
+	this.log.error("No Device found for %s",deviceSerial)
   }
 }
 
-SonosCoordinator.prototype.playRandomFavPlayList = function(playername) {
+
+
+SonosCoordinator.prototype.playRandomFavPlayList = function(deviceSerial) {
   var that = this
   this.log.info("play random list")
   var plitems = []
-  var playerDevice = this.getZonePlayerDevice(playername)
+  var playerDevice = this.getZonePlayerDevice(deviceSerial)
   if (playerDevice) {
 	  playerDevice.sonos.searchMusicLibrary('favorites','2',{start: 0, total: 100},function(err,result){
 		  var items = result.items;
@@ -271,38 +254,28 @@ SonosCoordinator.prototype.playRandomFavPlayList = function(playername) {
 		  var sl = parseInt(Math.random() * (ln))
 		  var selItem = plitems[sl]
 		  that.log.debug("%s items Selected (%s) %s",ln,sl,JSON.stringify(selItem))
-		  	
-		  selItem.uri = selItem.uri.split("&").join("&amp;");
-
-// Quick and f*cking dirty
-		  playerDevice.sonos.stop(function(){
-			playerDevice.sonos.flush(function(){
-				playerDevice.sonos.queue(selItem,function(err,result){
-					playerDevice.sonos.play();
-			})
-  		   })
-		  })
+		  playerDevice.playFav(selItem.title)						
 	  });
   } else {
-	this.log.error("No Device found for %s",playername)
+	this.log.error("No Device found for %s",deviceSerial)
   }
 }
 
 
 
-SonosCoordinator.prototype.switchon = function(playername) {
+SonosCoordinator.prototype.switchon = function(deviceSerial) {
   // Remove from group if playing
-  this.log.info("SwitchOn %s",playername)
+  this.log.info("SwitchOn %s",deviceSerial)
   var that = this
-  var playerDevice = this.getZonePlayerDevice(playername)
+  var playerDevice = this.getZonePlayerDevice(deviceSerial)
   if (playerDevice) {
 	if (playerDevice.transportState != "PLAYING") {
-		  this.log.debug("TransportState of %s is not Playing",playername)
+		  this.log.debug("TransportState of %s is not Playing",deviceSerial)
 		  var playing = this.findPlayingDevice()
 		  if (playing) {
-		  	  this.log.debug("There is Music playing -> adding %s to %s",playername,playing)
-		  	  this.addtogroup(playing,playername)
-  			  this.fadeIn(playername)
+		  	  this.log.debug("There is Music playing -> adding %s to %s",deviceSerial,playing)
+		  	  this.addtogroup(playing,deviceSerial)
+  			  this.fadeIn(deviceSerial)
 		  } else {
 			  // Set a Default Playlist
 		  	  this.log.debug("There is silence check default playlist")
@@ -313,19 +286,19 @@ SonosCoordinator.prototype.switchon = function(playername) {
 			  }
 			  // If the user set a autovolume table fade in to that volume
 		  	  this.log.debug("Set fading and start playing")
-			  this.fadeIn(playername)
+			  this.fadeIn(deviceSerial)
 			  playerDevice.play()
 		  }
 	} 
   } else {
-	this.log.error("No Device found for %s",playername)
+	this.log.error("No Device found for %s",deviceSerial)
   }
 }
 
 
-SonosCoordinator.prototype.fadeIn = function(playerName) {
+SonosCoordinator.prototype.fadeIn = function(deviceSerial) {
 	if (this.plugin.volumeTable) {
-	    var playerDevice = this.getZonePlayerDevice(playerName)
+	    var playerDevice = this.getZonePlayerDevice(deviceSerial)
 	    if (playerDevice) {
 			this.log.debug("user has a volume table fade in")
 				playerDevice.setVolume(0,function (err){
@@ -339,21 +312,21 @@ SonosCoordinator.prototype.findPlayingDevice = function() {
 	var that = this
 	var result = undefined
 	
-	Object.keys(this.zonePlayer).forEach(function (playername) {
-       var player = that.zonePlayer[playername]
-       that.log.debug("State of %s is %s",playername,player.transportState)
+	Object.keys(this.zonePlayer).forEach(function (deviceSerial) {
+       var player = that.zonePlayer[deviceSerial]
+       that.log.debug("State of %s is %s",deviceSerial,player.transportState)
        if ((player.transportState == "PLAYING") && (player.isCoordinator)) {
-	       result = playername
+	       result = deviceSerial
        } 
     });
 	that.log.debug("Will return %s as playing coordinator",result)
     return result
 }
 
-SonosCoordinator.prototype.createMesh = function(playernames) {
+SonosCoordinator.prototype.createMesh = function(deviceSerials) {
     try {
     var that = this
-    var players = playernames.split(',')
+    var players = deviceSerials.split(',')
     var newCoordinator = players[0]
     var calls = [];
     
@@ -408,14 +381,14 @@ SonosCoordinator.prototype.createMesh = function(playernames) {
 
 
 // Transfer the Coordinator Ownership to another Player
-SonosCoordinator.prototype.transfer = function(fromPlayerName,newCoordinator,callback) {
+SonosCoordinator.prototype.transfer = function(fromdeviceSerial,newCoordinator,callback) {
     var that = this
 		// if the new Coordinator is not the existing 
-	if ((fromPlayerName) && (fromPlayerName!=newCoordinator)) {
+	if ((fromdeviceSerial) && (fromdeviceSerial!=newCoordinator)) {
 		var newCoordinatorDevice = this.getZonePlayerDevice(newCoordinator)
 		if (newCoordinatorDevice) {
-			this.log.debug("Have to transfer Coordinator from %s to %s",fromPlayerName,newCoordinator)
-			var groupCoordinatorDevice = this.getZonePlayerDevice(fromPlayerName)
+			this.log.debug("Have to transfer Coordinator from %s to %s",fromdeviceSerial,newCoordinator)
+			var groupCoordinatorDevice = this.getZonePlayerDevice(fromdeviceSerial)
 			groupCoordinatorDevice.sonos.delegateGroupCoordinationTo(newCoordinatorDevice.rincon,function (result){
 				if (callback) {
 					callback(result)
@@ -435,11 +408,11 @@ SonosCoordinator.prototype.transfer = function(fromPlayerName,newCoordinator,cal
 	}
 }
 
-SonosCoordinator.prototype.removeZonePlayer = function(playername,callback) {
+SonosCoordinator.prototype.removeZonePlayer = function(deviceSerial,callback) {
 	var that = this
-	var zoneplayer = this.getZonePlayerDevice(playername)
+	var zoneplayer = this.getZonePlayerDevice(deviceSerial)
 	if (zoneplayer) {
-	   that.log.debug("Zoneplayer %s found. Set as standalone",playername)
+	   that.log.debug("Zoneplayer %s found. Set as standalone",deviceSerial)
 	   zoneplayer.sonos.becomeCoordinatorOfStandaloneGroup(function (result){
 	   	that.log.debug("Result %s",result)		
 		if (callback) {
@@ -447,19 +420,19 @@ SonosCoordinator.prototype.removeZonePlayer = function(playername,callback) {
 		}   
 		})
     } else {
-	   that.log.error("No ZonePlayer with Name %s",playername)
+	   that.log.error("No ZonePlayer with Name %s",deviceSerial)
 		if (callback) {
 			callback(result)
 		}   
     }
 }
 
-SonosCoordinator.prototype.addtogroup = function(groupCoordinator,playername,callback) {
+SonosCoordinator.prototype.addtogroup = function(groupCoordinator,deviceSerial,callback) {
 	var that = this
 	var groupCoordinatorDevice = this.getZonePlayerDevice(groupCoordinator)
-	var playerdevice = this.getZonePlayerDevice(playername)
+	var playerdevice = this.getZonePlayerDevice(deviceSerial)
 		if ((playerdevice) && (groupCoordinatorDevice)) {
-				this.log.debug('Add %s to group with %s',playername,groupCoordinator)
+				this.log.debug('Add %s to group with %s',deviceSerial,groupCoordinator)
 				groupCoordinatorDevice.sonos.addPlayerToGroup(playerdevice.rincon,function (error,result){
 					playerdevice.sonos.queueNext('x-rincon:'+groupCoordinatorDevice.rincon,function(error,result){
 					   if (callback) {
@@ -475,11 +448,11 @@ SonosCoordinator.prototype.addtogroup = function(groupCoordinator,playername,cal
 }
 
 SonosCoordinator.prototype.addZonePlayer = function(sonosDevice) {
-	this.zonePlayer[sonosDevice.playername] = sonosDevice
+	this.zonePlayer[sonosDevice.serial] = sonosDevice
 }
 
-SonosCoordinator.prototype.getZonePlayerDevice = function(deviceName) {
-	return this.zonePlayer[deviceName]
+SonosCoordinator.prototype.getZonePlayerDevice = function(deviceSerial) {	
+	return this.zonePlayer[deviceSerial]
 }
 
 module.exports = {

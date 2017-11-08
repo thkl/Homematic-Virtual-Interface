@@ -266,6 +266,25 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername,serial) {
 					  		}
 						}
 						break;
+						
+						case 'setSleep':
+						{
+							if (cmds.length>1) {
+								var stime = cmds[1]
+								// change format if needed
+								if (stime.indexOf(':')==-1) {
+									stime = '0:'+stime+':00'
+								}
+								that.sonos.configureSleepTimer(stime,function(err,result){
+									if (err) {
+										that.log.error('Error while setting Sleep Timer %s',err)
+									}
+								})
+							} else {
+						  		that.log.error("missing time name in sleep command")
+					  		}
+						}
+						break
 					}
 		    	}
 		     channel.updateValue("COMMAND","");
@@ -278,22 +297,43 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername,serial) {
 
 SonosDevice.prototype.playFav = function(title) {
   var that = this
-  this.sonos.searchMusicLibrary('favorites','2',{start: 0, total: 100},function(err,result){
+	  that.sonos.searchMusicLibrary('favorites','2',{start: 0, total: 100},function(err,result){
 		  var items = result.items;
+		  var found = false
 		  items.forEach(function(item){
-			if (item.title==title)	{
-				item.uri = item.uri.replace("&", "&amp;");
-// Quick and f*cking dirty
-				item.uri = item.uri.replace("sid=254&amp;flags=8224&sn=0","sid=254&amp;flags=32")
-				that.sonos.queueNext(item,function(err,result){
-					that.log.error("Result %s",err)
-					that.sonos.play();
-				});
-			}		  
-		  });
-	  });
-}
 
+			if (item.title === title)	{
+				that.log.debug("Selected %s",JSON.stringify(item))
+				item.uri = item.uri.split("&").join("&amp;");
+				item.uri = item.uri.replace("sid=254&flags=8224&sn=0","sid=254&amp;flags=32")
+					// Quick and f*cking dirty
+				that.sonos.stop(function(){
+					that.sonos.flush(function(){
+						
+						if (item.uri.indexOf('x-rincon-mp3radio') != -1) {
+							that.sonos.queueNext(item,function(err,result){
+								that.sonos.play();
+							})
+						} else {
+							that.sonos.queue(item,function(err,result){
+									that.sonos.selectQueue(function(err,result){
+										that.sonos.selectTrack(1,function(err,result){
+											that.sonos.play()
+										})
+									})
+							})
+						}
+						
+  		   			})
+		  		})
+		  		found = true
+		  }		  
+		  });
+		  if (found == false) {
+			  that.log.warn('Fav not found %s',title)
+		  }
+	})
+}
 
 SonosDevice.prototype.setPlayList = function(playlist) {
 	var that = this;
@@ -486,7 +526,7 @@ SonosDevice.prototype.refreshZoneGroupAttrs = function() {
 						  that.isCoordinator = (firstGroupMember == that.rincon)
 						  channel.updateValue("COORDINATOR",that.isCoordinator,true)
 						  var player = that.plugin.getPlayerByRinCon(firstGroupMember)
-						  that.groupCoordinator = (player) ? player['playername'] : firstGroupMember
+						  that.groupCoordinator = (player) ? player.serial : firstGroupMember
 						  channel.updateValue("ZONEGROUPID",that.groupCoordinator,true)
 					  }
 				  } 

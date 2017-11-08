@@ -92,9 +92,9 @@ var hueconf = require("node-hue-api");
 	    if (sw_channel!=undefined) {
 
 	    if (state==true) {
-	        sw_channel.updateValue("SWITCH",1,true);
+	        sw_channel.updateValue("STATE",1,true);
 	    	} else {
-	        di_channel.updateValue("SWITCH",0,true);
+	        di_channel.updateValue("STATE",0,true);
 	    }
 	 
 	  }

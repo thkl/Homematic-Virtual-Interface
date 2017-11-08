@@ -143,9 +143,13 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 	    var di_channel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')
 		if (di_channel != undefined) {
 			di_channel.startUpdating('LEVEL');
-			this.curLevel = parseInt(newLevel*255)
+			this.curLevel = parseInt(newLevel*254)
 			di_channel.updateValue('LEVEL',newLevel)
-			this.api.setDeviceState(this.id, { state: (newLevel>0) ? 'on' : 'off', brightness: parseInt(newLevel*255),transitionTime: this.transitiontime}).then(
+			var n_state = 'off'
+			if (newLevel > 0) {
+				n_state = 'on'
+			}
+			this.api.setDeviceState(this.id, { state: n_state, brightness: this.curLevel,transitionTime: this.transitiontime}).then(
 				di_channel.endUpdating('LEVEL')
 			);
 		}

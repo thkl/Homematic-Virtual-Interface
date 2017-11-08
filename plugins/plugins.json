@@ -126,7 +126,16 @@
 		"syname":"Raumfeld",
 		"description":{"de-de":"Verbindet Deine Raumfeld Lautsprecher mit der CCU","en-en":"Put your Raumfeld players into your CCU and control them"}
 	  } 
-
+ ,
+	  
+	  {
+		  
+		"name":"iCal",
+		"npm" :"homematic-virtual-ical",
+		"syname":"iCal",
+		"description":{"de-de":"Anzeige von Kalendern in Systemvariablen","en-en":"Show next appointments as system variables"}
+	  }
+	  
 	  
 	  
 	  

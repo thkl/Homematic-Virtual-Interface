@@ -33,6 +33,8 @@ util.inherits(TradfriPlatform, HomematicVirtualPlatform)
 
 TradfriPlatform.prototype.init = function () {
   this.configuration = this.server.configuration
+  this.tradfriUser = this.configuration.getValueForPlugin(this.name,'tradfri_user')
+  this.securityCode = this.configuration.getValueForPlugin(this.name,'tradfri_securityCode')
   this.securityID = this.configuration.getValueForPlugin(this.name,'tradfri_securityid')
   this.bridgeIp = this.configuration.getValueForPlugin(this.name,'tradfri_ip')
   this.coapPath = this.configuration.getValueForPluginWithDefault(this.name,'path_to_coap',path.join(__dirname,'node_modules','node-tradfri-thkl','lib','coap-client-raspbian'))
@@ -53,9 +55,28 @@ TradfriPlatform.prototype.reconnect = function() {
   var that = this
   this.gateway = tradfri.create({
     coapClientPath: that.coapPath, // Path to coap-client
-    securityId: that.securityID,        // As found on the IKEA hub
+    securityId: (that.securityCode != undefined) ? that.securityCode : that.securityID,        // As found on the IKEA hub
+    userName:'hvl_tradfri_user',
     hubIpAddress: that.bridgeIp    // IP-address of IKEA hub
   })
+  
+  // Check if we have to authenticate
+  if (this.securityCode == undefined) {
+	  
+	  this.log.warn('We have to authenticate first')
+	  
+	  this.gateway.authenticate().then((result) => {
+		  
+		  if ((result) && (result['9091'])) {
+			  that.configuration.setValueForPlugin(that.name,"tradfri_securityCode",result['9091']); 
+			  that.securityCode = result['9091']
+		  }
+		  
+	  }).catch((error) => {
+    	  that.log.error('Tradfri Error %s',error);
+  	  });
+  	  
+  } else {
   
   this.gateway.getDevices().then((devices) => {
     devices.forEach((device) => {
@@ -72,8 +93,10 @@ TradfriPlatform.prototype.reconnect = function() {
     });
   }).catch((error) => {
     // Manage the error
-    this.log.error('Error %s,',error);
+    this.log.error('Error %s',error);
   });
+  
+  }
   
   setTimeout(function(){
 	  that.reconnect()
