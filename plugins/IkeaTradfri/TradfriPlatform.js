@@ -2,6 +2,7 @@
 
 const path = require('path')
 const fs = require('fs')
+const crypto = require('crypto')
 
 var appRoot = path.dirname(require.main.filename)
 if (appRoot.endsWith('bin')) { appRoot = appRoot + '/../lib' }
@@ -35,14 +36,16 @@ TradfriPlatform.prototype.init = function () {
   this.configuration = this.server.configuration
   this.tradfriUser = this.configuration.getValueForPlugin(this.name,'tradfri_user')
   this.securityCode = this.configuration.getValueForPlugin(this.name,'tradfri_securityCode')
-  this.securityID = this.configuration.getValueForPlugin(this.name,'tradfri_securityid')
   this.bridgeIp = this.configuration.getValueForPlugin(this.name,'tradfri_ip')
   this.coapPath = this.configuration.getValueForPluginWithDefault(this.name,'path_to_coap',path.join(__dirname,'node_modules','node-tradfri-thkl','lib','coap-client-raspbian'))
-  
+  this.tradfriUser = this.configuration.getValueForPlugin(this.name,'tradfri_user')
   
   if (this.bridgeIp!=undefined) {
 	  this.reconnect()  
+  } else {
+	  this.log.warn('missing bridge ip')
   }
+
   this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 
   this.plugin.initialized = true
@@ -53,23 +56,39 @@ TradfriPlatform.prototype.init = function () {
 TradfriPlatform.prototype.reconnect = function() {
 	
   var that = this
+
+  if ((this.securityCode == undefined) && (this.securityID == undefined)) {
+	  this.log.warn('No credentials')
+	  return
+  }
+
+  if (this.tradfriUser == undefined) {
+	  // generate a new User
+	  this.tradfriUser = crypto.randomBytes(10).toString('hex')
+	  this.securityCode = undefined
+	  this.log.info('have to generate a new username')
+  }
+  
   this.gateway = tradfri.create({
-    coapClientPath: that.coapPath, // Path to coap-client
+    coapClientPath: that.coapPath, // Path tocoap-client
     securityId: (that.securityCode != undefined) ? that.securityCode : that.securityID,        // As found on the IKEA hub
-    userName:'hvl_tradfri_user',
+    userName:that.tradfriUser,
     hubIpAddress: that.bridgeIp    // IP-address of IKEA hub
   })
   
   // Check if we have to authenticate
   if (this.securityCode == undefined) {
 	  
-	  this.log.warn('We have to authenticate first')
+	  this.log.warn('we have to authenticate first')
 	  
 	  this.gateway.authenticate().then((result) => {
 		  
 		  if ((result) && (result['9091'])) {
 			  that.configuration.setValueForPlugin(that.name,"tradfri_securityCode",result['9091']); 
+			  that.configuration.setValueForPlugin(that.name,"tradfri_user",that.tradfriUser); 
 			  that.securityCode = result['9091']
+			  that.log.info('authentication done save user and code. as requested by ikea we will also remove the bridge security key')
+			  that.configuration.setValueForPlugin(that.name,"tradfri_securityid",'removed'); 
 		  }
 		  
 	  }).catch((error) => {
@@ -143,7 +162,8 @@ TradfriPlatform.prototype.saveSettings = function(settings) {
 	
 	if (tradfri_securityid) {
 		this.securityID = tradfri_securityid;
-		this.configuration.setValueForPlugin(this.name,"tradfri_securityid",tradfri_securityid); 
+		// As requested by IKEA do not save the Code
+		//this.configuration.setValueForPlugin(this.name,"tradfri_securityid",tradfri_securityid); 
 	}
 
 	if (tradfri_ip) {

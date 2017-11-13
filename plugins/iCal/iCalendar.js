@@ -22,10 +22,10 @@ var iCalendar = function(plugin, url, itemCount, serialprefix) {
 
 iCalendar.prototype.checkVariables = function() {
 	
-	let tmpscript = "object x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('%vn%');if (!x){object newVar = dom.CreateObject(OT_VARDP); newVar.Name('%vn%');newVar.ValueType(%vt%);newVar.ValueSubType(%vs%);dom.GetObject(ID_SYSTEM_VARIABLES).Add(newVar.ID());}"
+	let tmpscript = "x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('%vn%');if (!x){object newVar = dom.CreateObject(OT_VARDP); newVar.Name('%vn%');newVar.ValueType(%vt%);newVar.ValueSubType(%vs%);dom.GetObject(ID_SYSTEM_VARIABLES).Add(newVar.ID());} "
 
-	var regaScript = ""
-	
+	var regaScript = "object x;"
+	this.log.debug("Check Variables for %s",this.prefix)
 	for(var i=0; i<this.itemCount; i++){	
 		
 	   var script = tmpscript
@@ -44,18 +44,19 @@ iCalendar.prototype.checkVariables = function() {
 	   script = script.replace(/%vn%/gi, this.prefix + "_" + i + "_Diff")
 	   script = script.replace(/%vt%/gi, "ivtFloat")
 	   script = script.replace(/%vs%/gi, "istGeneric")
+	   regaScript = regaScript + script	   
 
 	   var script = tmpscript
 	   script = script.replace(/%vn%/gi, this.prefix + "_" + i + "_User")
 	   script = script.replace(/%vt%/gi, "ivtString")
 	   script = script.replace(/%vs%/gi, "istChar8859")
 	   regaScript = regaScript + script	   
-
-
-	   regaScript = regaScript + script	   
 	   
 	}
-	this.bridge.runRegaScript(regaScript,function(result){})
+	this.log.debug("Rega is %s",regaScript)
+	this.bridge.runRegaScript(regaScript,function(result){
+	
+	})
 }
 
 iCalendar.prototype.refresh = function() {
@@ -81,31 +82,36 @@ iCalendar.prototype.refresh = function() {
       items.sort(function(a,b){
 	  	return  new Date(a.start)-new Date(b.start);
 	  });
+	  that.log.debug("number of entries after sort %s",items.length)
 	  var cnt = 0
 	  var script = ""
+	  that.log.debug("%s is max",that.itemCount)
 	  items.some(function (event){
 		if (that.itemCount > cnt) {
 			// Fill Variables
 			let start = moment(event.start)
 			let strDate = start.format("D.MM.YYYY HH:mm:ss")
 			let strUser = (that.plugin.userFormat != undefined) ? start.format(that.plugin.userFormat) : ''
-			script = script + "dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Date').State('" + strDate + "');"
-			script = script + "dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt +  "_Desc').State('" + event.summary + "');"
-			script = script + "dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Diff').State(" + start.diff(mNow,'seconds') + ");"
-			script = script + "dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_User').State('" + strUser + "');"
+			
+			script = script + "object x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Date'); if (x) {x.State('" + strDate + "');} "
+			script = script + "object x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt +  "_Desc'); if (x) {x.State('" + event.summary + "');} "
+			script = script + "object x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Diff'); if (x) {x.State(" + start.diff(mNow,'seconds') + ");} "
+			script = script + "object x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_User'); if (x) {x.State('" + strUser + "');} "
 			cnt = cnt + 1
-		}
+			that.log.debug("Send Event %s",event.summary)
+		} 
 	  })
 
 // fill others with zero
 	  while (that.itemCount > cnt) {
-			script = script + "dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Date').State('');"
-			script = script + "dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt +  "_Desc').State('');"
-			script = script + "dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Diff').State(0);"
-			script = script + "dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_User').State('');"
+			script = script + "object x=dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Date'); if (x) {x.State('');} "
+			script = script + "object x=dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Desc'); if (x) {x.State('');} "
+			script = script + "object x=dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_Diff'); if (x) {x.State(0);} "
+			script = script + "object x=dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + that.prefix + '_' + cnt + "_User'); if (x) {x.State('');} "
 			cnt = cnt + 1
 	  }
 
+	 that.log.debug("Rega is %s",script)
 	 that.bridge.runRegaScript(script,function(result){})
     });
     // wait 30 minutes
