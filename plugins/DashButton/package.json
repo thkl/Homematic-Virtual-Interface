@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-dashbutton",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Virtual Plugin - DashButton",
   "license": "ISC",
   "keywords": [
