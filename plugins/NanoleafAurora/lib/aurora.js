@@ -135,8 +135,10 @@ AuroraApi.prototype.turnOn = function () {
 };
 
 AuroraApi.prototype.turnOff = function () {
-  const requestOptions = this.makePutRequest('/state/on', {
-    value: false
+  const requestOptions = this.makePutRequest('/state', {
+	  on: {
+    		value: false
+	  }
   });
 
   return this.doRequest(requestOptions);
