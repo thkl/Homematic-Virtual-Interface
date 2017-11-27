@@ -64,7 +64,7 @@ HarmonyPlatform.prototype.init = function() {
 	
 	if (this.config.getValueForPluginWithDefault(this.name,"use_roku",false)==true)
 	{
-		this.rokuServer = new HarmonyRokuServer(this,9093)
+		this.rokuServer = new HarmonyRokuServer(this,9093,"-ROKU")
 		this.rokuServer.bind(localHostIP,9093)
 		this.rokuServer.init()
 		this.rokuManger.addRoku(this.rokuServer);
@@ -250,7 +250,7 @@ HarmonyPlatform.prototype.saveSettings = function(settings) {
 	{	
 		this.log.info("Will restart 2.nd RokuService now on %s 9094",localHostIP);
 		this.rokuServer2 = new HarmonyRokuServer(this,9094,"-ROKU2")
-		this.rokuServer.bind(localHostIP,9094)
+		this.rokuServer2.bind(localHostIP,9094)
 		this.rokuServer2.init()
 		this.rokuManger.addRoku(this.rokuServer2);
 	} else {

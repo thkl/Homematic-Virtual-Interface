@@ -47,7 +47,7 @@ var HarmonyRokuServer = function (plugin,port,instance) {
 	this.server = this.plugin.server
 	this.config = this.server.configuration
 	this.bridge = this.server.getBridge();
-	this.rokuInstance = instance || ""
+	this.rokuInstance = instance || "-ROKU"
     this.multicast_ip = "239.255.255.250";
     this.uuid = uuid.v1();
     
@@ -63,9 +63,9 @@ HarmonyRokuServer.prototype.bind = function(ipAdress,port) {
     this.descxml = '<?xml version="1.0" encoding="UTF-8" ?><root xmlns="urn:schemas-upnp-org:device-1-0"><specVersion><major>1</major>'
     this.descxml = this.descxml + '<minor>0</minor></specVersion>'
     this.descxml = this.descxml + '<device><deviceType>urn:roku-com:device:player:1-0</deviceType>'
-    this.descxml = this.descxml + '<friendlyName>Homematic-Harmony'+ this.rokuInstance + '</friendlyName><manufacturer>thkl</manufacturer>'
+    this.descxml = this.descxml + '<friendlyName>HM'+ this.rokuInstance + '</friendlyName><manufacturer>thkl</manufacturer>'
     this.descxml = this.descxml + '<manufacturerURL>https://github.com/thkl/</manufacturerURL><modelDescription>HVL Fake Roku </modelDescription>'
-    this.descxml = this.descxml + '<modelName>Homematic-Harmony'+ this.rokuInstance + '</modelName><modelNumber>4200X</modelNumber>'
+    this.descxml = this.descxml + '<modelName>HM'+ this.rokuInstance + '</modelName><modelNumber>4200X</modelNumber>'
     this.descxml = this.descxml + '<modelURL>https://github.com/thkl/Homematic-Virtual-Interface</modelURL>'
     this.descxml = this.descxml + '<serialNumber>'+ this.uuid + '</serialNumber><UDN>uuid:roku:ecp:'+ this.uuid + '</UDN>'
     this.descxml = this.descxml + '<software-version>7.5.0</software-version><software-build>09021</software-build><power-mode>PowerOn</power-mode>'
@@ -98,13 +98,13 @@ HarmonyRokuServer.prototype.init = function() {
 	this.hmDevice = new HomematicDevice(this.plugin.getName());
 	
 	
-	var data = this.bridge.deviceDataWithSerial("HarmonyRoku"+this.rokuInstance);
+	var data = this.bridge.deviceDataWithSerial("HM"+this.rokuInstance);
 	if (data!=undefined) {
 		this.hmDevice.initWithStoredData(data);
 	} 
 	
 	if (this.hmDevice.initialized == false) {
-		this.hmDevice.initWithType("HM-RC-19", "HarmonyRoku"+this.rokuInstance);
+		this.hmDevice.initWithType("HM-RC-19", "HM"+this.rokuInstance);
 		this.bridge.addDevice(this.hmDevice,true);
 	} else {
 		this.bridge.addDevice(this.hmDevice,false);
@@ -114,7 +114,13 @@ HarmonyRokuServer.prototype.init = function() {
 
        
 HarmonyRokuServer.prototype.stopServer = function() {
-    this.rk_server.close();
+	if (this.rk_server != undefined) {
+	    try {
+		    this.rk_server.close();
+		} catch (e) {
+	    	this.log.error(e);
+    	}
+	}
 }
 
 

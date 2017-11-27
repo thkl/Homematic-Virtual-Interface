@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-harmonydevice",
-  "version": "0.0.37",
+  "version": "0.0.40",
   "description": "Virtual Harmony Device",
   "license": "ISC",
   "keywords": [
@@ -14,7 +14,7 @@
     "url": "https://github.com/thkl/Homematic-Virtual-Interface/issues"
   },
   "engines": {
-    "node": ">=0.12.0",
+    "node": ">=4.5.0",
     "homematic-virtual-interface" : ">=0.2.51"
   },
   
