@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-tradfridevice",
-  "version": "0.0.15",
+  "version": "0.0.19",
   "description": "Virtual Plugin - Ikea Tradfri",
   "license": "ISC",
   "keywords": [
@@ -14,13 +14,13 @@
     "url": "https://github.com/thkl/Homematic-Virtual-Interface/issues"
   },
   "engines": {
-    "node": ">=4.4.7",
+    "node": ">=6.0.0",
     "homematic-virtual-interface" : ">=0.2.50"
   },
   
-  "remark":"update to version > 0.0.12 to use with gateway firmware > 1.2.42",
+  "remark":"Version > 0.0.17 Requires NodeJS >= 6.x",
 
   "dependencies": {
-    "node-tradfri-thkl" : ">=1.0.2"
+    "node-tradfri-client" : ">=0.5.3"
   }
 }

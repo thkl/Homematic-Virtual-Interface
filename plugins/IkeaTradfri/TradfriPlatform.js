@@ -18,7 +18,11 @@ if (appRoot.endsWith('node_modules/daemonize2/lib')) {
 appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')
-const tradfri = require('node-tradfri-thkl')
+const tradfriLib = require("node-tradfri-client")
+const TradfriClient = tradfriLib.TradfriClient
+const AccessoryTypes = tradfriLib.AccessoryTypes
+
+
 var util = require('util')
 var HomematicDevice
 var url = require('url')
@@ -61,66 +65,78 @@ TradfriPlatform.prototype.reconnect = function() {
 	  this.log.warn('No credentials')
 	  return
   }
-
-  if (this.tradfriUser == undefined) {
-	  // generate a new User
-	  this.tradfriUser = crypto.randomBytes(10).toString('hex')
-	  this.securityCode = undefined
-	  this.log.info('have to generate a new username')
-  }
   
-  this.gateway = tradfri.create({
-    coapClientPath: that.coapPath, // Path tocoap-client
-    securityId: (that.securityCode != undefined) ? that.securityCode : that.securityID,        // As found on the IKEA hub
-    userName:that.tradfriUser,
-    hubIpAddress: that.bridgeIp    // IP-address of IKEA hub
-  })
-  
+  this.gateway = new TradfriClient(that.bridgeIp);
+    
   // Check if we have to authenticate
-  if (this.securityCode == undefined) {
+  if ((this.securityCode == undefined) || (this.tradfriUser == undefined)){
 	  
 	  this.log.warn('we have to authenticate first')
 	  
-	  this.gateway.authenticate().then((result) => {
-		  
-		  if ((result) && (result['9091'])) {
-			  that.configuration.setValueForPlugin(that.name,"tradfri_securityCode",result['9091']); 
-			  that.configuration.setValueForPlugin(that.name,"tradfri_user",that.tradfriUser); 
-			  that.securityCode = result['9091']
-			  that.log.info('authentication done save user and code. as requested by ikea we will also remove the bridge security key')
-			  that.configuration.setValueForPlugin(that.name,"tradfri_securityid",'removed'); 
-		  }
-		  
-	  }).catch((error) => {
-    	  that.log.error('Tradfri Error %s',error);
-  	  });
-  	  
+	  this.gateway.authenticate(this.securityID).then((identity, psk) => {
+        // work with the result
+        that.tradfriUser = identity
+        that.securityCode = psk
+		that.configuration.setValueForPlugin(that.name,"tradfri_securityCode",that.securityCode); 
+		that.configuration.setValueForPlugin(that.name,"tradfri_user",that.tradfriUser); 
+		that.configuration.setValueForPlugin(that.name,"tradfri_securityid",'removed'); 
+		setTimeout(function(){that.reconnect()}, 1000)
+      })
+      
+    .catch((e) => {
+	    that.log.error('Gateway authentication error %s',e)
+    })
+	  
   } else {
+	  
+  this.gateway.reset();
+  this.gateway.connect(that.tradfriUser, that.securityCode).catch((e) => {
+	that.log.error(e)  
+  })
   
-  this.gateway.getDevices().then((devices) => {
-    devices.forEach((device) => {
-        this.log.debug('Devices %s',JSON.stringify(device));
-        if (device['brightness'] != undefined) {
-	        if (that.hazLampWithId(device.id) === false) {
-				var tdevice = new TradfriDevice(this,this.gateway,device,device.id)
-				that.lights.push(tdevice) 
-				that.log.info('Lamp %s added',device.id)       
-			} else {
-				that.log.debug('Skip adding %s because lamp is here',device.id)
-			}
-        }
-    });
-  }).catch((error) => {
-    // Manage the error
-    this.log.error('Error %s',error);
-  });
   
-  }
-  
-  setTimeout(function(){
-	  that.reconnect()
-  }, 30000)
+  this.gateway
+    .on("device updated", function(device) {
+	   if (device.type === AccessoryTypes.lightbulb) {
+		   let idevice = device.lightList[0]
+		   
+		   var hm_lamp = that.lampWithId(device.instanceId)
+		   if (hm_lamp == undefined) {
+		   	   hm_lamp = new TradfriDevice(that,idevice,device.instanceId)	
+			   that.lights.push(hm_lamp)
+		   }
+
+		   that.log.debug('Update Level for  Lamp %s',idevice.dimmer) 
+		   
+		   hm_lamp.updateLevel(idevice.onOff, (idevice.dimmer / 100))	
+		   if (idevice.spectrum === 'white') {	
+			   that.log.debug('Update Color for White Lamp %s',idevice.color) 
+		   		hm_lamp.updateWhite(idevice.color)  
+		   } 
+	   } else {
+
+	   }
+    })
+    
+    .on("device removed", function(instanceId) {
+	    
+    })
+    .observeDevices();
+   
+ } 
+
 }
+
+TradfriPlatform.prototype.lampWithId = function(lampId) {
+	var result = undefined	
+		this.lights.some(function (light){
+			if (light.id === lampId) {
+				result = light
+			}
+		})
+	return result
+}
+
 
 TradfriPlatform.prototype.hazLampWithId = function(lampId) {
 	var result = false	
@@ -150,7 +166,6 @@ TradfriPlatform.prototype.showSettings = function(dispatched_request) {
 	var result = [];
 	result.push({"control":"text","name":"tradfri_securityid","label":"Security ID","value":this.securityID,"description":this.localization.localize("See backside of your bridge")});
 	result.push({"control":"text","name":"tradfri_ip","label":"Bridge IP","value": this.bridgeIp });
-	result.push({"control":"text","name":"path_to_coap","label":"Path to coap client","value": this.coapPath,"description":this.localization.localize("see https://github.com/nidayand/node-tradfri-argon#compiling-libcoap (default setting is for raspberry)")});
 	return result;
 }
 
@@ -158,12 +173,9 @@ TradfriPlatform.prototype.saveSettings = function(settings) {
 	var that = this
 	var tradfri_securityid = settings.tradfri_securityid;
 	var tradfri_ip = settings.tradfri_ip;
-	var path_to_coap = settings.path_to_coap;
 	
 	if (tradfri_securityid) {
 		this.securityID = tradfri_securityid;
-		// As requested by IKEA do not save the Code
-		//this.configuration.setValueForPlugin(this.name,"tradfri_securityid",tradfri_securityid); 
 	}
 
 	if (tradfri_ip) {
@@ -171,10 +183,6 @@ TradfriPlatform.prototype.saveSettings = function(settings) {
 		this.configuration.setValueForPlugin(this.name,"tradfri_ip",tradfri_ip); 
 	}
 
-	if (path_to_coap) {
-		this.coapPath = path_to_coap
-		this.configuration.setValueForPlugin(this.name,"path_to_coap",path_to_coap); 
-	}
 	this.reconnect()
 }
 
@@ -211,6 +219,7 @@ TradfriPlatform.prototype.shutdown = function() {
     this.log.info("Shutdown");
  	this.server.getBridge().deleteDevicesByOwner(this.name)
     this.lights = [];
+    this.gateway.destroy();
 }
 
 

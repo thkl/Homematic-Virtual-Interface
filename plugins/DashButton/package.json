@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-dashbutton",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "Virtual Plugin - DashButton",
   "license": "ISC",
   "keywords": [
@@ -14,12 +14,13 @@
     "url": "https://github.com/thkl/Homematic-Virtual-Interface/issues"
   },
   "engines": {
-    "node": ">=0.12.0",
-    "homematic-virtual-interface" : ">=0.0.4"
+  	"node": ">=4.5.0",
+    "homematic-virtual-interface" : ">=0.2.58"
   },
   
   "remark":"Please first read the manual https://github.com/thkl/Homematic-Virtual-Interface/blob/master/plugins/DashButton/README.md",
   "dependencies": {
-    "node-dash-button":"0.6.1"
+    "node-dash-button":"0.6.1",
+    "pcap": "git+https://github.com/mranney/node_pcap.git#d920204745c8b00ef4b7a3fe27d902b263cdb70f"
   }
 }

@@ -26,7 +26,8 @@ if (appRoot.endsWith('node_modules/daemonize2/lib')) {
 }
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js');
-
+var util = require("util");
+var HomematicDevice;
 
 function LightifyPlatform(plugin,name,server,log,instance) {
 	LightifyPlatform.super_.apply(this,arguments);
@@ -40,23 +41,28 @@ function LightifyPlatform(plugin,name,server,log,instance) {
 
 util.inherits(LightifyPlatform, HomematicVirtualPlatform);
 
-
-
 LightifyPlatform.prototype.init = function() {
 	var that = this;
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
 	
 	this.log.info("Init %s",this.name);
-	var ip = this.configuration.getValueForPlugin(this.name,"ip");
-	
-	if (ip == undefined) {
+	this.gatewayIP = this.configuration.getValueForPlugin(this.name,"ip");
+	this.mappedDevices = []
+	if (this.gatewayIP == undefined) {
 		this.log.error("Please setup Lightify ip in your config.json")
     } else {
 	    
-	lightify.start(ip).then(function(data){
+	
+    
+    }    
+}
+
+LightifyPlatform.prototype.reInit = function() {
+  var that = this
+  lightify.start(this.gatewayIP).then(function(data){
     	return lightify.discovery();
-	}).then(function(data) {
+  }).then(function(data) {
 	
 	if ((data != undefined) && (data.result != undefined))	
 	
@@ -74,8 +80,25 @@ LightifyPlatform.prototype.init = function() {
 		});	
 	  	
 	})
-    
-    }    
+}
+
+LightifyPlatform.prototype.showSettings = function(dispatched_request) {
+	var result = [];
+	result.push({"control":"text","name":"gatewayIP","label":"IP Gateway","value":this.gatewayIP,"description":"IP of your gateway"});
+	return result;
+}
+
+LightifyPlatform.prototype.saveSettings = function(settings) {
+	var that = this
+	var gatewayIP = settings.gatewayIP;
+	
+	if (gatewayIP) {
+		this.gatewayIP = gatewayIP;
+	}
+
+	this.configuration.setValueForPlugin(this.name,"ip",gatewayIP); 
+
+	this.reInit()
 }
 
 

@@ -67,8 +67,15 @@ PioneerPlatform.prototype.reconnect = function(command) {
 	var hop = this.configuration.getValueForPlugin(this.name,"options");
 	if (hop != undefined) {
 		var options = {port: hop["port"],host: hop["host"],log: false};
-	    this.log.info("Connecting to AVR %s:%s",options.host,options.port);
+
+		if ( this.receiver != undefined) {
+	 	     this.log.info("Removing old connection");
+			 this.receiver.closeConnection();
+			 this.receiver = undefined
+		}
+
 		this.receiver = new avr.VSX(options);
+	    this.log.info("Connecting to AVR %s:%s",options.host,options.port);
 		
 		this.receiver.on("connect", function() {
 			that.log.info("Connection to the AVR");
@@ -80,8 +87,8 @@ PioneerPlatform.prototype.reconnect = function(command) {
         });
         
         this.receiver.on("error", function () {
-        	that.log.error("Error Reconnecting in 60 seconds");
-			setTimeout(function() {that.reconnect()},60000);
+        	that.log.error("Error Reconnecting in 30 seconds");
+			setTimeout(function() {that.reconnect()},30000);
         });
     }
 }

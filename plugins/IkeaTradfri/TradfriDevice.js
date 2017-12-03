@@ -2,29 +2,29 @@
 
 var HomematicDevice;
 
-var TradfriDevice = function(plugin, api ,light,serialprefix) {
+var TradfriDevice = function(plugin,light,serialprefix) {
 
 
 		var that = this
-		this.api =  api
 		this.log = plugin.log
 		this.bridge = plugin.server.getBridge()
 		this.plugin = plugin
+		this.light = light
 		
 		HomematicDevice = plugin.server.homematicDevice
 		
-		this.id = light['id']
+		this.id = serialprefix
 		this.onTime = 0
 		this.lastLevel = 0
 		this.curLevel = 0
-		this.transitiontime = 4
-		
+		this.transitiontime = 0.5
 		this.hmDevice = new HomematicDevice(this.plugin.getName())
 		this.serial = 'Tradfri'+this.id
-		this.ikeaName = light.name
-		this.ikeaType = light.type
+		this.ikeaName = light._accessory.name
+		this.ikeaType = light._accessory.deviceInfo.modelNumber
 		this.log.debug('Setup new Tradfri %s',this.serial)
-
+		this.test = 0
+		
 		var data = this.bridge.deviceDataWithSerial(this.serial)
 		if (data!=undefined) {
 			this.hmDevice.initWithStoredData(data)
@@ -56,7 +56,7 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 		    setTimeout(function() {that.setLevel(0)}, that.onTime * 1000)
 	       }
 	       // reset the transition and on time 
-	       that.transitiontime = 4
+	       that.transitiontime = 0.5
 	       that.onTime = 0
 	       if (newValue > 0) {
 		       that.lastLevel = newValue
@@ -76,7 +76,7 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 	     }
 
 	    if ((parameter.name == 'RAMP_TIME') && (channel.index == '1')) {
-		  that.transitiontime = newValue*10
+		  that.transitiontime = newValue
 		}
 
 	    if ((parameter.name == "ON_TIME") && (channel.index == '1')) {
@@ -92,27 +92,28 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 	    }
     })
 
-	     this.updateTimer = setTimeout(function() {
-		 	that.refreshDevice();
-		 }, 1000)
-
 	}
 	
 	TradfriDevice.prototype.setColor = function(newColor) {
+	    var that = this
+	    if (this.light.spectrum === 'rgb') {
 	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')
 		if (co_channel != undefined) {
-			
 			var regex = /(\s*[0-9]{1,3}),(\s*[0-9]{1,3}),(\s*[0-9]{1,3})/
 			var result = newColor.match(regex);
 			var r = parseInt(result[1].trim()).toString(16);
 			var g = parseInt(result[2].trim()).toString(16);
 			var b = parseInt(result[3].trim()).toString(16);
-			let color = this.pad(r,2)+this.pad(g,2)+this.pad(b,2);
-			let devData = {state:'on', brightness:this.curLevel, color: color, transitionTime: this.transitiontime}
-			this.log.debug('Color %s command %s',newColor,JSON.stringify(devData))
-			this.api.setDeviceState(this.id,devData ).then(
-			)
+			let hsv = this.RGBtoHSV(r,g,b)
+			this.light.setHue(hsv.h,this.transitiontime).then().catch((e) => {
+				that.log.error('set hue error %s',e)
+			})
+			this.light.setSaturation(hsv.s,this.transitiontime).then().catch((e) => {
+				that.log.error('set sat error %s',e)
+			})
+			this.log.debug('Color %s command %s',JSON.stringify(hsv))
 		}
+		} 
 	}
 
     TradfriDevice.prototype.pad = function (n, width, z) {
@@ -122,74 +123,89 @@ var TradfriDevice = function(plugin, api ,light,serialprefix) {
 	}
 
 	TradfriDevice.prototype.setWhite = function(newTemp) {
+	    
+	    if (this.light.spectrum === 'white') {
+		var that = this
 	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')
 		if (co_channel != undefined) {
-			let color = 'warm'
-			if (newTemp>3000) {
-				color = 'normal'
+			// White bulbs have  fixed color s
+			this.log.info(newTemp)
+			if (newTemp == 6500) {
+				this.light.setColor('f5faf6', this.transitionTime)
 			}
-			if (newTemp>4500) {
-				color = 'cool'
+			if (newTemp == 4500) {
+				this.light.setColor('f1e0b5', this.transitionTime)
 			}
-			let devData = {state:'on', brightness:this.curLevel, color: color, transitionTime: this.transitiontime}
-			this.log.debug('Temp %s command %s',newTemp,JSON.stringify(devData))
-			this.api.setDeviceState(this.id,devData ).then(
-			)
+			if (newTemp == 2000) {
+				this.light.setColor('efd275', this.transitionTime)
+			}
+		}
 		}
 	}
 
-
+	
 	TradfriDevice.prototype.setLevel = function(newLevel) {
 	    var di_channel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')
 		if (di_channel != undefined) {
+			this.curLevel = newLevel
+			this.light.operateLight({dimmer: (newLevel * 100)}, this.transitiontime)
 			di_channel.startUpdating('LEVEL');
-			this.curLevel = parseInt(newLevel*254)
 			di_channel.updateValue('LEVEL',newLevel)
-			var n_state = 'off'
-			if (newLevel > 0) {
-				n_state = 'on'
-			}
-			this.api.setDeviceState(this.id, { state: n_state, brightness: this.curLevel,transitionTime: this.transitiontime}).then(
-				di_channel.endUpdating('LEVEL')
-			);
+			di_channel.endUpdating('LEVEL')
 		}
 	}
 
-	TradfriDevice.prototype.refreshDevice = function(device) {
-	  var that = this
-	  this.api.getDevice(this.id).then(function(data) {
-		  that.log.debug(JSON.stringify(data));
-
-		  if ((data != undefined) && (data.brightness != undefined)) {
-		  	  var di_channel = that.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')
-		  	  var bri = 0
-		  	  if (data['on']==true) {
-				  bri = data['brightness'] / 255;
-				  that.curLevel = data['brightness']
-			  }
-			  di_channel.updateValue('LEVEL',bri,true,false);
-			  
-			  if (data.color=='efd275') { // 'warm'
-				  di_channel.updateValue('WHITE','2000',true,false)
-			  }
-			  
-			  if (data.color=='f1e0b5') {
-				  di_channel.updateValue('WHITE','4250',true,false)
-			  }
-			  
-			  if (data.color=='f5faf6') {
-				  di_channel.updateValue('WHITE','6500',true,false)
-			  }
-			}		
-	  });
-	
-
-	 this.updateTimer = setTimeout(function() {
-		 	that.refreshDevice()
-		 }, 20000)
+	TradfriDevice.prototype.updateLevel = function(isOn, newLevel) {
+		var di_channel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')
+		if (di_channel != undefined) {
+			if (isOn == false) {
+				di_channel.updateValue('LEVEL',0,true)
+			} else {
+				di_channel.updateValue('LEVEL',newLevel,true)
+			}
+		}
 	}
+	
+	TradfriDevice.prototype.updateWhite = function(newColor) {
+		if (this.light.spectrum === 'white') {
+			var di_channel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGBW-DIM-CH','1')
+			var newColTemp = '6500'
+	    
+			if (newColor == 'f1e0b5') {
+				newColTemp = '4500'
+			}
+	    
+			if (newColor == 'efd275') {
+		    	newColTemp = '2000'
+	    	}
+	    
+			di_channel.updateValue('WHITE', newColTemp,true,false)
+		}
+	}
+	
+	TradfriDevice.prototype.RGBtoHSV = function(r, g, b) {
+   		if (arguments.length === 1) {
+   		 	g = r.g, b = r.b, r = r.r;
+    	}
+    var max = Math.max(r, g, b), min = Math.min(r, g, b),
+        d = max - min,
+        h,
+        s = (max === 0 ? 0 : d / max),
+        v = max / 255;
 
+    switch (max) {
+        case min: h = 0; break;
+        case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
+        case g: h = (b - r) + d * 2; h /= 6 * d; break;
+        case b: h = (r - g) + d * 4; h /= 6 * d; break;
+    }
 
+    return {
+        h: h,
+        s: s,
+        v: v
+    };
+	}
 
 	module.exports = {
 	  TradfriDevice : TradfriDevice
