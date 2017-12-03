@@ -134,6 +134,15 @@
 		"npm" :"homematic-virtual-ical",
 		"syname":"iCal",
 		"description":{"de-de":"Anzeige von Kalendern in Systemvariablen","en-en":"Show next appointments as system variables"}
+	  },
+	  
+	  
+	  {
+		  
+		"name":"Dash-Button",
+		"npm" :"homematic-virtual-dashbutton",
+		"syname":"DashButton",
+		"description":{"de-de":"F&uuml;gt Amazon Dash Buttons hinzu","en-en":"adds amazon Dash buttons"}
 	  }
 	  
 	  
