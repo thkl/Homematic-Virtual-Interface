@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-huedevice",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Virtual Plugin - Dummy",
   "license": "ISC",
   "keywords": [
@@ -14,8 +14,8 @@
     "url": "http://"
   },
   "engines": {
-    "node": ">=0.12.0",
-    "homematic-virtual-interface" : ">=0.0.4"
+    "node": ">=4.5.0",
+    "homematic-virtual-interface" : ">=0.2.58"
   },
   
   "dependencies": {
