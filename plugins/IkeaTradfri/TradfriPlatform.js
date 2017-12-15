@@ -41,6 +41,23 @@ TradfriPlatform.prototype.init = function () {
 
 	var that = this
 
+	// copy the needed device.json
+	var devs = { 
+		rgb: 'VIR-LG-RGB-DIM_Tradfri',
+		white: 'VIR-LG-WHITE-DIM_Tradfri',
+		dim: 'VIR-LG-DIM_Tradfri',
+		group: 'VIR-LG-GROUP_Tradfri'
+		}
+
+	for (var dev in devs) {
+
+		var devfile = path.join(__dirname, devs[dev] + '.json' )
+		var buffer = fs.readFileSync(devfile)
+		var devdata = JSON.parse(buffer.toString())
+		this.server.transferHMDevice( devs[dev],devdata)
+
+	}
+
 	this.configuration = this.server.configuration
 	this.tradfriUser = this.configuration.getValueForPlugin(this.name,'tradfri_user')
 	this.securityCode = this.configuration.getValueForPlugin(this.name,'tradfri_securityCode')
