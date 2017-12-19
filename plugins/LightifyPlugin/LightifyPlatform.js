@@ -11,7 +11,8 @@
 
 const lightify = require('node-lightify')
 const url = require('url')
-var LightifyDevice = require("./LightifyDevice.js").LightifyDevice;
+var LightifyRGBDevice = require("./LightifyRGBDevice.js").LightifyRGBDevice;
+var LightifyWhiteDevice = require("./LightifyWhiteDevice.js").LightifyWhiteDevice;
 const path = require('path')
 const fs = require('fs')
 
@@ -32,11 +33,19 @@ var HomematicDevice;
 function LightifyPlatform(plugin,name,server,log,instance) {
 	LightifyPlatform.super_.apply(this,arguments);
 	this.mappedDevices = [];
-	this.api;
 	this.lights = [];
-	this.groups = [];
 	this.alexa_appliances = {};
+	this.server = server
 	HomematicDevice = server.homematicDevice;
+	// transport device defs
+	var devfile = path.join(__dirname,'VIR-LG-WHITE-DIM.json');
+    var buffer = fs.readFileSync(devfile);
+    try {
+	    var devdata = JSON.parse(buffer.toString());
+		this.server.transferHMDevice('VIR-LG-WHITE-DIM',devdata);
+    } catch (e) {
+	    this.log.error(e) 
+	}
 }
 
 util.inherits(LightifyPlatform, HomematicVirtualPlatform);
@@ -48,39 +57,65 @@ LightifyPlatform.prototype.init = function() {
 	
 	this.log.info("Init %s",this.name);
 	this.gatewayIP = this.configuration.getValueForPlugin(this.name,"ip");
-	this.mappedDevices = []
+
 	if (this.gatewayIP == undefined) {
 		this.log.error("Please setup Lightify ip in your config.json")
     } else {
-	    
-	
-    
+	    this.log.info("Config IP found .. trying to setup connection to lf")
+		this.reInit()
     }    
 }
 
 LightifyPlatform.prototype.reInit = function() {
   var that = this
-  lightify.start(this.gatewayIP).then(function(data){
-    	return lightify.discovery();
+  this.mappedDevices = []
+  this.lights = [];
+
+  if (this.connection != undefined) {
+	  this.connection.dispose();
+  }
+
+  this.connection = new lightify.lightify(this.gatewayIP);
+  this.connection.connect().then(function(){
+    return that.connection.discover();
   }).then(function(data) {
-	
-	if ((data != undefined) && (data.result != undefined))	
-	
 		data.result.forEach(function (light) {
-			that.log.debug("LFLight %s",light);
+		that.log.info("LFLight %s (%s)",light["name"],light["type"]);
+		
 			if (light["type"]=="10") {
-    			that.log.debug("Create new Osram Light " + light["name"]);
+    			that.log.debug("Create new Osram RGB Light " + light["name"]);
     			var name = "VIR-LG-" + light["name"].replace(" ", "_");
-				var hd = new LightifyDevice(that,lightify,light,name);
+				var hd = new LightifyRGBDevice(that,that.connection,light,name);
 				light["hm_device_name"] = light["name"];
+				that.lights.push(light);
+	    		that.mappedDevices.push(hd);
     		}
-				
-			that.lights.push(light);
-    		that.mappedDevices.push(hd);
-		});	
-	  	
-	})
+    		
+    		if (light["type"]=="2") {
+    			that.log.debug("Create new Osram White Light " + light["name"]);
+    			var name = "VIR-LG-" + light["name"].replace(" ", "_");
+				var hd = new LightifyWhiteDevice(that,that.connection,light,name);
+				light["hm_device_name"] = light["name"];
+				that.lights.push(light);
+	    		that.mappedDevices.push(hd);
+    		}
+		})
+		
+  }).catch(function(error){
+	that.log.error("LF Init Error %s" ,error);
+  });
 }
+
+
+LightifyPlatform.prototype.shutdown = function() {
+   this.log.info("Shutdown");
+ //  this.hm_layer.deleteDevicesByOwner(this.name)
+   if (this.connection != undefined) {
+	  this.connection.dispose();
+  }
+}
+
+
 
 LightifyPlatform.prototype.showSettings = function(dispatched_request) {
 	var result = [];
