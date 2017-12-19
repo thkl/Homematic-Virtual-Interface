@@ -343,6 +343,28 @@ TradfriPlatform.prototype.reconnect = function() {
 	}
 }
 
+// for compatibility with the other HVL PlugIn's
+TradfriPlatform.prototype.myDevices = function() {
+
+	// return my Devices here
+	var result = []
+
+	result.push({"id":"sep-trad","name":"--------- Tradfri Devices ---------","type":"seperator"})
+
+	for(var index in this.trApiLightbulbs) {
+		let light = this.trApiLightbulbs[index]
+		result.push({"id": 'Tradfri' + light.instanceId,"name":light.name,"udn": 'Tradfri' + light.instanceId,"type":"TRADFRI"})
+	}
+
+	for(var index in this.trApiGroups) {
+		let group = this.trApiGroups[index]
+		result.push({"id": 'Tradfri' + group.instanceId,"name":group.name,"udn": 'Tradfri' + group.instanceId,"type":"TRADFRI"})
+	}
+
+	return result
+}
+
+
 TradfriPlatform.prototype.showSettings = function(dispatched_request) {
 	var result = [];
 	result.push({"control":"text","name":"tradfri_securityid","label":"Security ID","value":this.securityID,"description":this.localization.localize("See backside of your bridge")});
