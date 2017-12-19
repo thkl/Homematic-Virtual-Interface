@@ -93,10 +93,10 @@ var RaumfeldPlayer = function(plugin,_deviceUdn,_deviceName) {
 								roomRenderer.setMute(mute).then(function(_data){
 									that.log.debug('result set mute %s',JSON.stringify(_data))
 								}).catch(function(_data){
-								
+									that.log.error("set mute error %s",_data)
 							})
 							}).catch(function(_data){
-								that.log.error("set mute error %s",_data)
+								that.log.error("get mute error %s",_data)
 							})
 						break
 						
@@ -225,7 +225,9 @@ var RaumfeldPlayer = function(plugin,_deviceUdn,_deviceName) {
 					zoneRenderer.play().then(function(_data){
 						that.log.debug('play result %s',_data)
 					}).catch(function(_data){
-								
+						that.log.error('Set Playlist Rejection %s',_data)
+					}).catch(function(_data){
+						that.log.error('Load Playlist Rejection %s',_data)
 					})
 				})
 			}
