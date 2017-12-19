@@ -50,12 +50,8 @@ TradfriPlatform.prototype.init = function () {
 		}
 
 	for (var dev in devs) {
-
 		var devfile = path.join(__dirname, devs[dev] + '.json' )
-		var buffer = fs.readFileSync(devfile)
-		var devdata = JSON.parse(buffer.toString())
-		this.server.transferHMDevice( devs[dev],devdata)
-
+		this.server.publishHMDevice(this.getName(),devs[dev],devfile,1)
 	}
 
 	this.configuration = this.server.configuration
