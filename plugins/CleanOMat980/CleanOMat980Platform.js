@@ -157,7 +157,9 @@ CleanOMat980Platform.prototype.command = function (command) {
 						that.command('update')
 					}, (that.refreshTime * 60000))
 					
-		   		});
+		   		}).catch(function(_data){
+						that.log.error('getRobotState Rejection %s',_data)
+				});
 		   		
 				}, 500);
 			break;
