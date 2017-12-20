@@ -63,9 +63,8 @@ TradfriPlatform.prototype.init = function () {
 	
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings");
 
-	this.plugin.initialized = true
-	
-	this.log.info('initialization completed %s', this.plugin.initialized)
+	// this.plugin.initialized = true
+	// this.log.info('initialization completed %s', this.plugin.initialized)
 
 	if (this.bridgeIp!=undefined) {
 		// give a bit time
@@ -81,11 +80,17 @@ TradfriPlatform.prototype.init = function () {
 TradfriPlatform.prototype.reconnect = function() {
 	
 	var that = this
+	
+	var gotAllDevs = false
+	var gotAllGroups = false
+	
 
-	// don't delete all the known devices on reconnect
-	// this.trApiLightbulbs = {}
-	// this.trApiGroups = {}
-	// this.trApiScenes = {}
+	// delete all the known devices on reconnect cause they would'nt be observered else
+	// the listeners are reseted and will only be recreated on device and group setup
+	//
+	this.trApiLightbulbs = {}
+	this.trApiGroups = {}
+	this.trApiScenes = {}
 
 	if ((this.securityCode == undefined) && (this.securityID == undefined)) {
 		this.log.warn('No credentials')
@@ -149,7 +154,16 @@ TradfriPlatform.prototype.reconnect = function() {
 		.on("error", tradfri_error)
 		.on("device updated", tradfri_deviceUpdated)
 		.on("device removed", tradfri_deviceRemoved)
-		.observeDevices()
+		.observeDevices().then((result) => {
+			// if resolve, all devices are there
+			that.log.debug('got all devices')
+			gotAllDevs = true
+			tradfri_initialized()
+		})
+		.catch((e) => {
+			// handle error
+			that.log.error("Device observation error %s", e)
+		})
 		;
 		that.tradfri
 		.on("error", tradfri_error)
@@ -157,7 +171,16 @@ TradfriPlatform.prototype.reconnect = function() {
 		.on("scene removed", tradfri_sceneRemoved)
 		.on("group updated", tradfri_groupUpdated)
 		.on("group removed", tradfri_groupRemoved)
-		.observeGroupsAndScenes()
+		.observeGroupsAndScenes().then((result) => {
+			// if resolve, all groups and scenes are there
+			that.log.debug('got all groups and scenes')
+			gotAllGroups = true
+			tradfri_initialized()
+		})
+		.catch((e) => {
+			// handle error
+			that.log.error("Device observation error %s", e)
+		})
 		;
 		that.tradfri.setMaxListeners(250)
 		that.log.info('Observer added and increased maxListeners to 250')
@@ -166,6 +189,21 @@ TradfriPlatform.prototype.reconnect = function() {
 		// start hearbeat to monitor connection
 		that.heartBeatId = setInterval(tradfri_health, 15000)
 		that.log.info('Heartbeat started')
+	}
+	
+	// Plugin initialized //////////////////////////////////////////////////
+	//
+	//
+	function tradfri_initialized() {
+		if ((gotAllDevs == true) && (gotAllGroups == true)) {
+			that.log.info("got all Devices, Groups and Scenes from Gateway")
+
+			that.plugin.initialized = true
+			that.log.info('initialization completed %s', that.plugin.initialized)
+
+		} else {
+			that.log.debug("i need one more thing")
+		}
 	}
 
 
