@@ -179,7 +179,7 @@ TradfriPlatform.prototype.reconnect = function() {
 		})
 		.catch((e) => {
 			// handle error
-			that.log.error("Device observation error %s", e)
+			that.log.error("Group observation error %s", e)
 		})
 		;
 		that.tradfri.setMaxListeners(250)
