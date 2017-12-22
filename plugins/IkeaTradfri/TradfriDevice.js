@@ -155,15 +155,19 @@ var TradfriDevice = function(plugin, id) {
 		if (parameter.instanceId == that.id) {
 
 			// that.log.debug('Tradfri change event recieved, update Homematic')
-
+			that.bridge.startMulticallEvent(500)
 			var di_channel = that.hmDevice.getChannelWithTypeAndIndex(that.HMChannel,'1')
 			that.updateHM( di_channel, parameter )
+			that.bridge.sendMulticallEvents()
 		}
 	})
+
 	// first time initialise on plugin startup
 	// that.log.debug('HM device first time init %s', that.id)
+	that.bridge.startMulticallEvent(500)
 	var in_channel = that.hmDevice.getChannelWithTypeAndIndex(that.HMChannel,'1')
 	that.updateHM( in_channel, that.trApiLightbulb )
+	that.bridge.sendMulticallEvents()
 
 }
 
