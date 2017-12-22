@@ -101,6 +101,10 @@ LogicalPlatform.prototype.init = function() {
     
 	this.calculateSunTimes();
 	this.reInitScripts();
+	
+	this.subscriptions.forEach(function(sbs){
+		logicLogger.info("Subscribed to %s",sbs.source);
+	})
 }
 
 LogicalPlatform.prototype.shutdown = function() {
@@ -362,7 +366,7 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
         }
 
       if (typeof subs.callback === 'function' && match) {
-      		
+      		logicLogger.info("Subscription %s was triggered %s",subs.source);
       		delay = 0;
             if (options.shift) delay += ((parseFloat(options.shift) || 0) * 1000);
             if (options.random) delay += ((parseFloat(options.random) || 0)  * Math.random() * 1000);
@@ -378,6 +382,7 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
 }
 
 LogicalPlatform.prototype.getDatabase = function(name) {
+	var that = this
 	var spath = this.configuration.storagePath()
 	// Do not store outside the config file
 	try {
@@ -386,7 +391,7 @@ LogicalPlatform.prototype.getDatabase = function(name) {
 		db.loadDatabase(function (err) {    // Callback is optional
 				// Now commands will be executed
 				if (err) {
-					this.log.error("Error while loading custom db %s",err)
+					that.log.error("Error while loading custom db %s",err)
 				}
 		});
 		return db
@@ -668,6 +673,82 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
             });
         },
         
+        linkLightSwitch:   function linkLightSwitch(source,target,  options, /* optional */ callback) {
+
+
+	    	if ((typeof source === 'undefined') || (typeof target === 'undefined')) {
+                throw(new Error('argument source missing'));
+            }
+            
+            
+            options = arguments[2] || {};
+            
+            if (arguments.length === 4) {
+
+                if (typeof arguments[3] !== 'function') throw new Error('callback is not a function');
+                options = arguments[2] || {};
+                callback = arguments[3];
+
+            } else if (arguments.length > 4) {
+                throw(new Error('wrong number of arguments'));
+            }
+            
+            var fn = path.basename(name)
+            that.subscriptions.push({file:fn, source: source, options: options, callback: scriptDomain.bind(function(){
+				
+				logicLogger.info("Processing lightlink %s with %s",source,target);
+				
+				// first get the current taget Level
+				Sandbox.getValue(target).then(function (value) {
+					var tvalue = 0
+					var isOn = false
+					if (target.indexOf('LEVEL')>-1) {
+						if (parseInt(value) > 0) {tvalue = 0}
+						if (parseInt(value) === 0) {
+							tvalue = 1
+							isOn = true
+						}
+					}
+					
+					if (target.indexOf('STATE')>-1) {
+						if (parseInt(value) === 0) {
+							tvalue = 1
+							isOn = true}
+						if (parseInt(value) === 1) {tvalue = 0}
+						if (value === true) {tvalue = false}
+						
+						if (value === false) {
+							tvalue = true
+							isOn = true
+						}
+						
+					}
+					
+					logicLogger.info("set %s to %s",target,JSON.stringify(tvalue));
+					Sandbox.setValue(target,tvalue).then(function(){
+						
+					if ((options != undefined) && (isOn == true)) {
+						
+						Object.keys(options).forEach(function (ok) {
+							if (options[ok]) {
+								logicLogger.info("set %s to %s",ok,options[ok]);
+								Sandbox.setValue(ok,options[ok])
+							}
+						})
+					}
+					
+					if (callback != undefined) {
+						callback()
+					}
+						
+					})
+					
+				})	            
+	            
+            })});
+            
+	    },
+        
         subscribe:  function Sandbox_subscribe(source, /* optional */ options, callback) {
             if (typeof source === 'undefined') {
                 throw(new Error('argument source missing'));
@@ -695,11 +776,16 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 				
 				var tmp = source.split('.');
 				// Check first Value for hmvirtual
-				if ((tmp.length>2) && (that.isVirtualPlatformDevice(tmp[0]))) {
+				if (tmp.length>2) {
+			      if (that.isVirtualPlatformDevice(tmp[0])) {
 				   var channel = tmp[1];
 				   // Bind to channel change events
 				   that.processLogicalBinding(channel);
-				} 
+				}
+				
+				} else {
+				   logicLogger.error("%s split error",source);
+				}
                 
                 var fn = path.basename(name)
                 that.subscriptions.push({file:fn, source: source, options: options, callback: (typeof callback === 'function') && scriptDomain.bind(callback)});
@@ -1058,7 +1144,7 @@ LogicalPlatform.prototype.processLogicalBinding = function(source_adress) {
   var that = this;
   if (channel) {
 	  that.log.debug("uhh someone is intrested in my value changes %s",source_adress);
-	  
+	  logicLogger.info("Subscribed to %s",source_adress)
 	  channel.removeAllListeners("logicevent_channel_value_change");
 	  
 	  channel.on('logicevent_channel_value_change', function(parameter){
@@ -1071,7 +1157,8 @@ LogicalPlatform.prototype.processLogicalBinding = function(source_adress) {
 	  });	
 	  
   } else {
-	  that.log.debug("channel with adress %s not found - cannot add event listener",source_adress);
+	  logicLogger.error("Cannot subscribe to %s channel was not found",source_adress)
+	  that.log.error("channel with adress %s not found - cannot add event listener",source_adress);
   }
 }
 
