@@ -102,6 +102,7 @@ HuePlatform.prototype.shutdown = function() {
     this.log.info("Shutdown")
  	this.hm_layer.deleteDevicesByOwner(this.name)
     this.lights = []
+    this.sensors = []
 	this.groups = []
 	this.effectServers={}
 	clearTimeout(this.refreshTimer)
@@ -192,7 +193,9 @@ HuePlatform.prototype.locateBridge = function (callback) {
           that.log.warn("Scan complete but no bridges found")
           callback(null,null)
 		}
-    }).done()
+    }).done().catch(function(_data) {
+		that.log.error("locateBridge %s",_data)
+	})
     
 }
 
@@ -290,28 +293,38 @@ HuePlatform.prototype.checkReady = function() {
 
 HuePlatform.prototype.querySensors = function() {
 	var that = this
-	this.log.debug("Query sensors")
+	this.log.info("Query sensors")
 	this.hue_api.sensors().then(function(results) {
 		if ((results != undefined) && (results['sensors']!=undefined)) {
+			that.log.debug('%s sensors found',results['sensors'].length)
 			results['sensors'].forEach(function (sensor){
 				that.log.debug("Try adding sensor %s",sensor['modelid'])
-				switch (sensor['type']) {
-					case 'ZLLTemperature' : {
-						var devName = "HUEST" + ((that.instance) ? that.instance :"0")
-						var hd = new HueTempDevice(that,that.hue_api,sensor,devName)
+				switch (sensor['type'].toLowerCase()) {
+					case 'zlltemperature' : {
+						var devName = "HUEZT" + ((that.instance) ? that.instance :"0")
+						var hd = new HueTempSensor(that,that.hue_api,sensor,devName)
 						that.mappedDevices.push(hd)
+						that.sensors.push({"name":sensor["name"] ,"hm_device_name":hd.hmName })
 					}
 					break
-					case 'Daylight' : {
-						var devName = "HUESD" + ((that.instance) ? that.instance :"0")
+					
+					case 'daylight' : {
+						var devName = "HUEZD" + ((that.instance) ? that.instance :"0")
 						var hd = new HueDayLightSensor(that,that.hue_api,sensor,devName)
 						that.mappedDevices.push(hd)
-					}
+						that.sensors.push({"name":sensor["name"] ,"hm_device_name":hd.hmName })
+					} //HueDayLightSensor
 					break
+					
+					default: {
+						that.log.debug("No handler found for %s",sensor['type'])
+					}
 				}
 				
 			})
 		}
+	}).catch(function(_data) {
+		that.log.error("query sensor error %s",_data)
 	})
 }        
 
@@ -326,13 +339,14 @@ HuePlatform.prototype.queryLights = function() {
   		lights["lights"].forEach(function (light) {
     		
     		
-    		    		
+    		var hd = undefined
+    				
     		switch (light["type"].toLowerCase()) {
 	    		  
     		 case "on/off plug-in unit": {
     			that.log.debug("Create new Osram Plug with name %s and id %s" , light["name"] ,  light["id"])
-    			var devName = "OSRPLG" + ((that.instance) ? that.instance :"0")
-				var hd = new HueDeviceOsramPlug(that,that.hue_api,light,devName)
+    			let devName = "OSRPLG" + ((that.instance) ? that.instance :"0")
+				hd = new HueDeviceOsramPlug(that,that.hue_api,light,devName)
 				light["hm_device_name"] = devName + light["id"]
     		  } 
      		  break
@@ -341,8 +355,8 @@ HuePlatform.prototype.queryLights = function() {
     		  case "color light": {
 	    		that.log.debug("Create new Color Light with name %s and id %s " , light["name"] ,  light["id"])
 	    		// Try to load device
-	    		var devName = "HUE000" + ((that.instance) ? that.instance : "0")
-				var hd = new HueColorDevice(that,that.hue_api,light,devName)
+	    		let devName = "HUE000" + ((that.instance) ? that.instance : "0")
+				hd = new HueColorDevice(that,that.hue_api,light,devName)
 				light["hm_device_name"] = devName + light["id"]
 				
 				hd.on("direct_light_event",function (alight) {
@@ -361,8 +375,8 @@ HuePlatform.prototype.queryLights = function() {
     		  case "dimmable light": {
 	    		that.log.debug("Create new White Light with name %s and id %s" , light["name"] ,  light["id"])
 	    		// Try to load device
-	    		var devName = "HUE000" +  ((that.instance)?that.instance : "0")
-				var hd = new HueDimmableDevice(that,that.hue_api,light,devName)
+	    		let devName = "HUE000" +  ((that.instance)?that.instance : "0")
+				hd = new HueDimmableDevice(that,that.hue_api,light,devName)
 				light["hm_device_name"] = devName + light["id"]
 				
 				hd.on("direct_light_event",function (alight) {
@@ -381,9 +395,11 @@ HuePlatform.prototype.queryLights = function() {
 			  	that.log.error("Sorry there is currently no mapping for %s please create an issue at github for that. Thank you.",light["type"])
 			  	break
     		 } 
-    		
+    
+    		if (hd != undefined) {
+	    		that.mappedDevices.push(hd)
+    		}
     		that.lights.push(light)
-    		that.mappedDevices.push(hd)
   		})
     	 }
     	 catch (e) {
@@ -477,7 +493,7 @@ HuePlatform.prototype.lightWithId = function(lightId) {
 } 
 
 HuePlatform.prototype.sensorWithId = function(sensorId) {
-	return this.mappedDevices.filter(function (device) { return device.serial == sensorId}).pop()
+	return this.mappedDevices.filter(function (device) { return device.sensorUniqueId == sensorId}).pop()
 } 
 
 
@@ -493,13 +509,12 @@ HuePlatform.prototype.refreshAll = function() {
 	this.log.debug("Refreshing Lamp status ...")
 	var refreshrate = this.configuration.getValueForPluginWithDefault(this.plugin.name,"refresh",60)*1000
 	
-	// Refresh Lights
-	
-	this.hue_api.lights(function(err, lights) {
-		that.log.debug("Number of Lamps in update %s error %s",lights["lights"].length,err)
-		if (err) {
-			that.log.debug(err.stack)
-		}
+	this.hue_api.lights().then(function(lights) {
+
+		// Start Multicall
+		that.hm_layer.startMulticallEvent(500)
+		that.log.debug("Number of Lamps in update %s",lights["lights"].length)
+
 		if (lights) {
 	 	lights["lights"].forEach(function (light) {
 		  var hue_light = that.lightWithId(light["id"])
@@ -510,11 +525,16 @@ HuePlatform.prototype.refreshAll = function() {
 		})
 		that.lastUpdate = new Date()
 		}
+	
+		that.log.info("refresh done send events")
+		that.hm_layer.sendMulticallEvents()
+    }).catch(function(_data) {
+		that.log.error("refresh lamps error %s",_data)
 	})
-	
+
 	// Refresh Sensors
-	
 	this.hue_api.sensors().then(function(results) {
+		that.hm_layer.startMulticallEvent(500)
 
 		if ((results != undefined) && (results['sensors']!=undefined)) {
 			that.log.debug("Number of Sensors in update %s",results["sensors"].length)
@@ -523,19 +543,23 @@ HuePlatform.prototype.refreshAll = function() {
 				var objsensor = that.sensorWithId(sensor["uniqueid"])
 				
 				if (objsensor) {
-					that.log.debug("Refreshing Sensor %s",sensor["uniqueid"])
+					 that.log.debug("Refreshing Sensor %s",sensor["uniqueid"])
 					 objsensor.refreshWithData(sensor)
 				}
 			})
 		}
+
+		that.log.info("refresh done send events")
+		that.hm_layer.sendMulticallEvents()
+
+	}).catch(function(_data) {
+			that.log.error("refresh sensor error %s",_data)
 	})
-	
 	
 	this.refreshTimer = setTimeout(function() {
 		 	that.refreshAll()
 	}, refreshrate)
 	this.log.debug("Refreshed Lights Next in %s ms.",refreshrate)
-
 } 
 
 HuePlatform.prototype.getConfiguredScenes = function() {
@@ -592,6 +616,7 @@ HuePlatform.prototype.saveEffectScenes = function(publishedscenes) {
 
 HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
 	var listLights = ""
+	var listSensors = ""
 	var listGroups = ""
 	var listScenes = ""
 	var listEfxS = ""
@@ -792,6 +817,9 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 	var grouptemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_group_tmp.html",null)
 	var szenetemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_scene_tmp.html",null)
 
+	var sensortemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_sensor_tmp.html",null)
+
+
 	var efxtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_efx_tmp.html",null)
 	var efxSceneListtemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_efx_slist_tmp.html",null)
 	var efxLighttemplate = dispatched_request.getTemplate(this.plugin.pluginPath , "list_efx_light_tmp.html",null)
@@ -802,6 +830,9 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 		listLights = listLights +  dispatched_request.fillTemplate(lighttemplate,{"lamp_name":light["name"],"lamp_hmdevice":light["hm_device_name"]})
 	})
 	
+	this.sensors.forEach(function (sensor) {
+		listSensors = listSensors + dispatched_request.fillTemplate(sensortemplate,{"sensor_name":sensor["name"],"sensor_hmdevice":sensor["hm_device_name"]})
+	})
 	
 	
 	if (this.groupManager != undefined) {
@@ -867,6 +898,7 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 																		"listLights":listLights,
 																		"listGroups":listGroups,
 																		"listScenes":listScenes,
+																		"listSensors":listSensors,
 																		  "listEfxS":listEfxS,
 																		   "message":message})
 }

@@ -265,9 +265,11 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	        newState["bri"] = (newLevel/1)*255;
 
 	      } else {
+		    that.log.debug("Set lamp to off : %s",that.lightId);
 	        newState["on"] = false;
 	        newState["bri"] = 0;
 	    }
+	    
 		this.bri = newState["bri"];
 		if (that.isGroup == true) {
 
@@ -278,8 +280,9 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	    });
 
 		} else {
-
-		that.api.setLightState(that.lightId,newState, function(err, result) {
+		    that.log.debug("Lamp Command %s",JSON.stringify(newState));
+			that.api.setLightState(that.lightId,newState, function(err, result) {
+		
 	      if (di_channel != undefined) {
 	        di_channel.endUpdating("LEVEL");
 	      }

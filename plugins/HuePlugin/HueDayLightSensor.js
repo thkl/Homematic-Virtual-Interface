@@ -33,7 +33,7 @@ var HueDayLightSensor = function(plugin, hueApi ,sensor,serialprefix) {
 	
 	HueDayLightSensor.prototype.refreshWithData = function (data) {
 		var daylight = data["state"]["daylight"];
-	    this.log.info("Hue Daylight Sensor State %s",daylight)
+	    this.log.debug("Hue Daylight Sensor State %s",daylight)
 	}
 
 
