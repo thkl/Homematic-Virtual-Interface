@@ -143,10 +143,16 @@
 		"npm" :"homematic-virtual-dashbutton",
 		"syname":"DashButton",
 		"description":{"de-de":"F&uuml;gt Amazon Dash Buttons hinzu","en-en":"adds amazon Dash buttons"}
+	  },
+	  
+	  
+	  {
+		  
+		"name":"Google-Cast",
+		"npm" :"homematic-virtual-google-cast",
+		"syname":"GoogleCast",
+		"description":{"de-de":"F&uuml;gt Google Cast hinzu","en-en":"adds Google Cast support"}
 	  }
-	  
-	  
-	  
 	  
 	]
 }
