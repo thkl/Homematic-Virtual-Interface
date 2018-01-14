@@ -11,7 +11,7 @@ This is work in progress.
 Quick Install:
 
  ```
-wget -nv -O- https://raw.githubusercontent.com/thkl/Homematic-Virtual-Interface/master/install.sh | bash -
+wget -nv -O- https://raw.githubusercontent.com/thkl/Homematic-Virtual-Interface/master/install.sh | sudo -E bash -
  ```
 Raspberrymatic:
 
