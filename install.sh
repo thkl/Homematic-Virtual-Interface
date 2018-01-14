@@ -69,7 +69,7 @@ fi
 info "Installing Virtual Layer Software"
 
 cd /home/hmvi
-npm install homematic-virtual-interface
+runuser -l hmvi -c "npm install homematic-virtual-interface"
 
 
 whiptail --yesno "Would you like to start the virtual layer at boot by default?" $DEFAULT 20 60 2
