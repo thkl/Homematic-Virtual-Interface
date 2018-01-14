@@ -40,6 +40,12 @@ sudo test "`dpkg --print-architecture`" == "armhf" || die "This Repos is only fo
 #info "Installing Git"
 #install_package "git"
 
+# create own user
+if [ $(cat /etc/passwd | grep hmvi |wc -l) -eq 0 ];
+then
+    info "Creating new user"
+    useradd -m hmvi
+fi
 
 if [ $(type -P node | grep node|wc -l) -eq 0 ]; 
 then
@@ -48,7 +54,7 @@ then
     tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
     cd node-v4.0.0-linux-armv7l
     sudo cp -R * /usr/local/
-    cd /home/pi
+    cd /home/hmvi
     rm node-v4.0.0-linux-armv7l.tar.gz
     rm node-v4.0.0-linux-armv7l -R
   else
@@ -62,7 +68,7 @@ fi
 
 info "Installing Virtual Layer Software"
 
-cd /home/pi
+cd /home/hmvi
 npm install homematic-virtual-interface
 
 
@@ -70,22 +76,20 @@ whiptail --yesno "Would you like to start the virtual layer at boot by default?"
 RET=$?
 if [ $RET -eq 0 ]; then
 
-    sudo cp /home/pi/node_modules/homematic-virtual-interface/lib/hmvi_npm /etc/init.d/hmvi
+    sudo cp /home/hmvi/node_modules/homematic-virtual-interface/lib/hmvi_npm /etc/init.d/hmvi
   	
   	sudo chmod 755 /etc/init.d/hmvi
 	sudo update-rc.d hmvi defaults
 fi
 
-USER_HOME=$(eval echo ~${SUDO_USER})
-
-if [ ! -d "${USER_HOME}/.hm_virtual_interface" ]; then
+if [ ! -d "/home/hmvi/.hm_virtual_interface" ]; then
 
   CCUIP=$(whiptail --inputbox "Please enter your CCU IP" 20 60 "000.000.000.000" 3>&1 1>&2 2>&3)
 
   echo "build new configuration directory and config"
-  mkdir ${USER_HOME}/.hm_virtual_interface
-  touch ${USER_HOME}/.hm_virtual_interface/config.json
-  echo "{\"ccu_ip\":\"$CCUIP\",\"plugins\":[]}" > ${USER_HOME}/.hm_virtual_interface/config.json
+  mkdir /home/hmvi/.hm_virtual_interface
+  touch /home/hmvi/.hm_virtual_interface/config.json
+  echo "{\"ccu_ip\":\"$CCUIP\",\"plugins\":[]}" > /home/hmvi/.hm_virtual_interface/config.json
 else
   echo "Config is here skipping this step"
 fi
