@@ -52,14 +52,8 @@
 		"npm" :"homematic-virtual-sonosdevice",
 		"syname":"Sonos",
 		"description":{"de-de":"Sellt Sonos Zoneplayer als CCU Ger&auml;te zur Verf&uuml;gung","en-en":"Creates CCU devices from sonos zone players"}
-	  },
-
-	  {
-		"name":"Alexa Plugin",
-		"npm" :"homematic-virtual-alexa",
-		"syname":"Alexa",
-		"description":{"de-de":"Benutze Amazon Alexa um Ger&auml;te zu steuern.","en-en":"Use amazon alexa to control your devices"}
 	  }
+	  
 	  ,
 
 	  {
