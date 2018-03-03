@@ -1,0 +1,18 @@
+{
+		"subscribe" : ["stat/%name%","tele/%name%"],
+		"type" : "switchdevice",
+		"hmdevice" : "HM-LC-SW1-FM",
+		"channels" : {
+			"1" : {
+				"hm_channeltype_set" : "SWITCH",
+				"hm_channeltype_get" : "SWITCH",
+				"hm_datapoint_get" : "STATE",
+				"hm_datapoint_set" : "STATE",
+				"mqtt_topic_set" : "cmnd/%name%/POWER",
+				"mqtt_topic_get" : "stat/%name%/POWER",
+				"mqtt_type" : "boolean",
+				"mqtt_representation" : ["ON","OFF"]
+			}			
+		}
+}
+	
