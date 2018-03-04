@@ -52,14 +52,11 @@ MQTTPlatform.prototype.showSettings = function(dispatched_request) {
 	var result = []
 
 	var host = this.configuration.getValueForPlugin(this.name,'broker_host')
-	var port = this.configuration.getValueForPlugin(this.name,'broker_port')
-
 	var user = this.configuration.getValueForPlugin(this.name,'client_user')
 	var password = this.configuration.getValueForPlugin(this.name,'client_password')
 
 
-	result.push({"control":"text","name":"broker_host","label":"Hostname of your MQTT Broker","value":host})
-	result.push({"control":"text","name":"broker_port","label":"Port","value":port})
+	result.push({"control":"text","name":"broker_host","label":"Url of your MQTT Broker","value":host})
 	result.push({"control":"text","name":"client_user","label":"Client username","value": user})
 	result.push({"control":"password","name":"client_password","label":"Client password","value": password})
 	return result
@@ -67,15 +64,15 @@ MQTTPlatform.prototype.showSettings = function(dispatched_request) {
 
 MQTTPlatform.prototype.saveSettings = function(settings) {
 	var that = this
+
 	if (settings.broker_host) {
 		this.configuration.setValueForPlugin(this.name,"broker_host",settings.broker_host) 
 	}
-	if (settings.broker_port) {
-		this.configuration.setValueForPlugin(this.name,"broker_port",settings.broker_port) 
-	}
+
 	if (settings.client_user) {
 		this.configuration.setValueForPlugin(this.name,"client_user",settings.client_user) 
 	}
+	
 	if (settings.client_password) {
 		this.configuration.setValueForPlugin(this.name,"client_password",settings.client_password) 
 	}
@@ -141,24 +138,17 @@ MQTTPlatform.prototype.initMqttConnection = function() {
 	var that = this
 	
 	var host = this.configuration.getValueForPlugin(this.name,'broker_host')
-	var port = this.configuration.getValueForPlugin(this.name,'broker_port',1884)
 
 	if (host != undefined) {
-		
-	var user = this.configuration.getValueForPlugin(this.name,'client_user')
-	var password = this.configuration.getValueForPlugin(this.name,'client_password')
-
-	this.log.info('Init mqtt broker connection to %s:s%',host,port)
-	
-   try {
-	   
-   this.mqttClient = Mqtt.connect(host, {
-     clientId: 'hvl_mqtt_' + Math.random().toString(16).substr(2, 8),
-     will: {topic: this.name + '/connected', payload: '0', retain: true},
-     username: user,
-     password: password
-   }); 
-
+		var user = this.configuration.getValueForPlugin(this.name,'client_user','')
+		var password = this.configuration.getValueForPlugin(this.name,'client_password','')
+		this.log.info('Init mqtt broker connection to %s',host)
+		try {
+			this.mqttClient = Mqtt.connect(host, {
+			clientId: 'hvl_mqtt_' + Math.random().toString(16).substr(2, 8),
+			will: {topic: this.name + '/connected', payload: '0', retain: true},
+			username: user,	password: password
+		}); 
    } catch (e) {
 	   that.log.error(e);
 	   return;
@@ -209,6 +199,13 @@ MQTTPlatform.prototype.initMqttConnection = function() {
    }
 }
 
+MQTTPlatform.prototype.shutdown = function() {
+    this.log.info("Shutdown")
+ 	this.bridge.deleteDevicesByOwner(this.name)
+    this.mqttClient.publish('presence', 'HVL MQTT plugin shutdown')
+    this.mqttClient.end()
+}
+
 
 MQTTPlatform.prototype.loadSettingsFor = function (devicetype) {
 
@@ -227,6 +224,7 @@ MQTTPlatform.prototype.handleConfigurationRequest = function (dispatchedRequest)
   var requesturl = dispatchedRequest.request.url
   var queryObject = url.parse(requesturl, true).query
   var deviceList = ''
+  var devtemplate = dispatchedRequest.getTemplate(this.plugin.pluginPath , "list_device_tmp.html",null);
 
   if (queryObject['do'] !== undefined) {
     switch (queryObject['do']) {
@@ -240,6 +238,14 @@ MQTTPlatform.prototype.handleConfigurationRequest = function (dispatchedRequest)
     }
   }
 
+  this.devices.forEach(function(device) { 
+		deviceList = deviceList +  dispatchedRequest.fillTemplate(devtemplate,{
+			'device_hmdevice': device.serial,
+			'device_name': device.mqtt_device,
+			'device_type': device.type,
+		})
+	})
+	
   dispatchedRequest.dispatchFile(this.plugin.pluginPath, template, {'listDevices': deviceList})
 }
 

@@ -3,16 +3,27 @@
 		"type" : "switchdevice",
 		"hmdevice" : "HM-LC-SW1-FM",
 		"channels" : {
+			
 			"1" : {
-				"hm_channeltype_set" : "SWITCH",
 				"hm_channeltype_get" : "SWITCH",
 				"hm_datapoint_get" : "STATE",
 				"hm_datapoint_set" : "STATE",
 				"mqtt_topic_set" : "cmnd/%name%/POWER",
-				"mqtt_topic_get" : "stat/%name%/POWER",
-				"mqtt_type" : "boolean",
-				"mqtt_representation" : ["ON","OFF"]
-			}			
-		}
+				"mqtt_payload_get" : "POWER",
+				"mqtt_representation_get" : {"ON":true, "OFF":false},
+				"hm_channeltype_set" : "SWITCH",
+				"mqtt_topic_get" : "stat/%name%/RESULT",
+				"mqtt_representation_state" : {"ON":true, "OFF":false},
+				"mqtt_topic_state" : "tele/%name%/STATE",
+				"mqtt_payload_state" : "POWER",
+				"mqtt_representation_set" : {"true": "ON" , "false": "OFF"}
+			}	
+					
+		},
+		
+		"mqtt_topic_state" : "cmnd/%name%/status",
+		"mqtt_payload_state" : "Power",
+		"mqtt_representation_state" : {"1" : true , "0": false}
+		
 }
 	
