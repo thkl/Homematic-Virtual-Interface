@@ -42,9 +42,25 @@ var SwitchDevice = function(plugin, settings, serial,mqtt_device) {
     	}
 			
 		})
-		// sample do something when parameter with name level was changed
   	})
 }
+
+SwitchDevice.prototype.queryState = function() {
+	let that = this
+	that.log.debug('query status for %s',this.serial)
+	Object.keys(that.settings['channels']).forEach(function (channel_index){
+		let chset = that.settings['channels'][channel_index]
+		let mqtt_topic_state = chset['mqtt_topic_getstate']
+		mqtt_topic_state = mqtt_topic_state.replace('%name%', that.mqtt_device)
+		if (mqtt_topic_state) {
+		   that.log.debug('mqtt message %s' , mqtt_topic_state)	
+		   that.plugin.mqttClient.publish(mqtt_topic_state)
+		} else {
+			that.log.warn('No status query topic found for channel %s',channel_index)
+		}	
+	})
+}	
+
 
 SwitchDevice.prototype.getTopicsToSubscribe = function() {
   let that = this
@@ -70,19 +86,17 @@ SwitchDevice.prototype.handleMqttMessage = function(topic,payload) {
 	Object.keys(that.settings['channels']).forEach(function (channel_index){
 		
 		let chset = that.settings['channels'][channel_index]
-		let mqtt_topic_get = chset['mqtt_topic_get']
-		let mqtt_topic_state = chset['mqtt_topic_state']
+		let mqtt_topic_get = chset['mqtt_topic_get'].replace('%name%', that.mqtt_device)
+		let mqtt_topic_state = chset['mqtt_topic_state'].replace('%name%', that.mqtt_device)
 		let mqtt_payload_state = chset['mqtt_payload_state']
 		let mqtt_payload_get = chset['mqtt_payload_get']
 		
-		mqtt_topic_get = mqtt_topic_get.replace('%name%', that.mqtt_device)
-		mqtt_topic_state = mqtt_topic_state.replace('%name%', that.mqtt_device)
 		let ctype = chset['hm_channeltype_set']
 		let dpname = chset['hm_datapoint_set']
 		
 		// Check Get Message
 		if (mqtt_topic_get) {
-		if (topic.startsWith(mqtt_topic_get)) {
+		if (topic.match(mqtt_topic_get)) {
 			let stateValue = opayload[mqtt_payload_get]
 			if (stateValue) {
 				let mqtt_representation_get = chset['mqtt_representation_get']
@@ -97,7 +111,7 @@ SwitchDevice.prototype.handleMqttMessage = function(topic,payload) {
 		
 		// Check State Message
 		if (mqtt_payload_state) {
-		if (topic.startsWith(mqtt_topic_state)) {
+		if (topic.match(mqtt_topic_state)) {
 			let stateValue = opayload[mqtt_payload_state]
 			if (stateValue) {
 				let mqtt_representation_state = chset['mqtt_representation_state']
@@ -110,6 +124,26 @@ SwitchDevice.prototype.handleMqttMessage = function(topic,payload) {
 		}
 		}
 		
+		// Check State rsponse Message
+		let mqtt_topic_getstate_response = chset['mqtt_topic_getstate_response'].replace('%name%', that.mqtt_device)
+		let mqtt_payload_getstate_response = chset['mqtt_payload_getstate_response']
+		
+		if (mqtt_topic_getstate_response) {
+			
+		if (topic.match(mqtt_topic_getstate_response)) {
+			let stateValue = opayload[mqtt_payload_getstate_response]
+			if (stateValue) {
+				let mqtt_representation_getstate_response = chset['mqtt_representation_getstate_response']
+				let value = mqtt_representation_getstate_response[stateValue]
+				let channel = that.hmDevice.getChannelWithTypeAndIndex(ctype,channel_index)
+				if (channel) {
+					channel.updateValue(dpname,value,true,true)
+				}
+			}
+		}
+		}
+
+
     })
     
 	this.bridge.sendMulticallEvents()

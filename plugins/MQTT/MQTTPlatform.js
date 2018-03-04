@@ -158,6 +158,10 @@ MQTTPlatform.prototype.initMqttConnection = function() {
    this.mqttClient.on('connect', () => {
     that.mqttConnected = true
     that.log.debug('MQTT client connected')
+    // Query all values
+    that.devices.forEach(function(device){
+	   device.queryState()
+	 })
    })
    
    this.mqttClient.on('close', () => {

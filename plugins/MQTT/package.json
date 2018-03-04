@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-mqttdevice",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Virtual Plugin - MQTT",
   "license": "ISC",
   "keywords": [
@@ -15,11 +15,10 @@
   },
   "engines": {
     "node": ">=4.5.0",
-    "homematic-virtual-interface" : ">=0.2.58",
-    "mqtt" : "^2.15.1"
+    "homematic-virtual-interface" : ">=0.2.58"
   },
   
   "dependencies": {
-
+   "mqtt" : "^2.15.1"
   }
 }
