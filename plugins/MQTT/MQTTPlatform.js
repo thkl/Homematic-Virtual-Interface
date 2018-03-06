@@ -20,6 +20,7 @@ appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')
 var SwitchDevice = require("./SwitchDevice.js").SwitchDevice;
+var SwitchDeviceEnergyCounter = require("./SwitchDeviceEnergyCounter.js").SwitchDeviceEnergyCounter;
 
 
 var util = require('util')
@@ -40,9 +41,13 @@ MQTTPlatform.prototype.init = function () {
   this.configuration = this.server.configuration
   this.localization = require(appRoot + '/Localization.js')(__dirname + '/Localizable.strings')
   this.log.info('Init %s',this.name)
-  let devtype = 'HM-LC-SW1-FM'
-  var devfile = path.join(__dirname, devtype + '.json' )
-  this.server.publishHMDevice(this.getName(),devtype,devfile,1)
+  let devtypes = ['HM-LC-SW1-FM','HM-ES-PMSw1-Pl']
+  
+  for (var dev in devtypes) {
+		var devfile = path.join(__dirname, devtypes[dev] + '.json' )
+		this.server.publishHMDevice(this.getName(),devtypes[dev],devfile,1)
+  }
+
   
   this.loadDevices();
   this.initMqttConnection();
@@ -85,12 +90,6 @@ MQTTPlatform.prototype.saveSettings = function(settings) {
    
 MQTTPlatform.prototype.loadDevices = function () {
 
-  // your need a device file which is not bundled in core system. copy data like this 
-  // as an example the HM-Sen-Wa-Od.json should be located in your plugin root
-  
-  /* 
-   this.server.publishHMDevice(this.getName(),'HM-Sen-Wa-Od',devfile,1);
-  */
   this.devices = []
   let that = this  
   var odev = this.configuration.getValueForPlugin(this.name,'devices')
@@ -100,13 +99,12 @@ MQTTPlatform.prototype.loadDevices = function () {
 		let serial = device['serial']
 		let mqname = device['mqttdevice']
 		if ((type) && (serial) && (mqname)) {
-//		that.loadDevice('SonoffBasic','Dum_1234','sonoff_1');
 			that.log.info('Adding %s %s %s',type,serial,mqname)
 			that.loadDevice(type,serial,mqname)
 		}
 	})
   } catch (e) {
-	  this.log.error(e);
+	  this.log.error(e.stack);
   }
     
   this.plugin.initialized = true
@@ -118,13 +116,13 @@ MQTTPlatform.prototype.loadDevice = function(type,serial,mqttName) {
 
 	let settings = this.loadSettingsFor(type);
 	if (settings) {
-		let service = settings['type']
-		if (service = 'switchdevice') {
+		let clazztype = settings['clazztype']
+		if (clazztype == 'switchdevice') {
 	  		this.devices.push(new SwitchDevice(this,settings,serial,mqttName));
   		}
-  	} else {
-		this.log.error('nothing found for %s',type); 
-  	}
+   	} else {
+	   this.log.error('missing settingsfile for %s',type)	
+   	}
 }
 
 
@@ -150,7 +148,7 @@ MQTTPlatform.prototype.initMqttConnection = function() {
 			username: user,	password: password
 		}); 
    } catch (e) {
-	   that.log.error(e);
+	   that.log.error(e.stack);
 	   return;
    }
    
