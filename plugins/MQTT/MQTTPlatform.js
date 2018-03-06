@@ -71,8 +71,10 @@ MQTTPlatform.prototype.saveSettings = function(settings) {
 		this.configuration.setValueForPlugin(this.name,"client_password",settings.client_password) 
 	}
 	
-    this.loadDevices();
-	this.initMqttConnection();
+    this.loadDevices()
+	this.initMqttConnection()
+	this.plugin.initialized = true
+	this.log.info('initialization completed %s', this.plugin.initialized)
 }
 
 
@@ -81,7 +83,9 @@ MQTTPlatform.prototype.loadDevices = function () {
 
   this.devices = []
   let that = this  
-  var odev = this.configuration.getValueForPlugin(this.name,'devices')
+  var odev = this.configuration.loadPersistentObjektfromFile('mqtt_objects')
+  if (odev) {
+	  
   try {
 	odev.forEach(function(device){
 		let type = device['type']
@@ -95,9 +99,8 @@ MQTTPlatform.prototype.loadDevices = function () {
   } catch (e) {
 	  this.log.error(e.stack);
   }
+  }
     
-  this.plugin.initialized = true
-  this.log.info('initialization completed %s', this.plugin.initialized)
 }
 
 
@@ -122,8 +125,8 @@ MQTTPlatform.prototype.loadDevice = function(type,serial,mqttName) {
 			let hmtype = settings['hmdevice']
 			if (hmtype != undefined) {
 				// Transfer the device date to core
-				var devfile = path.join(__dirname, 'devices', type + '.json' )
-				this.server.publishHMDevice(this.getName(),type,devfile,1)
+				var devfile = path.join(__dirname, 'devices', hmtype + '.json' )
+				this.server.publishHMDevice(this.getName(),hmtype,devfile,1)
 				this.devices.push(new service(this,settings,serial,mqttName))
 			}
 		}

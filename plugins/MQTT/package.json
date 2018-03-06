@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-mqttdevice",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "description": "Virtual Plugin - MQTT",
   "license": "ISC",
   "keywords": [
