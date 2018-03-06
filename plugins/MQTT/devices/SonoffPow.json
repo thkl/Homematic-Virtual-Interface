@@ -1,6 +1,6 @@
 {
 		"subscribe" : ["stat/%name%","tele/%name%"],
-		"clazztype" : "switchdevice",
+		"clazztype" : "SwitchDevice",
 		"type" : "Energy Counter",
 		"hmdevice" : "HM-ES-PMSw1-Pl",
 		"channels" : {

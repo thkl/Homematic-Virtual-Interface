@@ -138,26 +138,26 @@ SwitchDevice.prototype.handleMqttMessage = function(topic,payload) {
 					
 					let v = that.parseMqttResponse(dp_config,'get',topic,opayload)
 					if (v != undefined) {
-						that.log.debug("Update channel parameter %s with %s",dpname,v)
+						that.log.debug('Update channel parameter %s with %s',dpname,v)
 						channel.updateValue(dpname,v,true,true)
 					}
 					
 					v = that.parseMqttResponse(dp_config,'getstate',topic,opayload)
 					if (v != undefined) {
-						that.log.debug("Update channel parameter %s with %s",dpname,v)
+						that.log.debug('Update channel parameter %s with %s',dpname,v)
 						channel.updateValue(dpname,v,true,true)
 					}
 		
 					v = that.parseMqttResponse(dp_config,'state',topic,opayload)
 					if (v != undefined) {
-						that.log.debug("Update channel parameter %s with %s",dpname,v)
+						that.log.debug('Update channel parameter %s with %s',dpname,v)
 						channel.updateValue(dpname,v,true,true)
 					}
 				} else {
-					that.log.warn("there is no channel with index %s and type %s",channel_index,ctype)
+					that.log.warn('there is no channel with index %s and type %s',channel_index,ctype)
 				}
 			} else {
-				that.log.error("there is no mqtt message handling config for %s",dpname)
+				that.log.error('there is no mqtt message handling config for %s',dpname)
 			}
 		})
 	})
@@ -165,6 +165,4 @@ SwitchDevice.prototype.handleMqttMessage = function(topic,payload) {
 	this.bridge.sendMulticallEvents()
  }
 
-module.exports = {
-	SwitchDevice : SwitchDevice
-}
+module.exports = SwitchDevice

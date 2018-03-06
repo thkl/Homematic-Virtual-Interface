@@ -19,10 +19,6 @@ if (appRoot.endsWith('node_modules/daemonize2/lib')) {
 appRoot = path.normalize(appRoot);
 
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')
-var SwitchDevice = require("./SwitchDevice.js").SwitchDevice;
-var SwitchDeviceEnergyCounter = require("./SwitchDeviceEnergyCounter.js").SwitchDeviceEnergyCounter;
-
-
 var util = require('util')
 var HomematicDevice
 var url = require('url')
@@ -41,14 +37,7 @@ MQTTPlatform.prototype.init = function () {
   this.configuration = this.server.configuration
   this.localization = require(appRoot + '/Localization.js')(__dirname + '/Localizable.strings')
   this.log.info('Init %s',this.name)
-  let devtypes = ['HM-LC-SW1-FM','HM-ES-PMSw1-Pl']
-  
-  for (var dev in devtypes) {
-		var devfile = path.join(__dirname, devtypes[dev] + '.json' )
-		this.server.publishHMDevice(this.getName(),devtypes[dev],devfile,1)
-  }
-
-  
+ 
   this.loadDevices();
   this.initMqttConnection();
 }
@@ -112,14 +101,32 @@ MQTTPlatform.prototype.loadDevices = function () {
 }
 
 
-MQTTPlatform.prototype.loadDevice = function(type,serial,mqttName) {
+MQTTPlatform.prototype.loadServiceClazz = function(clazzType) {
+	let fileName = path.join(__dirname,'serviceclasses',clazzType+'.js');
+	if (fs.existsSync(fileName)) {
+	    this.log.debug('Load BuildIn Service Class %s from %s',clazzType,fileName)
+	    return require(path.join(__dirname,'serviceclasses',clazzType))
+    } else {
+	    this.log.error('No BuildIn Service Class found for %s at %s',clazzType,fileName)
+    }
 
+	return undefined
+}
+
+MQTTPlatform.prototype.loadDevice = function(type,serial,mqttName) {
 	let settings = this.loadSettingsFor(type);
 	if (settings) {
 		let clazztype = settings['clazztype']
-		if (clazztype == 'switchdevice') {
-	  		this.devices.push(new SwitchDevice(this,settings,serial,mqttName));
-  		}
+		var service = this.loadServiceClazz(clazztype)
+		if (service != undefined) {
+			let hmtype = settings['hmdevice']
+			if (hmtype != undefined) {
+				// Transfer the device date to core
+				var devfile = path.join(__dirname, 'devices', type + '.json' )
+				this.server.publishHMDevice(this.getName(),type,devfile,1)
+				this.devices.push(new service(this,settings,serial,mqttName))
+			}
+		}
    	} else {
 	   this.log.error('missing settingsfile for %s',type)	
    	}

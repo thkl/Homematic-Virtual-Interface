@@ -1,6 +1,6 @@
 {
 		"subscribe" : ["stat/%name%","tele/%name%"],
-		"clazztype" : "switchdevice",
+		"clazztype" : "SwitchDevice",
 		"type" : "Switch",
 		"hmdevice" : "HM-LC-SW1-FM",
 		"channels" : {
