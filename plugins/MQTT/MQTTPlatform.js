@@ -184,7 +184,7 @@ MQTTPlatform.prototype.initMqttConnection = function() {
 		this.topics = [];
 	}
 	var that = this
-	
+	this.clientID = 'hvl_mqtt_' + this.configuration.getMacAddress().toString().replace(/:/g,'')
 	var host = this.configuration.getValueForPlugin(this.name,'broker_host')
 
 	if (host != undefined) {
@@ -193,8 +193,8 @@ MQTTPlatform.prototype.initMqttConnection = function() {
 		this.log.info('Init mqtt broker connection to %s',host)
 		try {
 			this.mqttClient = Mqtt.connect(host, {
-			clientId: 'hvl_mqtt_' + Math.random().toString(16).substr(2, 8),
-			will: {topic: this.name + '/connected', payload: '0', retain: true},
+			clientId: that.clientID,
+			will: {topic: 'tele/' + that.clientID + '/LWT', payload: 'offline', retain: true},
 			username: user,	password: password
 		}); 
    } catch (e) {
@@ -210,6 +210,8 @@ MQTTPlatform.prototype.initMqttConnection = function() {
     that.devices.forEach(function(device){
 	   device.queryState()
 	 })
+	that.mqttClient.publish('tele/' + that.clientID + '/LWT', 'online')
+
    })
    
    this.mqttClient.on('close', () => {
@@ -247,7 +249,6 @@ MQTTPlatform.prototype.initMqttConnection = function() {
    	   })
    })
    
-   this.mqttClient.publish('presence', 'HVL MQTT plugin is alive')
    }
 }
 
