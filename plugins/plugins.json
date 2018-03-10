@@ -146,6 +146,13 @@
 		"npm" :"homematic-virtual-google-cast",
 		"syname":"GoogleCast",
 		"description":{"de-de":"F&uuml;gt Google Cast hinzu","en-en":"adds Google Cast support"}
+	  },
+	  {
+		  
+		"name":"MQTT",
+		"npm" :"homematic-virtual-mqttdevice",
+		"syname":"MQTT",
+		"description":{"de-de":"Verbindet Ger&auml;ete &uuml;ber MQTT mit der CCU","en-en":"connects MQTT devices to your CCU"}
 	  }
 	  
 	]
