@@ -2,7 +2,7 @@
 
 var HomematicDevice;
 
-var SwitchDevice = function(plugin, settings, serial,mqtt_device) {
+var TouchDevice = function(plugin, settings, serial,mqtt_device) {
 	
 	let that = this
 	this.log = plugin.log
@@ -49,7 +49,7 @@ var SwitchDevice = function(plugin, settings, serial,mqtt_device) {
   	})
 }
 
-SwitchDevice.prototype.queryState = function() {
+TouchDevice.prototype.queryState = function() {
 	let that = this
 	that.log.debug('query status for %s',this.serial)
 	Object.keys(that.settings['channels']).forEach(function (channel_index){
@@ -73,7 +73,7 @@ SwitchDevice.prototype.queryState = function() {
 }	
 
 
-SwitchDevice.prototype.getTopicsToSubscribe = function() {
+TouchDevice.prototype.getTopicsToSubscribe = function() {
   let that = this
   var result = []
   this.settings['subscribe'].forEach(function(topic){
@@ -84,7 +84,7 @@ SwitchDevice.prototype.getTopicsToSubscribe = function() {
 }
 
 
-SwitchDevice.prototype.parseMqttResponse = function(settings,key,mqtt_topic, mqtt_payloadObject) {
+TouchDevice.prototype.parseMqttResponse = function(settings,key,mqtt_topic, mqtt_payloadObject) {
 	let that = this
 	var result = undefined
 	var s_mqtt_topic = settings['mqtt_topic_' + key]
@@ -113,7 +113,7 @@ SwitchDevice.prototype.parseMqttResponse = function(settings,key,mqtt_topic, mqt
 	return result
 }
 
-SwitchDevice.prototype.handleMqttMessage = function(topic,payload) {
+TouchDevice.prototype.handleMqttMessage = function(topic,payload) {
 	let that = this
 	this.log.debug('Switch Device MQTT Message %s,%s',topic,payload)
 	let topic_parts = topic.split('/')
@@ -167,4 +167,4 @@ SwitchDevice.prototype.handleMqttMessage = function(topic,payload) {
 	this.bridge.sendMulticallEvents()
  }
 
-module.exports = SwitchDevice
+module.exports = TouchDevice

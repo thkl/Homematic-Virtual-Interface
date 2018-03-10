@@ -37,7 +37,12 @@ MQTTPlatform.prototype.init = function () {
   this.configuration = this.server.configuration
   this.localization = require(appRoot + '/Localization.js')(__dirname + '/Localizable.strings')
   this.log.info('Init %s',this.name)
- 
+  // Check my SubFolder 
+  this.personal_devpath = path.join(this.configuration.storagePath() , 'mqtt_dev');
+  var myutil = require(path.join(appRoot, 'Util.js'));
+  myutil.createPathIfNotExists(this.personal_devpath)
+  myutil.createPathIfNotExists(path.join(this.personal_devpath),'hmdata')
+
   this.loadDevices();
   this.initMqttConnection();
 }
@@ -50,9 +55,9 @@ MQTTPlatform.prototype.showSettings = function(dispatched_request) {
 	var password = this.configuration.getValueForPlugin(this.name,'client_password')
 
 
-	result.push({"control":"text","name":"broker_host","label":"Url of your MQTT Broker","value":host})
-	result.push({"control":"text","name":"client_user","label":"Client username","value": user})
-	result.push({"control":"password","name":"client_password","label":"Client password","value": password})
+	result.push({'control':'text','name':'broker_host','label':'Url of your MQTT Broker','value':host})
+	result.push({'control':'text','name':'client_user','label':'Client username','value': user})
+	result.push({'control':'password','name':'client_password','label':'Client password','value': password})
 	return result
 }
 
@@ -60,15 +65,15 @@ MQTTPlatform.prototype.saveSettings = function(settings) {
 	var that = this
 
 	if (settings.broker_host) {
-		this.configuration.setValueForPlugin(this.name,"broker_host",settings.broker_host) 
+		this.configuration.setValueForPlugin(this.name,'broker_host',settings.broker_host) 
 	}
 
 	if (settings.client_user) {
-		this.configuration.setValueForPlugin(this.name,"client_user",settings.client_user) 
+		this.configuration.setValueForPlugin(this.name,'client_user',settings.client_user) 
 	}
 	
 	if (settings.client_password) {
-		this.configuration.setValueForPlugin(this.name,"client_password",settings.client_password) 
+		this.configuration.setValueForPlugin(this.name,'client_password',settings.client_password) 
 	}
 	
     this.loadDevices()
@@ -105,15 +110,21 @@ MQTTPlatform.prototype.loadDevices = function () {
 
 
 MQTTPlatform.prototype.loadServiceClazz = function(clazzType) {
-	let fileName = path.join(__dirname,'serviceclasses',clazzType+'.js');
+	var fileName = path.join(__dirname,'serviceclasses',clazzType) + '.js';
 	if (fs.existsSync(fileName)) {
-	    this.log.debug('Load BuildIn Service Class %s from %s',clazzType,fileName)
-	    return require(path.join(__dirname,'serviceclasses',clazzType))
-    } else {
-	    this.log.error('No BuildIn Service Class found for %s at %s',clazzType,fileName)
-    }
-
-	return undefined
+		this.log.debug('use build in dev path %s',fileName)
+	    return require(fileName)
+    } 
+    
+    fileName = path.join(this.personal_devpath,clazzType) + '.js';
+	if (fs.existsSync(fileName)) {
+		this.log.debug('use personal dev path %s',fileName)
+	    return require(fileName)
+    } 
+    
+    
+    this.log.error('No BuildIn Service Class found for %s at %s',clazzType,fileName)
+    return undefined
 }
 
 MQTTPlatform.prototype.loadDevice = function(type,serial,mqttName) {
@@ -125,9 +136,21 @@ MQTTPlatform.prototype.loadDevice = function(type,serial,mqttName) {
 			let hmtype = settings['hmdevice']
 			if (hmtype != undefined) {
 				// Transfer the device date to core
-				var devfile = path.join(__dirname, 'devices', hmtype + '.json' )
-				this.server.publishHMDevice(this.getName(),hmtype,devfile,1)
-				this.devices.push(new service(this,settings,serial,mqttName))
+				var devfile = path.join(__dirname, 'devices', 'hmdata',hmtype + '.json' )
+				if (fs.existsSync(devfile)) {
+					this.server.publishHMDevice(this.getName(),hmtype,devfile,2)
+					let sc = new service(this,settings,serial,mqttName)
+					sc.ctype = type
+					this.devices.push(sc)
+				}
+				// Try personal file
+				var devfile = path.join(this.personal_devpath,'hmdata',hmtype + '.json' )
+				if (fs.existsSync(devfile)) {
+					this.server.publishHMDevice(this.getName(),hmtype,devfile,2)
+					let sc = new service(this,settings,serial,mqttName)
+					sc.ctype = type
+					this.devices.push(sc)
+				}
 			}
 		}
    	} else {
@@ -202,7 +225,7 @@ MQTTPlatform.prototype.initMqttConnection = function() {
    
    this.devices.forEach(function(device){
 	   device.getTopicsToSubscribe().forEach(function(topic){
-	   	that.mqttClient.subscribe(topic + "/#");
+	   	that.mqttClient.subscribe(topic + '/#');
 	   	that.log.debug('mqtt subscribe %s', topic);
    	   })
    })
@@ -212,51 +235,220 @@ MQTTPlatform.prototype.initMqttConnection = function() {
 }
 
 MQTTPlatform.prototype.shutdown = function() {
-    this.log.info("Shutdown")
+    this.log.info('Shutdown')
  	this.bridge.deleteDevicesByOwner(this.name)
     this.mqttClient.publish('presence', 'HVL MQTT plugin shutdown')
     this.mqttClient.end()
 }
 
 
+MQTTPlatform.prototype.deviceWithName = function(deviceName) {
+    var result = undefined
+    
+    this.devices.forEach(function(device) { 
+	    if (device.mqtt_device == deviceName) {
+		    result = device
+	    }
+	})
+	return result	    
+}
+
+MQTTPlatform.prototype.deviceWithHmSerial = function(deviceSerial) {
+    var result = undefined
+    
+    this.devices.forEach(function(device) { 
+	    if (device.serial == deviceSerial) {
+		    result = device
+	    }
+	})
+	return result	    
+}
+
+
+MQTTPlatform.prototype.saveDevices = function() {
+    var result = []
+    
+    this.devices.forEach(function(device) { 
+		result.push({'type':device.ctype,'serial':device.serial,'mqttdevice':device.mqtt_device})
+	})
+	this.configuration.savePersistentObjektToFile(result,'mqtt_objects')
+}
+
+MQTTPlatform.prototype.removeDeviceWithSerial = function(deviceSerial) {
+	var idx = -1
+	var i = 0
+	this.devices.forEach(function(device) { 
+	    if (device.serial == deviceSerial) {
+		    idx = i
+	    }
+	    i = i + 1
+	})
+	
+	if (idx > -1) {
+	   this.devices.splice(idx, 1);
+    }
+}
+
+MQTTPlatform.prototype.loadDeviceTypes = function () {
+	var result = [];
+	var devdir = path.join(__dirname, 'devices')
+	var privatedevdir = this.personal_devpath
+	let that = this;
+	try {  
+		var data = fs.readdirSync(devdir);
+		
+		data.sort().forEach(function (file) {
+			if (file.match(/\.(json)$/)) {
+				result.push(file.replace(/\.[^/.]+$/, ''));
+			}
+  		});
+
+  		
+  		data = fs.readdirSync(privatedevdir);
+  		data.sort().forEach(function (file) {
+  			if (file.match(/\.(json)$/)) {
+  				list.push(file.replace(/\.[^/.]+$/, ''));
+	  		}
+	  	});
+
+  } catch (e) {
+	  this.log.error('Error while loading Device Config List %s',e.stack);
+  }
+  return result;
+
+}
+
+
 MQTTPlatform.prototype.loadSettingsFor = function (devicetype) {
 
-	let configFile = __dirname + '/devices/' + devicetype + '.json'
+	var configFile = path.join(__dirname , 'devices' , devicetype + '.json')
 	this.log.info('try to load config : %s',configFile)
     if (fs.existsSync(configFile)) {
     	var buffer = fs.readFileSync(configFile);
         let result = JSON.parse(buffer.toString());
 		return result;
 	}
+
+	configFile = path.join(this.personal_devpath , devicetype + '.json')
+	this.log.info('try to load personal config : %s',configFile)
+    if (fs.existsSync(configFile)) {
+    	var buffer = fs.readFileSync(configFile);
+        let result = JSON.parse(buffer.toString());
+		return result;
+	}
+	
+	
 	return undefined;
 }
 
 MQTTPlatform.prototype.handleConfigurationRequest = function (dispatchedRequest) {
   var template = 'index.html'
+  let that = this
   var requesturl = dispatchedRequest.request.url
   var queryObject = url.parse(requesturl, true).query
   var deviceList = ''
-  var devtemplate = dispatchedRequest.getTemplate(this.plugin.pluginPath , "list_device_tmp.html",null);
-
+  var devtemplate = dispatchedRequest.getTemplate(this.plugin.pluginPath , 'list_device_tmp.html',null);
+  var fallback = true
   if (queryObject['do'] !== undefined) {
     switch (queryObject['do']) {
 
       case 'app.js':
         {
           template = 'app.js'
+          fallback = false
         }
         break
+		
+		
+	  case 'edit':
+	  {
+		template = 'edit.html'
+		let dserial = queryObject['serial']
+		let device = this.deviceWithHmSerial(dserial)
+		let dtypelist = ''
+		let dev_type_listItem = dispatchedRequest.getTemplate(this.plugin.pluginPath , 'dev_type_listItem.html',null);
+	  	var dtemplate = dispatchedRequest.getTemplate(this.plugin.pluginPath , 'edit_device_tmp.html',null);
+	  	this.loadDeviceTypes().forEach(function (dt){
+	  		let sel = (dt == device.ctype) ? 'selected=selected' : ''
+			dtypelist = dtypelist + dispatchedRequest.fillTemplate(dev_type_listItem,{'type': dt,'isSelected':sel});
+	  	})
+		deviceList = deviceList + dispatchedRequest.fillTemplate(dtemplate,{'device_hmdevice': device.serial,'device_name': device.mqtt_device,'device_type': dtypelist});
+          fallback = false
+	  }
+	  break
+	  
+	  
+	  case 'new':
+	  {
+		template = 'edit.html'
+		let dev_type_listItem = dispatchedRequest.getTemplate(this.plugin.pluginPath , 'dev_type_listItem.html',null);
+	  	var dtemplate = dispatchedRequest.getTemplate(this.plugin.pluginPath , 'edit_device_tmp.html',null);
+		let dtypelist = ''
+	  	this.loadDeviceTypes().forEach(function (dt){
+			dtypelist = dtypelist + dispatchedRequest.fillTemplate(dev_type_listItem,{'type': dt,'isSelected':''});
+	  	})
+		deviceList = deviceList + dispatchedRequest.fillTemplate(dtemplate,{'device_hmdevice': 'new','device_name': '','device_type':dtypelist});
+          fallback = false
+	  }
+	  break
+
+	 case 'delete':
+	  {
+		let dserial = queryObject['serial']
+		this.removeDeviceWithSerial(dserial)
+		this.saveDevices()
+		this.loadDevices()
+	  }
+	  break
 
     }
+    
   }
+  
+  if (dispatchedRequest.post != undefined) {
+  		
+  	switch (dispatchedRequest.post['do']) {
 
-  this.devices.forEach(function(device) { 
-		deviceList = deviceList +  dispatchedRequest.fillTemplate(devtemplate,{
+  	case 'save':
+	  {
+		this.log.debug('saving objects')
+		let device_hmdevice = dispatchedRequest.post['device_hmdevice'];
+		let device_name = dispatchedRequest.post['device_name'];
+		let device_type = dispatchedRequest.post['device_type'];
+		
+		if (device_hmdevice == 'new') {
+			this.log.debug('create a new object')
+			device_hmdevice = 'MQTT_' + this.devices.length + 1
+			this.loadDevice(device_type,device_hmdevice,device_name)
+		} else {
+			let device = this.deviceWithHmSerial(device_hmdevice)
+			if (device != undefined) {
+				this.log.debug('object found save')
+				device.mqtt_device = device_name
+				device.ctype = device_type
+			}
+		}
+		this.saveDevices()
+		this.loadDevices()
+	  }
+	
+	}
+  
+  }
+  
+  if (fallback == true) {
+	  	  {
+	  	this.devices.forEach(function(device) { 
+			deviceList = deviceList +  dispatchedRequest.fillTemplate(devtemplate,{
 			'device_hmdevice': device.serial,
 			'device_name': device.mqtt_device,
 			'device_type': device.type,
+			})
 		})
-	})
+	  }
+
+  }
+
 	
   dispatchedRequest.dispatchFile(this.plugin.pluginPath, template, {'listDevices': deviceList})
 }

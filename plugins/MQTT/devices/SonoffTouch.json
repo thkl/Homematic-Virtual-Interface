@@ -1,0 +1,54 @@
+{
+		"subscribe" : ["cmnd/%name%","tele/%name%","cmnd/%name%_Button"],
+		"clazztype" : "TouchDevice",
+		"type" : "TouchKey",
+		"hmdevice" : "HM-LC-SW1-FM-Touch",
+		"channels" : {
+			
+			"1" : {
+				"hm_channeltype" : "SWITCH",
+				"hm_datapoints" : ["STATE"],
+				"settings" : {
+
+						"STATE" : {
+
+							"mqtt_payload_get" : "POWER",
+							"mqtt_topic_get" : "stat/%name%/RESULT",
+							"mqtt_representation_get" : {"ON":true, "OFF":false},
+				
+							"mqtt_topic_set" : "cmnd/%name%/POWER",
+							"mqtt_representation_set" : {"true": "ON" , "false": "OFF"},
+				
+							"mqtt_topic_state" : ".*/%name%/STATE",
+							"mqtt_payload_state" : "POWER",
+							"mqtt_representation_state" : {"ON":true, "OFF":false},
+				
+							"mqtt_command_getstate" : "cmnd/%name%/status",
+							"mqtt_topic_getstate" : ".*/%name%/STATUS",
+							"mqtt_payload_getstate" : "Status|Power",
+							"mqtt_representation_getstate" : {"1" : true , "0": false}
+
+							
+							
+						}
+				}
+				
+			},
+			
+			"2" : {
+				"hm_channeltype" : "KEY",
+				"hm_datapoints" : ["PRESS_SHORT"],
+				"settings" : {
+
+						"PRESS_SHORT" : {
+				
+							"mqtt_topic_state" : ".*/%name%_Button/POWER",
+							"mqtt_payload_state" : "TOGGLE",
+							"mqtt_representation_state" : {"TOGGLE" : true }
+
+						}
+				}
+			}
+	}
+}
+	
