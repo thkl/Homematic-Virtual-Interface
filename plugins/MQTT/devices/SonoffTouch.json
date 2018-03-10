@@ -2,7 +2,7 @@
 		"subscribe" : ["cmnd/%name%","tele/%name%","cmnd/%name%_Button"],
 		"clazztype" : "TouchDevice",
 		"type" : "TouchKey",
-		"hmdevice" : "HM-LC-SW1-FM-Touch",
+		"hmdevice" : "HM-LC-SW1-FM_Touch",
 		"channels" : {
 			
 			"1" : {
