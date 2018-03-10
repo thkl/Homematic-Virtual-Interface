@@ -4,6 +4,18 @@
 		"type" : "TouchKey",
 		"hmdevice" : "HM-LC-SW1-FM_Touch",
 		"channels" : {
+			"0" : {
+				"hm_channeltype" : "MAINTENANCE",
+				"hm_datapoints" : ["UNREACH"],
+				"settings" : {
+					
+					"UNREACH" : {
+						"mqtt_topic_state" : "tele/%name%/LWT",
+						"mqtt_payload_state" : "",
+						"mqtt_representation_state" : {"online":false, "offline":true}
+					}
+				}
+			},
 			
 			"1" : {
 				"hm_channeltype" : "SWITCH",

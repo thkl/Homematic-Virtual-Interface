@@ -128,30 +128,47 @@ MQTTPlatform.prototype.loadServiceClazz = function(clazzType) {
 }
 
 MQTTPlatform.prototype.loadDevice = function(type,serial,mqttName) {
+	this.log.debug('Loading device %s with serial %s und mqtt name %s',type,serial,mqttName)
 	let settings = this.loadSettingsFor(type);
 	if (settings) {
 		let clazztype = settings['clazztype']
 		var service = this.loadServiceClazz(clazztype)
 		if (service != undefined) {
+			this.log.debug('servic clazz found for %s',clazztype)
 			let hmtype = settings['hmdevice']
 			if (hmtype != undefined) {
+				this.log.debug('hmtype found for %s',hmtype)
+				var devicefound = false
 				// Transfer the device date to core
-				var devfile = path.join(__dirname, 'devices', 'hmdata',hmtype + '.json' )
-				if (fs.existsSync(devfile)) {
-					this.server.publishHMDevice(this.getName(),hmtype,devfile,2)
+				var devfilebi = path.join(__dirname, 'devices', 'hmdata',hmtype + '.json' )
+				if (fs.existsSync(devfilebi)) {
+					this.log.debug('found dev in build in  %s',devfilebi)
+					this.server.publishHMDevice(this.getName(),hmtype,devfilebi,2)
 					let sc = new service(this,settings,serial,mqttName)
 					sc.ctype = type
+					console.log(sc.mqtt_device)
 					this.devices.push(sc)
-				}
+					devicefound = true
+				} 
 				// Try personal file
-				var devfile = path.join(this.personal_devpath,'hmdata',hmtype + '.json' )
-				if (fs.existsSync(devfile)) {
-					this.server.publishHMDevice(this.getName(),hmtype,devfile,2)
+				var devfilecs = path.join(this.personal_devpath,'hmdata',hmtype + '.json' )
+				if (fs.existsSync(devfilecs)) {
+					this.server.publishHMDevice(this.getName(),hmtype,devfilecs,2)
 					let sc = new service(this,settings,serial,mqttName)
 					sc.ctype = type
 					this.devices.push(sc)
+					devicefound = true
 				}
+				
+				if (devicefound == false) {
+					this.log.error('missing device file %s or %s',devfilebi,devfilecs)	
+				}
+				
+			} else {
+				this.log.error('missing hmtype %s',hmtype)	
 			}
+		} else {
+			this.log.error('missing service clazz for %s',clazztype)	
 		}
    	} else {
 	   this.log.error('missing settingsfile for %s',type)	
@@ -271,6 +288,7 @@ MQTTPlatform.prototype.saveDevices = function() {
     this.devices.forEach(function(device) { 
 		result.push({'type':device.ctype,'serial':device.serial,'mqttdevice':device.mqtt_device})
 	})
+	this.log.debug('object %s',JSON.stringify(result))
 	this.configuration.savePersistentObjektToFile(result,'mqtt_objects')
 }
 
@@ -418,7 +436,8 @@ MQTTPlatform.prototype.handleConfigurationRequest = function (dispatchedRequest)
 		
 		if (device_hmdevice == 'new') {
 			this.log.debug('create a new object')
-			device_hmdevice = 'MQTT_' + this.devices.length + 1
+			device_hmdevice = 'MQTT_' + String(this.devices.length + 1)
+			this.log.debug('serial is %s',device_hmdevice)
 			this.loadDevice(device_type,device_hmdevice,device_name)
 		} else {
 			let device = this.deviceWithHmSerial(device_hmdevice)
@@ -428,6 +447,7 @@ MQTTPlatform.prototype.handleConfigurationRequest = function (dispatchedRequest)
 				device.ctype = device_type
 			}
 		}
+		this.log.debug('saving devices')
 		this.saveDevices()
 		this.loadDevices()
 	  }
