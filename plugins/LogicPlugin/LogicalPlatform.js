@@ -366,7 +366,7 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
         }
 
       if (typeof subs.callback === 'function' && match) {
-      		logicLogger.info("Subscription %s was triggered %s",subs.source);
+      		logicLogger.debug("Subscription %s was triggered %s",subs.source);
       		delay = 0;
             if (options.shift) delay += ((parseFloat(options.shift) || 0) * 1000);
             if (options.random) delay += ((parseFloat(options.random) || 0)  * Math.random() * 1000);
@@ -673,80 +673,8 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
             });
         },
         
-        linkLightSwitch:   function linkLightSwitch(source,target,  options, /* optional */ callback) {
-
-
-	    	if ((typeof source === 'undefined') || (typeof target === 'undefined')) {
-                throw(new Error('argument source missing'));
-            }
-            
-            
-            options = arguments[2] || {};
-            
-            if (arguments.length === 4) {
-
-                if (typeof arguments[3] !== 'function') throw new Error('callback is not a function');
-                options = arguments[2] || {};
-                callback = arguments[3];
-
-            } else if (arguments.length > 4) {
-                throw(new Error('wrong number of arguments'));
-            }
-            
-            var fn = path.basename(name)
-            that.subscriptions.push({file:fn, source: source, options: options, callback: scriptDomain.bind(function(){
-				
-				logicLogger.info("Processing lightlink %s with %s",source,target);
-				
-				// first get the current taget Level
-				Sandbox.getValue(target).then(function (value) {
-					var tvalue = 0
-					var isOn = false
-					if (target.indexOf('LEVEL')>-1) {
-						if (parseInt(value) > 0) {tvalue = 0}
-						if (parseInt(value) === 0) {
-							tvalue = 1
-							isOn = true
-						}
-					}
-					
-					if (target.indexOf('STATE')>-1) {
-						if (parseInt(value) === 0) {
-							tvalue = 1
-							isOn = true}
-						if (parseInt(value) === 1) {tvalue = 0}
-						if (value === true) {tvalue = false}
-						
-						if (value === false) {
-							tvalue = true
-							isOn = true
-						}
-						
-					}
-					
-					logicLogger.info("set %s to %s",target,JSON.stringify(tvalue));
-					Sandbox.setValue(target,tvalue).then(function(){
-						
-					if ((options != undefined) && (isOn == true)) {
-						
-						Object.keys(options).forEach(function (ok) {
-							if (options[ok]) {
-								logicLogger.info("set %s to %s",ok,options[ok]);
-								Sandbox.setValue(ok,options[ok])
-							}
-						})
-					}
-					
-					if (callback != undefined) {
-						callback()
-					}
-						
-					})
-					
-				})	            
-	            
-            })});
-            
+        linkLightSwitch: function linkLightSwitch(source,target,  options, /* optional */ callback) {
+			that.linkLightSwitch(name,source,target,  options, /* optional */ callback)
 	    },
         
         subscribe:  function Sandbox_subscribe(source, /* optional */ options, callback) {
@@ -967,7 +895,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 			});
 		  //}
 		},
-
+		
 		getState: function Sandbox_getState(target,callback) {
 		
 			return new Promise(function (resolve,reject) {
@@ -1137,6 +1065,138 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
         }
     });
 
+}
+
+LogicalPlatform.prototype.linkLightSwitch = function(name,source,target,  options, /* optional */ callback) {
+	
+	    	if ((typeof source === 'undefined') || (typeof target === 'undefined')) {
+                throw(new Error('argument source missing'));
+            }
+            
+            options = arguments[2] || {};
+            
+            if (arguments.length === 4) {
+                if (typeof arguments[3] !== 'function') throw new Error('callback is not a function');
+                options = arguments[2] || {};
+                callback = arguments[3];
+            } else if (arguments.length > 4) {
+                throw(new Error('wrong number of arguments'));
+            }
+            
+            var fn = path.basename(name)
+            
+            this.subscriptions.push({file:fn, source: source, options: options, callback: scriptDomain.bind(function(){
+				var mode = 'toggle'
+				
+				if (options != undefined) {
+					mode = options['mode'] || 'toggle'
+				}
+				
+				logicLogger.info("Processing lightlink %s with %s",source,target);
+				var isOn = false
+				var tmp = target.split('.')
+				if (tmp.length<2) {return}
+				// first get the current taget Level
+				if (tmp[2] == 'LEVEL') {
+
+				Sandbox.getValue(target).then(function (value) {
+					let ivalue = parseInt(value)
+					let dirTarget = tmp[0]+'.'+tmp[1] + '.DIRECTION'					
+					Sandbox.getValue(dirTarget).then(function (dirvalue) {
+					var tvalue = 0
+						switch (mode) {
+							
+							case 'level_both': {
+							   if (ivalue == 0) {dirvalue = 1} else if (ivalue == 1) {dirvalue = 0}
+							   ivalue = ivalue - (dirvalue==1) ? 0.1 : -0.1
+							}
+							break
+							
+							case  'level_up': {
+								if (ivalue < 1) {
+								   	dirvalue = 1
+								   	ivalue = ivalue + 0.1
+								   	isOn = true
+							  	} else {dirvalue = 0}
+							}
+							break
+
+							case 'level_down': {
+								if (ivalue > 0 ) {
+								   	ivalue = ivalue - 0.1
+								   	dirvalue = 0
+								   	isOn = true
+							  	} else {
+									dirvalue = 1
+									isOn = false
+							  	}
+							}
+							break
+							
+							case 'toggle': {
+								if (ivalue > 0) {tvalue = 0}
+								if (ivalue === 0) {
+									tvalue = 1
+									isOn = true
+								}
+							}
+							break
+						}
+						
+					logicLogger.info("set %s to %s",target,JSON.stringify(tvalue));
+					Sandbox.setValue(dirTarget,dirvalue)
+					Sandbox.setValue(target,tvalue).then(function(){
+					if ((options != undefined) && (isOn == true)) {
+						Object.keys(options).forEach(function (ok) {
+							if ((ok.toLocaleString() == 'mode') && (options[ok])) {
+								logicLogger.info("set %s to %s",ok,options[ok]);
+								Sandbox.setValue(ok,options[ok])
+							}
+						})
+					}
+					
+					if (callback != undefined) {
+						callback()
+					}
+					})
+					})
+				})	
+				}
+				
+				if (target.indexOf('STATE')>-1) {
+					
+					Sandbox.getValue(target).then(function (value) {		
+						if (ivalue === 0) {
+							tvalue = 1
+							isOn = true
+						}
+						
+						if (ivalue === 1) {tvalue = 0}
+						
+						if (value === true) {tvalue = false}
+						
+						if (value === false) {
+							tvalue = true
+							isOn = true
+						}
+					
+					
+						logicLogger.info("set %s to %s",target,JSON.stringify(tvalue));
+						Sandbox.setValue(target,tvalue).then(function(){
+						if ((options != undefined) && (isOn == true)) {
+							Object.keys(options).forEach(function (ok) {
+							if ((ok.toLocaleString() == 'mode') && (options[ok])) {
+								logicLogger.info("set %s to %s",ok,options[ok]);
+								Sandbox.setValue(ok,options[ok])
+							}
+							})
+						}
+						if (callback != undefined) {callback()}
+						})
+					})
+            	}
+          })  	
+})
 }
 
 LogicalPlatform.prototype.processLogicalBinding = function(source_adress) {
