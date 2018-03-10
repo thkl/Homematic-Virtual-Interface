@@ -96,18 +96,7 @@
 <h4>Syntax Help</h4>
 <div id="help">
 <ul>
-	<li><b>link(Source,Destination)</b> Create a link between two datapoints.</li>
-	<li><b>subscribe(Source, callback)</b> Subscribe to change Event of a datapoint. The callback function will be executed with parameters (source,value).</li>
-	<li><b>getValue(Datapoint).then(function (value) {})</b> Will fetch a value for the datapoint an call the function later.(last known Value)</li>
-	<li><b>getState(Datapoint).then(function (value) {})</b> Will fetch a value for the datapoint an call the function later. Fetches value direct from the interface.</li>
-	<li><b>setValue(Datapoint,newValue)</b> Will set a new Value to the given Datapoint.</li>
-	<li><b>getVariables([Name1,Name2,Namen]).then(function (variables) {})</b> Will fetch the values for given variables from CCU and call the function later its done.</li>
-	<li><b>executeCCUProgram(program).then(function () {})</b> Will launch the named programm at your ccu</li>
-	<li><b>setVariables({"Name1":Value1,"Name2":value2,"NameN":vnalue})</b> Will set new Variable Values</li>
-	<li><b>schedule('m h d M Y', {"name":"SchedulerName"}, function () {})</b> Will schedule a function for the given time. Syntax is like unix cron</li>
-	<li><b>fetchMessages().then(function (messages) {})</b>will fetch all CCU system messages into the array  messages.</li>
-	<li><b>confirmMessages(messages)</b>will confirm all ccu system messages from messages array.</li>
-    <li><b>httpCall(method,url,parameters).then(function (result,error){}</b> Will perform a http Call (parameters are {key:value,key2:value2})</li>
+	<a href="https://github.com/thkl/Homematic-Virtual-Interface/wiki/Logic-Plugin-Functions-(en)" target="_blank">HVL Wiki</a>
 </ul>
 </div>
 	
