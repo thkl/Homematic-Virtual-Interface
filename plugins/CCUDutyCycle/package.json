@@ -20,7 +20,7 @@
   
   "dependencies": {
 	  "group-array":"0.3.2",
-	  "moment":"2.17.1",
+	  "moment":"2.19.3",
 	  "nedb-logger":"0.1.0",
       "nedb" : "1.8.0"
   }
