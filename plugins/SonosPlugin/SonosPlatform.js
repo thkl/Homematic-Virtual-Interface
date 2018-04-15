@@ -56,6 +56,7 @@ SonosPlatform.prototype.init = function() {
 	this.configuration = this.server.configuration;
     this.hm_layer = this.server.getBridge();
 	this.maxVolume = this.configuration.getValueForPlugin(this.name,"max_volume",undefined) || 20;
+	this.volume_step = this.configuration.getValueForPlugin(this.name,"volume_step",undefined) || 1;
 	this.volumeTable = this.configuration.getValueForPlugin(this.name,"volume_table",undefined);
 	// Add Coordinator Device
 	this.coordinator = new SonosCoordinator(this)
@@ -127,6 +128,14 @@ SonosPlatform.prototype.showSettings = function(dispatched_request) {
 		     "description":this.localization.localize("24 values to use with autovolume. Separated with , (0-100)")
 	});
 
+	result.push({"control":"text",
+					"name":"volume_step",
+				   "label":this.localization.localize("Volume Step"),
+				   "value":this.volume_step || "",
+		     "description":this.localization.localize("Number of Volume levels which will add/remove by one step")
+	});
+
+	
 	
 	return result;
 }
@@ -157,6 +166,11 @@ SonosPlatform.prototype.saveSettings = function(settings) {
 	if  (settings.volume_table) {
 		this.configuration.setValueForPlugin(this.name,"volume_table",settings.volume_table); 
 		this.volume_table = settings.volume_table
+	}
+
+	if  (settings.volume_step) {
+		this.configuration.setValueForPlugin(this.name,"volume_step",settings.volume_step); 
+		this.volume_step = settings.volume_step
 	}
 
 }
@@ -209,6 +223,7 @@ SonosPlatform.prototype.addZonePlayer = function(host,cname,callback) {
 		  sdevice.rincon = puuid
 		  sdevice.zonename = name
 		  sdevice.maxVolume = that.maxVolume;
+		  sdevice.volume_step = that.volume_step;
 		  that.devices.push(sdevice);
 		  that.coordinator.addZonePlayer(sdevice)
 		  if (callback) {
