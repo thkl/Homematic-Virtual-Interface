@@ -1,0 +1,44 @@
+{
+		"subscribe" : ["%name%/stat","%name%/tele/STATE"],
+		"clazztype" : "DimmerDevice",
+		"type" : "Dimmer",
+		"hmdevice" : "HM-LC-Dim1T-Pl",
+		"channels" : {
+			"0" : {
+				"hm_channeltype" : "MAINTENANCE",
+				"hm_datapoints" : ["UNREACH"],
+				"settings" : {
+					
+					"UNREACH" : {
+						"mqtt_topic_state" : "%name%/tele/LWT",
+						"mqtt_payload_state" : "",
+						"mqtt_representation_state" : {"online":false, "offline":true}
+					}
+				}
+			},
+			"1" : {
+				"hm_channeltype" : "DIMMER",
+				"hm_datapoints" : ["LEVEL"],
+				"settings" : {
+
+						"LEVEL" : {
+
+							"mqtt_payload_get" : "Level",
+							"mqtt_topic_get" : "%name%/stat/Level",
+				
+							"mqtt_topic_set" : "%name%/cmnd/Level",
+				
+							"mqtt_topic_state" : "%name%/tele/STATE",
+							"mqtt_payload_state" : "Brightness",
+								
+							"mqtt_command_getstate" : "%name%/cmnd/State",
+							"mqtt_topic_getstate" : "%name%/stat/Result",
+							"mqtt_payload_getstate" : "Brightness"
+							
+						}
+				}
+				
+			}
+		}
+}
+	

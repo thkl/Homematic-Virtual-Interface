@@ -6,6 +6,7 @@ mkdir -p tmp/hvl
 cp -a update_script tmp/
 cp -a rc.d tmp/
 cp -a hvl tmp/
+cp -a VERSION tmp/
 
 # generate archive
 cd tmp

@@ -1,16 +1,20 @@
 #!/bin/sh
 
+ADDON_NAME=hvl
+CONFIG_DIR=/usr/local/etc/config
+ADDON_DIR=/usr/local/etc/config/addons/www/${ADDON_NAME}
+
 case "$1" in
 
   
   ""|start)
   #make it only when user configurated the ip
-  if [ -f /usr/local/etc/config/addons/www/hvl/ip ] 
+  if [ -f ${ADDON_DIR}/ip ] 
   then 
 	  if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]
         then
 		echo "Updating InterfaceList.xml"
-		my_url=$(cat /usr/local/etc/config/addons/www/hvl/ip)
+		my_url=$(cat ${ADDON_DIR}/ip)
 		sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/${my_url}<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 	  fi
    fi
@@ -25,19 +29,22 @@ case "$1" in
    ;;
    
    info)
+	    version=$(cat ${ADDON_DIR}/VERSION)
         echo "Info: <center><b>Homematic Virtual Layer</b></center>"
         echo "Info: <center><br>Aufruf:<br><a href="/addons/hvl" target="_blank">http://IPAdressederCCU/addons/hvl</a></center>"
         echo "Name: Homematic Virtual Layer"
-        echo "Version: 0.5"
+        echo "Version: ${version}"
         echo "Operations: uninstall"
+        echo "Config-Url: /addons/${ADDON_NAME}"
+        echo "Update: /addons/${ADDON_NAME}/update-check.cgi"
     ;;
    
    
    uninstall)
 	logger -t homematic -p user.info "removing homematic virtual layer"
-	my_url=$(cat /usr/local/etc/config/addons/www/hvl/ip)
+	my_url=$(cat ${ADDON_DIR}/ip)
 	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/${my_url}<\/url><info>HVL<\/info><\/ipc>//"
-	rm -r /usr/local/etc/config/addons/www/hvl
+	rm -r ${ADDON_DIR}
 	rm -r /usr/local/etc/config/rc.d/ccu_hvl
 	mount -o remount,rw /
 	rm -r /etc/init.d/S59hvl

@@ -1,0 +1,50 @@
+{
+		"subscribe" : ["%name%/stat","%name%/tele"],
+		"clazztype" : "SwitchDevice",
+		"type" : "Switch",
+		"hmdevice" : "HM-LC-SW1-FM",
+		"channels" : {
+			"0" : {
+				"hm_channeltype" : "MAINTENANCE",
+				"hm_datapoints" : ["UNREACH"],
+				"settings" : {
+					
+					"UNREACH" : {
+						"mqtt_topic_state" : "%name%/tele/LWT",
+						"mqtt_payload_state" : "",
+						"mqtt_representation_state" : {"online":false, "offline":true}
+					}
+				}
+			},
+			"1" : {
+				"hm_channeltype" : "SWITCH",
+				"hm_datapoints" : ["STATE"],
+				"settings" : {
+
+						"STATE" : {
+
+							"mqtt_payload_get" : "Power",
+							"mqtt_topic_get" : "%name%/stat/Result",
+							"mqtt_representation_get" : {"On":true, "Off":false},
+				
+							"mqtt_topic_set" : "%name%/cmnd/Power",
+							"mqtt_representation_set" : {"true": "On" , "false": "Off"},
+				
+							"mqtt_topic_state" : "%name%/tele/STATE",
+							"mqtt_payload_state" : "Power",
+							"mqtt_representation_state" : {"On":true, "Off":false},
+				
+							"mqtt_command_getstate" : "%name%/cmnd/State",
+							"mqtt_topic_getstate" : "%name%/stat/Result",
+							"mqtt_payload_getstate" : "Power",
+							"mqtt_representation_getstate" : {"1" : true , "0": false}
+
+							
+							
+						}
+				}
+				
+			}
+		}
+}
+	
