@@ -146,7 +146,6 @@ MQTTPlatform.prototype.loadDevice = function(type,serial,mqttName) {
 					this.server.publishHMDevice(this.getName(),hmtype,devfilebi,2)
 					let sc = new service(this,settings,serial,mqttName)
 					sc.ctype = type
-					console.log(sc.mqtt_device)
 					this.devices.push(sc)
 					devicefound = true
 				} 
@@ -186,16 +185,20 @@ MQTTPlatform.prototype.initMqttConnection = function() {
 	var that = this
 	this.clientID = 'hvl_mqtt_' + this.configuration.getMacAddress().toString().replace(/:/g,'')
 	var host = this.configuration.getValueForPlugin(this.name,'broker_host')
+	var topics = this.configuration.getValueForPlugin(this.name,'topics')
 
 	if (host != undefined) {
 		var user = this.configuration.getValueForPlugin(this.name,'client_user','')
 		var password = this.configuration.getValueForPlugin(this.name,'client_password','')
-		this.log.info('Init mqtt broker connection to %s',host)
+		
+				
+		
+		this.log.info('MQTT connect to %s as %s',host,this.clientID)
 		try {
 			this.mqttClient = Mqtt.connect(host, {
 			clientId: that.clientID,
 			will: {topic: 'tele/' + that.clientID + '/LWT', payload: 'offline', retain: true},
-			username: user,	password: password
+			username: user,	password: password,reconnectPeriod:1000
 		}); 
    } catch (e) {
 	   that.log.error(e.stack);
@@ -205,13 +208,15 @@ MQTTPlatform.prototype.initMqttConnection = function() {
    
    this.mqttClient.on('connect', () => {
     that.mqttConnected = true
-    that.log.debug('MQTT client connected')
+    that.log.info('MQTT client connected')
+	that.mqttClient.publish('tele/' + that.clientID + '/LWT', 'online',{ qos: 1, retain: true },function(err){
+	  	that.log.info('MQTT hello published %s',err)
+	})
     // Query all values
     that.devices.forEach(function(device){
 	   device.queryState()
 	 })
-	that.mqttClient.publish('tele/' + that.clientID + '/LWT', 'online')
-
+	 
    })
    
    this.mqttClient.on('close', () => {
@@ -225,7 +230,7 @@ MQTTPlatform.prototype.initMqttConnection = function() {
    });
 
    this.mqttClient.on('reconnect', () => {
-    that.log.log.info('MQTT client connection reconnect');
+    that.log.info('MQTT client connection reconnect');
    });
    
    
@@ -239,8 +244,14 @@ MQTTPlatform.prototype.initMqttConnection = function() {
 				}
 			})
 		})
+		// Send Message to HM Layer
+		that.bridge.emit('mqtt_event',{"topic":topic,"payload":payload})
    })
    
+   this.bridge.on("mqtt_add_topic",function(topic){
+	   that.mqttClient.subscribe(topic + '/#');
+	   that.log.debug('mqtt subscribe %s', topic);
+   });
    
    this.devices.forEach(function(device){
 	   device.getTopicsToSubscribe().forEach(function(topic){

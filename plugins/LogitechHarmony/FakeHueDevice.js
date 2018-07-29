@@ -77,6 +77,8 @@ FakeHueDevice.prototype.initHMDevice = function() {
   	
   this.light.on("harmony_device_value_change", function(lightid,parameter,state){
 	  that.log.debug("Event -> Set %s to %s",parameter,state);
+	  that.log.info("Emit Harmony Event %s,%s",parameter,state);
+	  that.bridge.emit("harmony_device_value_change", lightid , parameter ,state);
 
 	  if ((parameter=="bri") && (state > 0)) {
 		  

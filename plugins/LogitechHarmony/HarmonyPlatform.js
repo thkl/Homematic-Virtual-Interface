@@ -79,6 +79,8 @@ HarmonyPlatform.prototype.init = function() {
 	}
 	this.log.debug("Start announcing Rokus")
 	this.rokuManger.startDiscovery();
+	
+	
 }
 
 HarmonyPlatform.prototype.getFakeLightWithId = function(lightId) {

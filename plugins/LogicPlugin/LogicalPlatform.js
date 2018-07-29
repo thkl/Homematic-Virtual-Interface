@@ -9,14 +9,12 @@
 
 "use strict";
 
-
-
 var path = require('path')
 var fs = require('fs')
 
 var appRoot = path.dirname(require.main.filename);
 if (appRoot.endsWith("bin")) {appRoot =  appRoot+"/../lib";}
-
+ 
 if (appRoot.endsWith('node_modules/daemonize2/lib')) { 
 	appRoot = path.join(appRoot,'..','..','..','lib')
 	
@@ -67,6 +65,8 @@ function LogicalPlatform(plugin,name,server,log,instance) {
 	this.scripts = {};
     this.subscriptions = [];
 	this.sunEvents = [];
+	this.mqttEvents = [];
+	this.harmonyEvents = [];
 	this.sunTimes = [/* yesterday */ {}, /* today */ {}, /* tomorrow */ {}];
 }
 
@@ -101,7 +101,8 @@ LogicalPlatform.prototype.init = function() {
     
 	this.calculateSunTimes();
 	this.reInitScripts();
-	
+	this.processMQTTBinding();
+	this.processHarmonyBinding();
 	this.subscriptions.forEach(function(sbs){
 		logicLogger.info("Subscribed to %s",sbs.source);
 	})
@@ -124,6 +125,8 @@ LogicalPlatform.prototype.reInitScripts = function() {
 	// Kill all and Init 
 	this.scripts = {};
     this.subscriptions = [];
+    this.mqttEvents = [];
+    this.harmonyEvents = [];
     // Kill All Scheduled Jobs
 
     Object.keys(scheduler.scheduledJobs).forEach(function(job){
@@ -251,7 +254,12 @@ LogicalPlatform.prototype.get_Value = function(interf,adress,datapoint,callback)
 }
 
 LogicalPlatform.prototype.set_Variable = function(name,value,callback) {
-   var script = "var x = dom.GetObject('"+name+"');if (x){x.State("+value+");}";
+   var script = "";
+   if (typeof value == 'string') {			
+   		script = "var x = dom.GetObject('"+name+"');if (x){x.State('"+value+"');}";
+   } else {
+   		script = "var x = dom.GetObject('"+name+"');if (x){x.State("+value+");}";
+   }
    this.regaCommand(script,callback);
 }
 
@@ -293,9 +301,14 @@ LogicalPlatform.prototype.set_Variables = function(variables,callback) {
    Object.keys(variables).forEach(function(key) {
    	var vv = variables[key];
    	if (vv) {
-       script = script + "x=dom.GetObject('" + key + "');if (x){x.State("+vv+");}"
+	   if (typeof vv == 'string') {
+    	   script = script + "x=dom.GetObject('" + key + "');if (x){x.State('"+vv+"');}"	   
+	   } else {
+    	   script = script + "x=dom.GetObject('" + key + "');if (x){x.State("+vv+");}"	   
+	   }
    	}
    });
+   console.log("setVaraibles %s",script);
    this.regaCommand(script,function (result){
 	   callback();
    });
@@ -313,7 +326,7 @@ LogicalPlatform.prototype.executeCCUProgram = function(programName,callback) {
 
 LogicalPlatform.prototype.fetchMessages = function(callback) {
    var that = this;
-   var script = "boolean df = true;Write(\'{\"messages\":[\');var i=dom.GetObject(41);if(i.State()>0){var s=dom.GetObject(ID_SERVICES);string sid;foreach(sid,s.EnumIDs()){var o=dom.GetObject(sid);if (o.AlState()==asOncoming){if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\'#sid#\'\",\');Write(\'\"obj\": \"\'#o.Name()#\'\",\');var n = dom.GetObject(o.AlTriggerDP());if ((n) && (n.Device())) {var d=dom.GetObject(n.Device());Write(\'\"trg\":\"\'#d.Name()#\'\",\');}Write(\'\"time\":\"\'#o.Timestamp()#\'\"}\');}}}Write(\']}\');"
+   var script = "boolean df = true;Write(\'{\"messages\":[\');var i=dom.GetObject(41);if(i.State()>0){var s=dom.GetObject(ID_SERVICES);string sid;foreach(sid,s.EnumIDs()){var o=dom.GetObject(sid);if (o.AlState()==asOncoming){if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\'#sid#\'\",\');Write(\'\"obj\": \"\'#o.Name()#\'\",\');var n = dom.GetObject(o.AlTriggerDP());if ((n) && (n.Channel())) {var d=dom.GetObject(n.Channel());Write(\'\"trg\":\"\'#d.Name()#\'\",\');}Write(\'\"time\":\"\'#o.Timestamp()#\'\"}\');}}}Write(\']}\');"
    
    this.regaCommand(script,function (result){
 	   try {
@@ -353,14 +366,14 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
   var that = this;
   
   var eventSource = adress+"."+datapoint;
+  
   this.subscriptions.forEach(function (subs) {
-
-	  var options = subs.options || {};
+  	  var options = subs.options || {};
       var delay;
       var match;
 
 	  if (typeof subs.source === 'string') {
-            match = (subs.source == eventSource);
+            match = (subs.source.toLowerCase() == eventSource.toLowerCase());
         } else if (subs.source instanceof RegExp) {
             match = eventSource.match(subs.source);
         }
@@ -381,13 +394,17 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
   });
 }
 
+
+
 LogicalPlatform.prototype.getDatabase = function(name) {
 	var that = this
 	var spath = this.configuration.storagePath()
 	// Do not store outside the config file
 	try {
 		var Datastore = require('nedb')
-		var db = new Datastore({ filename: path.join(spath,path.basename(name)+".udb")})
+		let storeFile = path.join(spath,path.basename(name))+".udb"
+		this.log.debug("Try to load database %s",storeFile);
+		var db = new Datastore({ filename: storeFile})
 		db.loadDatabase(function (err) {    // Callback is optional
 				// Now commands will be executed
 				if (err) {
@@ -700,9 +717,11 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 					if (tmp[2] == 'LEVEL') {
 
 					Sandbox.getValue(target).then(function (value) {
+						logicLogger.debug("target %s is currently %s",target,value);
 						let ivalue = parseInt(value)
 						let dirTarget = tmp[0]+'.'+tmp[1] + '.DIRECTION'					
 						Sandbox.getValue(dirTarget).then(function (dirvalue) {
+							logicLogger.debug("direction %s is currently %s ; mode is %s",target,dirvalue,mode);
 						var tvalue = 0
 							switch (mode) {
 							
@@ -734,6 +753,15 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 							break
 							
 							case 'toggle': {
+								if (ivalue > 0) {tvalue = 0}
+								if (ivalue === 0) {
+									tvalue = 1
+									isOn = true
+								}
+							}
+							break
+							
+							default : {
 								if (ivalue > 0) {tvalue = 0}
 								if (ivalue === 0) {
 									tvalue = 1
@@ -796,6 +824,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 	    },
         
         subscribe:  function Sandbox_subscribe(source, /* optional */ options, callback) {
+	     
             if (typeof source === 'undefined') {
                 throw(new Error('argument source missing'));
             }
@@ -821,19 +850,34 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
             if (typeof source === 'string') {
 				
 				var tmp = source.split('.');
+				that.log.debug("Subscription %s",tmp.length)
 				// Check first Value for hmvirtual
 				if (tmp.length>2) {
-			      if (that.isVirtualPlatformDevice(tmp[0])) {
-				   var channel = tmp[1];
-				   // Bind to channel change events
-				   that.processLogicalBinding(channel);
-				}
+			
+					if (tmp[0].toLowerCase() == "mqtt") {
+						that.log.debug("MQTT Subscription %s",tmp[1])
+						that.mqttEvents.push(tmp[1]);
+						that.hm_layer.emit("mqtt_add_topic",tmp[1]);
+					} else 
+					
+					if (tmp[0].toLowerCase() == "harmony") {
+						that.log.debug("Harmony Subscription %s",tmp[1])
+						that.harmonyEvents.push(tmp[1]);
+					} else 
+					
+					if (that.isVirtualPlatformDevice(tmp[0])) {
+						var channel = tmp[1];
+						// Bind to channel change events
+						that.processLogicalBinding(channel);
+				  	}  else 
+				  	
+				  	if (!that.isVirtualPlatformDevice(tmp[0])) {
+				  		that.proccessCCUBinding(tmp[0],tmp[1])
+				  	}
 				
-				} else {
-				   logicLogger.error("%s split error",source);
-				}
-                
-                var fn = path.basename(name)
+			}
+			    
+               	 var fn = path.basename(name)
                 that.subscriptions.push({file:fn, source: source, options: options, callback: (typeof callback === 'function') && scriptDomain.bind(callback)});
 
             } else if (typeof source === 'object' && source.length) {
@@ -1186,6 +1230,11 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 }
 
 
+
+LogicalPlatform.prototype.proccessCCUBinding = function(interface_name,channel_adress) {
+	this.processSubscriptions(interface_name+"."+channel_adress,"","");
+}
+
 LogicalPlatform.prototype.processLogicalBinding = function(source_adress) {
   var channel = this.hm_layer.channelWithAdress(source_adress);
   var that = this;
@@ -1207,6 +1256,39 @@ LogicalPlatform.prototype.processLogicalBinding = function(source_adress) {
 	  logicLogger.error("Cannot subscribe to %s channel was not found",source_adress)
 	  that.log.error("channel with adress %s not found - cannot add event listener",source_adress);
   }
+}
+
+
+
+LogicalPlatform.prototype.processMQTTBinding = function() {
+  var that = this;
+  that.log.info("Bind to MQTT Events");
+  this.hm_layer.removeAllListeners("mqtt_event");
+  this.hm_layer.on('mqtt_event', function(parameter){
+	that.mqttEvents.forEach(function(topic){
+	that.log.debug("mqtt_event %s %s",parameter.topic,parameter.payload);
+		if (parameter.topic.indexOf(topic)!=-1) {
+			 that.log.debug("topic match %s %s",topic,parameter.payload);
+			 that.processSubscriptions("mqtt."+parameter.topic,"",parameter.payload);
+		}
+  	});
+  });	
+}
+
+
+LogicalPlatform.prototype.processHarmonyBinding = function() {
+  var that = this;
+  that.log.debug("Bind to Harmony Events");
+  this.hm_layer.removeAllListeners("harmony_device_value_change");
+  this.hm_layer.on('harmony_device_value_change', function(parameter){
+	that.log.debug("Harmony Event %s",JSON.stringify(parameter))
+	that.harmonyEvents.forEach(function(lightid){
+		if (parameter.lightid == lightid) {
+			that.log.debug("lightid match %s %s %s",lightid,parameter.parameter,parameter.state);
+			 that.processSubscriptions("harmony."+parameter.lightid ,parameter.parameter,parameter.state);
+		}
+	})
+  });	
 }
 
 

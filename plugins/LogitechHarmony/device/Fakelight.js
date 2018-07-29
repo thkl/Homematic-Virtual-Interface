@@ -75,7 +75,8 @@ Fakelight.prototype.setOn = function (state) {
 	   }
 	   this.isOn = state;
 	   this.log.debug("Set isOn for Light %s to %s",this.uniqueid , this.isOn);
-   }	
+   }
+   
 }
 
 Fakelight.prototype.setBrightness = function (brightness) {
