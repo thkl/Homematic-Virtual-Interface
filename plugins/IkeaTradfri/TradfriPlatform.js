@@ -114,8 +114,8 @@ TradfriPlatform.prototype.reconnect = function() {
 		
 		this.tradfri.authenticate(this.securityID).then((identity, psk) => {
 			// work with the result
-			that.tradfriUser = identity
-			that.securityCode = psk
+			that.tradfriUser = identity;
+			that.securityCode = psk;
 			that.configuration.setValueForPlugin(that.name,"tradfri_securityCode",that.securityCode); 
 			that.configuration.setValueForPlugin(that.name,"tradfri_user",that.tradfriUser); 
 			that.configuration.setValueForPlugin(that.name,"tradfri_securityid",'removed'); 
