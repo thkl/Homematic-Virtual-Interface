@@ -72,7 +72,7 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 
 		this.hmDevice.on('device_channel_value_change', function(parameter){
 			
-			that.log.debug("Value was changed " + JSON.stringify(parameter) );
+			that.log.debug("Value was changed %s", JSON.stringify(parameter) );
 			var newValue = parameter.newValue;
 			
 			var channel = that.hmDevice.getChannel(parameter.channel);
@@ -106,9 +106,9 @@ var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
 	       }
 	     }
 
-
+	
 		 if (parameter.name == "OLD_LEVEL") {
-	       if (newValue==true) {
+		   if (newValue==true) {
 		      if (that.lastLevel == 0) {
 			      that.lastLevel = 1;
 		      }

@@ -67,6 +67,9 @@ HuePlatform.prototype.init = function() {
     this.hm_layer = this.server.getBridge()
 	this.localization = require(appRoot + '/Localization.js')(__dirname + "/Localizable.strings")
 	
+	// Copy new Device for Dimmers
+	this.server.publishHMDevice(this.getName(),'HM-LC-Dim1T-Pl',path.join(__dirname, 'HM-LC-Dim1T-Pl.json' ),2)
+				
 	this.log.info("Init %s",this.name)
 	var ip = this.configuration.getValueForPlugin(this.name,"hue_bridge_ip")
 	
@@ -80,7 +83,7 @@ HuePlatform.prototype.init = function() {
 	    this.queryBridgeAndMapDevices()
     }
 
-} else {
+	} else {
 	
 	this.locateBridge( function (err) {
         if (err) throw err
@@ -193,10 +196,7 @@ HuePlatform.prototype.locateBridge = function (callback) {
           that.log.warn("Scan complete but no bridges found")
           callback(null,null)
 		}
-    }).done().catch(function(_data) {
-		that.log.error("locateBridge %s",_data)
-	})
-    
+    }).done()
 }
 
 
@@ -452,13 +452,15 @@ HuePlatform.prototype.queryScenes = function() {
 	var that = this
 	var scnt = 0
 	this.hue_api.getScenes(function(err, scenes) {
-		scenes.forEach(function (scene) {
-			if (scene["owner"] != "none") {
-				scnt = scnt + 1
-				that.sceneManager.addScene(scene)
-			}
-		})
-
+		if ((scenes != undefined) && (scenes != null)) {
+			scenes.forEach(function (scene) {
+				if (scene["owner"] != "none") {
+					scnt = scnt + 1
+					that.sceneManager.addScene(scene)
+				}
+			})
+		}
+		
 		var publishedscenes = that.getConfiguredScenes()	
 		if (publishedscenes != undefined) {
 	  		that.sceneManager.publish(publishedscenes,false)
@@ -526,7 +528,7 @@ HuePlatform.prototype.refreshAll = function() {
 		that.lastUpdate = new Date()
 		}
 	
-		that.log.info("refresh done send events")
+		that.log.debug("refresh done send events")
 		that.hm_layer.sendMulticallEvents()
     }).catch(function(_data) {
 		that.log.error("refresh lamps error %s",_data)
@@ -545,11 +547,11 @@ HuePlatform.prototype.refreshAll = function() {
 				if (objsensor) {
 					 that.log.debug("Refreshing Sensor %s",sensor["uniqueid"])
 					 objsensor.refreshWithData(sensor)
-				}
+				}	
 			})
 		}
 
-		that.log.info("refresh done send events")
+		that.log.debug("refresh sensors done send events")
 		that.hm_layer.sendMulticallEvents()
 
 	}).catch(function(_data) {
@@ -622,7 +624,7 @@ HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) 
 	var listEfxS = ""
 	
 	this.localization.setLanguage(dispatched_request)
-	
+	this.log.debug("handleConfigurationRequest")
 	var message = this.localization.localize("No Message from your Hue Plugin. Yet ! Last Update : ")
 	message = message + this.lastUpdate
 	

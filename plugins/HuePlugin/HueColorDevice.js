@@ -91,18 +91,23 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
     			}
 				channel.endUpdating("PROGRAM");
 	      	}
+	      	
+	      	
+	      	// {'ACT_COLOR_PROGRAM_STORE':0,'ACT_BRIGHTNESS_STORE':200,'RAMP_TIME_STORE':0.5,'ON_TIME_STORE':0,'ACT_MIN_BORDER_STORE':0,'ACT_MAX_BORDER_STORE':34}
+	      	if (parameter.name == "USER_PROGRAM") {
+		      	// Thats a channel action JSON with ' needs to replaced
+		      	let action = JSON.parse(newValue.replace(new RegExp("'", 'g'), "\""));
+		      	if ((action != undefined) && (action['ACT_BRIGHTNESS_STORE'] != undefined)) {
+		      		that.log.debug("User Program %s",action)
+		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;
+		      		that.onTime = action['ON_TIME_STORE'];  
+		      		that.setColor(action['ACT_MAX_BORDER_STORE']);
+		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']);  
+		      	}
+		    }
 
 	      if (parameter.name == "LEVEL") {
-	       that.setLevel(newValue);
-		   if ((that.onTime > 0) && (newValue>0)) {
-		    setTimeout(function() {that.setLevel(0);}, that.onTime * 1000);
-	       }
-	       // reset the transition and on time 
-	       that.transitiontime = 4;
-	       that.onTime = 0;
-	       if (newValue > 0) {
-		       that.lastLevel = newValue;
-	       }
+	        that.internalSetLevel(newValue);
 	     }
 
 
@@ -219,6 +224,19 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		}
 	}
 
+	HueColorDevice.prototype.internalSetLevel = function(newValue) { 
+		let that = this;
+		that.setLevel(newValue);
+		   if ((that.onTime > 0) && (newValue>0)) {
+		    setTimeout(function() {that.setLevel(0);}, that.onTime * 1000);
+	       }
+	       // reset the transition and on time 
+	       that.transitiontime = 4;
+	       that.onTime = 0;
+	       if (newValue > 0) {
+		       that.lastLevel = newValue;
+	       }
+	}
 
 	HueColorDevice.prototype.setSaturation = function(newSaturation) {
 		var that = this;
