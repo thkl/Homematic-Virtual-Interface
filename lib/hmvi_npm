@@ -10,9 +10,9 @@
 ### END INIT INFO
 
 
-dir="/home/pi/node_modules/homematic-virtual-interface"
+dir="/home/hmvi/node_modules/homematic-virtual-interface"
 cmd="bin/hmviservice"
-user="pi"
+user="hmvi"
 
 sudo -u "$user" $dir/$cmd $1
 exit 0

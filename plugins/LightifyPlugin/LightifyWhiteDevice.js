@@ -2,7 +2,7 @@
 
 var HomematicDevice;
 
-var LightifyDevice = function(plugin, api ,light,serialprefix) {
+var LightifyWhiteDevice = function(plugin, api ,light,serialprefix) {
 
 
 		var that = this;
@@ -17,12 +17,12 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 		this.onTime = 0;
 		this.lastLevel = 0;
 
-		this.log.debug("Setup new LightifyDevice %s",serialprefix);
+		this.log.debug("Setup new Lightify White Device %s",serialprefix);
 		this.transitiontime = 4;
 
 		this.hmDevice = new HomematicDevice(this.plugin.getName());
 		// TODO Stored Devices
-		this.hmDevice.initWithType("VIR-LG-RGBW-DIM", serialprefix);
+		this.hmDevice.initWithType("VIR-LG-WHITE-DIM", serialprefix);
 		this.hmDevice.firmware = light["firmware_version"];
 		this.bridge.addDevice(this.hmDevice);
 
@@ -72,14 +72,7 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 		  that.onTime = newValue;
 		}
 
-
-	    if (parameter.name == "RGBW") {
-		  that.setColor(newValue);
-		  that.transitiontime = 4;
-	     }
-
-
-	    if (parameter.name == "WHITE") {
+		if (parameter.name == "WHITE") {
 		  that.setWhite(newValue);
 	     }
 
@@ -95,58 +88,36 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 	}
 	
 	
-
-	LightifyDevice.prototype.setColor = function(newColor) {
-	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex("VIR-LG_RGBW-DIM-CH","1");
+	LightifyWhiteDevice.prototype.setWhite = function(newTemp) {
+	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex("VIR-LG_WHITE-DIM-CH","1");
 		if (co_channel != undefined) {
-			var regex = /(\s*[0-9]{1,3}),(\s*[0-9]{1,3}),(\s*[0-9]{1,3})/
-			var result = newColor.match(regex);
-			var r = result[1];
-			var g = result[2];
-			var b = result[3];
-			this.api.node_color(this.mac,r,g,b,255,this.transitiontime);
-			co_channel.updateValue("RGBW",newColor);
-		}
-	}
-
-
-	LightifyDevice.prototype.setWhite = function(newTemp) {
-	    var co_channel = this.hmDevice.getChannelWithTypeAndIndex("VIR-LG_RGBW-DIM-CH","1");
-		if (co_channel != undefined) {
-			this.api.node_temperature(this.mac,newTemp,this.transitiontime);
+			this.api.nodeTemperature(this.mac,newTemp,this.transitiontime);
 			co_channel.updateValue("WHITE",newTemp);
 		}
 	}
 
 
-	LightifyDevice.prototype.setLevel = function(newLevel) {
-	    var di_channel = this.hmDevice.getChannelWithTypeAndIndex("VIR-LG_RGBW-DIM-CH","1");
+	LightifyWhiteDevice.prototype.setLevel = function(newLevel) {
+	    var di_channel = this.hmDevice.getChannelWithTypeAndIndex("VIR-LG_WHITE-DIM-CH","1");
 		if (di_channel != undefined) {
 			di_channel.startUpdating("LEVEL");
 			di_channel.updateValue("LEVEL",newLevel);
-			this.api.node_brightness(this.mac,newLevel*100, this.transitiontime);
+			this.api.nodeBrightness(this.mac,newLevel*100, this.transitiontime);
 			di_channel.endUpdating("LEVEL");
 		}
 	}
 
-	LightifyDevice.prototype.refreshDevice = function(device) {
+	LightifyWhiteDevice.prototype.refreshDevice = function(device) {
 	  var that = this;
 	  
-	  this.api.get_status(this.mac).then(function(data) {
+	  this.api.getStatus(this.mac).then(function(data) {
 		  that.log.debug(data);
 		  if ((data != undefined) && (data.result != undefined)) {
-		  	  var di_channel = that.hmDevice.getChannelWithTypeAndIndex("VIR-LG_RGBW-DIM-CH","1");
+		  	  var di_channel = that.hmDevice.getChannelWithTypeAndIndex("VIR-LG_WHITE-DIM-CH","1");
 		  	  that.log.debug("Query Reslut %s",JSON.stringify(data["result"][0]["brightness"]));
 			  var bri = data["result"][0]["brightness"] / 100;
 			  that.log.debug("Set Osram Level to %s",bri);
 			  di_channel.updateValue("LEVEL",bri,true);
-			  
-			  var r = data["result"][0]["red"];
-			  var g = data["result"][0]["green"];
-			  var b = data["result"][0]["blue"];
-			  var rgb = "rgb("+r+","+g+","+b+")";
-			  that.log.debug("Set RGBW %s",rgb);
-			  di_channel.updateValue("RGBW",rgb,true);
 			  var temperature = data["result"][0]["temperature"];
 			  di_channel.updateValue("WHITE",temperature,true);
 			  
@@ -156,11 +127,11 @@ var LightifyDevice = function(plugin, api ,light,serialprefix) {
 
 	 this.updateTimer = setTimeout(function() {
 		 	that.refreshDevice();
-		 }, 60000);
+	 }, 60000);
 	}
 
 
 
 	module.exports = {
-	  LightifyDevice : LightifyDevice
+	  LightifyWhiteDevice : LightifyWhiteDevice
 	}

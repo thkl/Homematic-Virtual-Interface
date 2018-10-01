@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-logicmanager",
-  "version": "0.0.13",
+  "version": "0.0.17",
   "description": "Virtual Logic Manager",
   "license": "ISC",
   "keywords": [
@@ -22,7 +22,7 @@
     "node-schedule":"latest",
     "suncalc":"1.8.0",
     "promise":"latest",
-    "moment":"2.17.1",
+    "moment":"2.19.3",
     "nedb-logger":"0.1.0",
     "nedb" : "1.8.0"
   },

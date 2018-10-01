@@ -25,6 +25,7 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername,serial) {
 	this.transportState
 	this.currentVolume
 	this.serial = serial
+	this.volume_step = 1;
 // Add Event Handler
     
     
@@ -127,13 +128,13 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername,serial) {
 				break;
 				case "VolUp": 
 					that.sonos.getVolume(function (err, volume) {
-						volume = volume + 1;	
+						volume = volume + that.volume_step;	
 						that.sonos.setVolume(volume, function (err, playing) {})
 					});
 				break;
 				case "VolDn": 
 					that.sonos.getVolume(function (err, volume) {
-						volume = volume - 1;	
+						volume = volume - that.volume_step;	
 						that.sonos.setVolume(volume, function (err, playing) {})
 					});
 				break;
@@ -161,14 +162,14 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername,serial) {
 						break;
 						case "6": 
 							that.sonos.getVolume(function (err, volume) {
-								volume = volume + 1;	
+								volume = volume + parseInt(that.volume_step);	
 								that.sonos.setVolume(volume, function (err, playing) {})
-								});
+							});
 						break;
 						case "7": 
 							that.sonos.getVolume(function (err, volume) {
-							volume = volume - 1;	
-							that.sonos.setVolume(volume, function (err, playing) {})
+								volume = volume - parseInt(that.volume_step);	
+								that.sonos.setVolume(volume, function (err, playing) {})
 							});
 						break;
 					}
@@ -241,7 +242,23 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername,serial) {
 						case 'enablesub':
 						{
 							if (cmds.length>1) {
-								that.enablesub(cmds[1])	
+								that.enableSub(cmds[1])	
+					  		}
+						}
+						break;
+
+						case 'enabledialog':
+						{
+							if (cmds.length>1) {
+								that.enabledialog(cmds[1])	
+					  		}
+						}
+						break;
+
+						case 'enablenightmode':
+						{
+							if (cmds.length>1) {
+								that.enablenightmode(cmds[1])	
 					  		}
 						}
 						break;
@@ -255,6 +272,14 @@ var SonosDevice = function(plugin ,sonosIP,sonosPort,playername,serial) {
 					  		}
 						}
 						break;
+
+						case 'setspdiftransportstream':
+						{
+							that.setTSStreamToSPDIF(cmds[1])	
+						}
+						break;
+						
+						
 						
 						
 						case 'playFav':
@@ -451,8 +476,22 @@ SonosDevice.prototype.setRampTime = function(newTime) {
 }
 
 SonosDevice.prototype.enableSub = function(enable) {
-    this.sonos.enableSub(enable,function (error,result){})
+	var strEnable = ((enable == true) || (enable == 'true') || (enable == '1') || (enable == 1)) ? 1 : 0
+    this.sonos.enableSub(strEnable,function (error,result){})
 }
+
+SonosDevice.prototype.enabledialog = function(enable) {
+	var strEnable = ((enable == true) || (enable == 'true') || (enable == '1') || (enable == 1)) ? 1 : 0
+    this.sonos.enableDialog(strEnable,function (error,result){})
+}
+
+SonosDevice.prototype.enablenightmode = function(enable) {
+	var strEnable = ((enable == true) || (enable == 'true') || (enable == '1') || (enable == 1)) ? 1 : 0
+    this.sonos.enableNightMode(strEnable,function (error,result){})
+}
+
+
+
 
 
 SonosDevice.prototype.setTransportStream = function(newStream) {
@@ -469,6 +508,22 @@ SonosDevice.prototype.setTransportStream = function(newStream) {
 	})
 	})
 }
+
+SonosDevice.prototype.setTSStreamToSPDIF = function() {
+	var newTs = "x-sonos-htastream:"+this.rincon+":spdif"
+    var that = this
+    this.log.debug("Set Transport Stream of %s to %s",this.playername,newTs)
+    this.sonos.flush(function (){
+  	  that.sonos.queueNext({uri: newTs,metadata: ""}, function (error,data) {
+		if (!error) {
+			that.sonos.play(function (err, playing) {})
+		} else {
+			that.log.error("set Transport Stream error %s",error)
+		}
+	})
+	})
+}
+
 
 
 SonosDevice.prototype.rampAutoVolume = function(increase) {

@@ -1,0 +1,23 @@
+<form action="." method="post" id="editform">
+<input type="hidden" name="do" value="save" />
+<div class="ph  row">
+          <span class="dh col-md-2">MQTT Ger&auml;t</span>
+          <span class="dh col-md-10"><input type="text" style="color: black" id="device_name" name="device_name" value="$device_name$"/></span>
+</div>
+<div class="ph  row">
+          <span class="dh col-md-2">Ger&auml;tetyp Type</span>
+          <span class="dh col-md-10"><select style="color: black" id="device_type" name="device_type" >$device_type$</select></span>
+</div>
+<div class="ph  row">
+          <span class="dh col-md-2">CCU Seriennummer</span>
+          <span class="dh col-md-10"><input type="hidden" style="color: black" id="device_hmdevice" name="device_hmdevice" value="$device_hmdevice$"/>$device_hmdevice$</span>
+</div>
+<div class="ph  row">
+          <span class="dh col-md-6"><input type="submit" style="color: black" value="Speichern" /></span>
+          <span class="dh col-md-6"><input type="button" style="color: black" value="Abbrechen" onclick="window.location.href='./'"/></span>
+</div>
+</form>
+<div class="ph  row">
+	<span class="dh col-md-10"></span>
+	<span class="dh col-md-2"><a target="_blank" href="https://github.com/thkl/Homematic-Virtual-Interface/wiki/MQTT-Plugin">Hilfe</a></span>
+</div>

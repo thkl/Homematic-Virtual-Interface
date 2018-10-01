@@ -118,6 +118,7 @@ HarmonyClient.prototype.init = function() {
 				*/
 				
 			if (acID) {
+				
 			  that.startActivity(acID);
 			} else {
 				that.log.debug("No Activity With ID %s found",acID);
@@ -125,8 +126,29 @@ HarmonyClient.prototype.init = function() {
 	    }
 	    
 	    if (parameter.name == "COMMAND") {
-		    that.log.debug("Harmony Command %s",parameter.newValue);
-		    that.sendAction(parameter.newValue);
+		    if (parameter.newValue.indexOf("|")>-1) {
+			    var cmds = parameter.newValue.split('|')
+			    if ((cmds.length==2) && (cmds[0]=='A')) {
+				    let acID = cmds[1] 
+				    var selectedActivity =  undefined
+				    that.log.debug('Searching for activity %s',acID)
+					that.activities.some(function (activity) { 
+						if ((activity.chid == acID) || (activity.label == acID)) {
+							that.log.debug('Activity for %s found %s',acID,activity.id)
+							selectedActivity = activity
+						}
+					})
+	
+					if (selectedActivity != undefined) {
+						that.startActivity(selectedActivity.id)
+					} else {
+						that.log.error('No activity found for search %s'.acID)
+					}						
+			    }
+		    } else {
+			    that.log.debug("Harmony Command %s",parameter.newValue);
+				that.sendAction(parameter.newValue);
+		    }
 		}
 	});
 	

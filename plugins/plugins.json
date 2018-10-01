@@ -52,14 +52,8 @@
 		"npm" :"homematic-virtual-sonosdevice",
 		"syname":"Sonos",
 		"description":{"de-de":"Sellt Sonos Zoneplayer als CCU Ger&auml;te zur Verf&uuml;gung","en-en":"Creates CCU devices from sonos zone players"}
-	  },
-
-	  {
-		"name":"Alexa Plugin",
-		"npm" :"homematic-virtual-alexa",
-		"syname":"Alexa",
-		"description":{"de-de":"Benutze Amazon Alexa um Ger&auml;te zu steuern.","en-en":"Use amazon alexa to control your devices"}
 	  }
+	  
 	  ,
 
 	  {
@@ -143,10 +137,23 @@
 		"npm" :"homematic-virtual-dashbutton",
 		"syname":"DashButton",
 		"description":{"de-de":"F&uuml;gt Amazon Dash Buttons hinzu","en-en":"adds amazon Dash buttons"}
+	  },
+	  
+	  
+	  {
+		  
+		"name":"Google-Cast",
+		"npm" :"homematic-virtual-google-cast",
+		"syname":"GoogleCast",
+		"description":{"de-de":"F&uuml;gt Google Cast hinzu","en-en":"adds Google Cast support"}
+	  },
+	  {
+		  
+		"name":"MQTT",
+		"npm" :"homematic-virtual-mqttdevice",
+		"syname":"MQTT",
+		"description":{"de-de":"Verbindet Ger&auml;ete &uuml;ber MQTT mit der CCU","en-en":"connects MQTT devices to your CCU"}
 	  }
-	  
-	  
-	  
 	  
 	]
 }

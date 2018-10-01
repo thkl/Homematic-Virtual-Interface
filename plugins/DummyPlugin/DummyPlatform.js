@@ -36,10 +36,7 @@ DummyPlatform.prototype.init = function () {
   // as an example the HM-Sen-Wa-Od.json should be located in your plugin root
   
   /* 
-   var devfile = path.join(__dirname,'HM-Sen-Wa-Od.json');
-   var buffer = fs.readFileSync(devfile);
-   var devdata = JSON.parse(buffer.toString());
-   this.server.transferHMDevice('HM-Sen-Wa-Od',devdata);
+   this.server.publishHMDevice(this.getName(),'HM-Sen-Wa-Od',devfile,1);
   */
   var serial = 'Dum_1234'
   
@@ -109,8 +106,10 @@ DummyPlatform.prototype.loadValues = function (dispatchedRequest) {
 	let value = 1;
 	// insert real query here
 	
-    //	let value = myPhysicalDevice.getData()
+	// Start a multicall collecting 
+	this.hm_layer.startMulticallEvent(500)
 	
+    //	let value = myPhysicalDevice.getData()
 	
 	// change the virtual homematic device data
 	// first get the channel - in this example the dimmer channel with number 1
@@ -120,7 +119,10 @@ DummyPlatform.prototype.loadValues = function (dispatchedRequest) {
 		  channel.updateValue("LEVEL",value,true,true);
 	}
 	
-// do it again i about 6 seconds	 
+	// send out all events as one multicall
+	this.hm_layer.sendMulticallEvents()
+
+	// do it again i about 6 seconds	 
   setTimeout(function (){
 	  // check value
 	that.loadValues()	  

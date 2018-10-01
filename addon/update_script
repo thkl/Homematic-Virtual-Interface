@@ -19,6 +19,7 @@ fi
 	mkdir -p $WWWDIR
 	# copy addon
 	cp -R hvl/* $WWWDIR
+	cp VERSION $WWWDIR
 	chmod 775 $WWWDIR
 
 	# copy startup script

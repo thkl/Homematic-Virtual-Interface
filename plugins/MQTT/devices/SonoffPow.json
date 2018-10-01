@@ -1,0 +1,85 @@
+{
+		"subscribe" : ["stat/%name%","tele/%name%"],
+		"clazztype" : "SwitchDevice",
+		"type" : "Energy Counter",
+		"hmdevice" : "HM-ES-PMSw1-Pl",
+		"channels" : {
+			"0" : {
+				"hm_channeltype" : "MAINTENANCE",
+				"hm_datapoints" : ["UNREACH"],
+				"settings" : {
+					
+					"UNREACH" : {
+						"mqtt_topic_state" : "tele/%name%/LWT",
+						"mqtt_payload_state" : "",
+						"mqtt_representation_state" : {"online":false, "offline":true}
+					}
+				}
+			},			
+			"1" : {
+				"hm_channeltype" : "SWITCH",
+				"hm_datapoints" : ["STATE"],
+				"settings" : {
+
+						"STATE" : {
+
+							"mqtt_payload_get" : "POWER",
+							"mqtt_topic_get" : "stat/%name%/RESULT",
+							"mqtt_representation_get" : {"ON":true, "OFF":false},
+				
+							"mqtt_topic_set" : "cmnd/%name%/POWER",
+							"mqtt_representation_set" : {"true": "ON" , "false": "OFF"},
+				
+							"mqtt_topic_state" : ".*/%name%/STATE",
+							"mqtt_payload_state" : "POWER",
+							"mqtt_representation_state" : {"ON":true, "OFF":false},
+				
+							"mqtt_command_getstate" : "cmnd/%name%/status",
+							"mqtt_topic_getstate" : ".*/%name%/STATUS",
+							"mqtt_payload_getstate" : "Status|Power",
+							"mqtt_representation_getstate" : {"1" : true , "0": false}
+
+							
+							
+						}
+				}
+				
+			},
+			
+			"2" : {
+				"hm_channeltype" : "POWERMETER",
+				"hm_datapoints" : ["VOLTAGE","CURRENT","POWER"],
+				"settings" : {
+
+						"VOLTAGE" : {
+							"mqtt_topic_state" : ".*/%name%/SENSOR",
+							"mqtt_payload_state" : "ENERGY|Voltage",
+							
+							"mqtt_topic_getstate" : ".*/%name%/STATUS8",
+							"mqtt_payload_getstate" : "StatusSNS|ENERGY|Voltage",
+							"mqtt_command_getstate" : "cmnd/%name%/status|8"
+						},
+						
+						"CURRENT" : {
+							"mqtt_topic_state" : ".*/%name%/SENSOR",
+							"mqtt_payload_state" : "ENERGY|Current",
+							
+							"mqtt_topic_getstate" : ".*/%name%/STATUS8",
+							"mqtt_payload_getstate" : "StatusSNS|ENERGY|Current"
+						},
+
+						"POWER" : {
+							"mqtt_topic_state" : ".*/%name%/SENSOR",
+							"mqtt_payload_state" : "ENERGY|Power",
+							
+							"mqtt_topic_getstate" : ".*/%name%/STATUS8",
+							"mqtt_payload_getstate" : "StatusSNS|ENERGY|Power"
+						}
+
+				}
+				
+			}
+					
+		}
+}
+	
