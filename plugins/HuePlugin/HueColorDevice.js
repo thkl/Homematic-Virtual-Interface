@@ -101,7 +101,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		      		that.log.debug("User Program %s",action)
 		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;
 		      		that.onTime = action['ON_TIME_STORE'];  
-		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']);  
+		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']/200);  
 		      		that.setColor(action['ACT_MAX_BORDER_STORE']);
 		      	}
 		    }
@@ -115,7 +115,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		      		that.log.debug("User Color %s",action)
 		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;
 		      		that.onTime = action['ON_TIME_STORE'];  
-		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']);  
+		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']/200);  
 		      		that.setColor(action['ACT_HSV_COLOR_VALUE_STORE']);
 		      	}
 		    }
