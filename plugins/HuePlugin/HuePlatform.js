@@ -328,18 +328,6 @@ HuePlatform.prototype.querySensors = function() {
 	})
 }        
 
-HuePlatform.prototype.persistantName = function(devName, id, uniqueid) {
-  var persistenceFile = this.server.configuration.storagePath() + "/" + uniqueid + ".dev";
-  try {
-    var data = fs.readFileSync(persistenceFile);
-    // Try to parse //
-	    var info = JSON.parse(data);
-    return info['adress'];
-  } catch (e) {
-    return devName + id;
-  }
-}
-
 HuePlatform.prototype.queryLights = function() {
 	var that = this
 
@@ -359,7 +347,7 @@ HuePlatform.prototype.queryLights = function() {
     			that.log.debug("Create new Osram Plug with name %s and id %s" , light["name"] ,  light["id"])
     			let devName = "OSRPLG" + ((that.instance) ? that.instance :"0")
 				hd = new HueDeviceOsramPlug(that,that.hue_api,light,devName)
-				light["hm_device_name"] = that.persistantName(devName, light["id"], light["uniqueid"])
+				light["hm_device_name"] = devName + light["id"]
     		  } 
      		  break
      		  
@@ -369,7 +357,7 @@ HuePlatform.prototype.queryLights = function() {
 	    		// Try to load device
 	    		let devName = "HUE000" + ((that.instance) ? that.instance : "0")
 				hd = new HueColorDevice(that,that.hue_api,light,devName)
-				light["hm_device_name"] = that.persistantName(devName, light["id"], light["uniqueid"])
+				light["hm_device_name"] = devName + light["id"]
 				
 				hd.on("direct_light_event",function (alight) {
 					// Call all EffectServer to stop
@@ -389,7 +377,7 @@ HuePlatform.prototype.queryLights = function() {
 	    		// Try to load device
 	    		let devName = "HUE000" +  ((that.instance)?that.instance : "0")
 				hd = new HueDimmableDevice(that,that.hue_api,light,devName)
-				light["hm_device_name"] = that.persistantName(devName, light["id"], light["uniqueid"])
+				light["hm_device_name"] = devName + light["id"]
 				
 				hd.on("direct_light_event",function (alight) {
 					// Call all EffectServer to stop
