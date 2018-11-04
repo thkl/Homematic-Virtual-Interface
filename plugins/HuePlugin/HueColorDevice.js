@@ -101,10 +101,25 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		      		that.log.debug("User Program %s",action)
 		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;
 		      		that.onTime = action['ON_TIME_STORE'];  
+		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']/200);  
 		      		that.setColor(action['ACT_MAX_BORDER_STORE']);
-		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']);  
 		      	}
 		    }
+		    
+		     
+            //  {'ACT_HSV_COLOR_VALUE_STORE':133,'ACT_BRIGHTNESS_STORE':200,'RAMP_TIME_STORE':0.5,'ON_TIME_STORE':0}
+	      	if (parameter.name == "USER_COLOR") {
+		      	// Thats a channel action JSON with ' needs to replaced
+		      	let action = JSON.parse(newValue.replace(new RegExp("'", 'g'), "\""));
+		      	if ((action != undefined) && (action['ACT_BRIGHTNESS_STORE'] != undefined)) {
+		      		that.log.debug("User Color %s",action)
+		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;
+		      		that.onTime = action['ON_TIME_STORE'];  
+		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']/200);  
+		      		that.setColor(action['ACT_HSV_COLOR_VALUE_STORE']);
+		      	}
+		    }
+
 
 	      if (parameter.name == "LEVEL") {
 	        that.internalSetLevel(newValue);
