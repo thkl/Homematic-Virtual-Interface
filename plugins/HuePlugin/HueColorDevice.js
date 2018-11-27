@@ -40,7 +40,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 
 	// try to load persistant object
 		if (serial != undefined) {
-			this.log.debug("Serial %s",serial);
+			this.log.debug("Zerial %s",serial);
 			var data = this.bridge.deviceDataWithSerial(serial);
 			if (data!=undefined) {
 				this.hmDevice.initWithStoredData(data);
@@ -57,8 +57,10 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 			if (uniqueid!=undefined) {
 				this.hmDevice.serialNumber = uniqueid
 			}
+			this.log.debug("add new object to core");
 			this.bridge.addDevice(this.hmDevice,true);
 		} else {
+			this.log.debug("add stored object to core");
 			this.bridge.addDevice(this.hmDevice,false);
 		}
 		
@@ -68,13 +70,9 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 			channel.endUpdating("INSTALL_TEST");
 		});
 		
-		
 		this.hmDevice.on('device_channel_value_change', function(parameter){
-			
 			var newValue = parameter.newValue;
-			
 			var channel = that.hmDevice.getChannel(parameter.channel);
-
 			if (parameter.name == "PROGRAM") {
 				switch(newValue) {
 					case 0:
@@ -102,6 +100,7 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;
 		      		that.onTime = action['ON_TIME_STORE'];  
 		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']/200);  
+		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;
 		      		that.setColor(action['ACT_MAX_BORDER_STORE']);
 		      	}
 		    }
@@ -109,14 +108,19 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 		     
             //  {'ACT_HSV_COLOR_VALUE_STORE':133,'ACT_BRIGHTNESS_STORE':200,'RAMP_TIME_STORE':0.5,'ON_TIME_STORE':0}
 	      	if (parameter.name == "USER_COLOR") {
+		      	that.log.debug("Channel 2 Channel action",newValue)
+
 		      	// Thats a channel action JSON with ' needs to replaced
 		      	let action = JSON.parse(newValue.replace(new RegExp("'", 'g'), "\""));
 		      	if ((action != undefined) && (action['ACT_BRIGHTNESS_STORE'] != undefined)) {
 		      		that.log.debug("User Color %s",action)
 		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;
 		      		that.onTime = action['ON_TIME_STORE'];  
-		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']/200);  
+		      		that.internalSetLevel (action['ACT_BRIGHTNESS_STORE']/200);
+		      		that.transitiontime = action['RAMP_TIME_STORE'] * 10;  
 		      		that.setColor(action['ACT_HSV_COLOR_VALUE_STORE']);
+		      	} else {
+			      	that.log.debug("action is missing or ACT_BRIGHTNESS_STORE value not set")
 		      	}
 		    }
 
@@ -209,9 +213,9 @@ var HueColorDevice = function(plugin, hueApi ,light,serialprefix) {
 	      // SpeZiale
 	        var white = co_channel.getParamsetValueWithDefault("MASTER","WHITE_HUE_VALUE",39609);
 	        var sat = co_channel.getParamsetValueWithDefault("MASTER","DEFAULT_SATURATION",128);
-   	        newState = {"hue":white,"sat":sat,"bri":this.bri};
+   	        newState = {"transitiontime":that.transitiontime,"hue":white,"sat":sat,"bri":this.bri};
 	    } else {
-	        newState = {"hue":(newColor/199)*65535,"sat":255,"bri":this.bri};
+	        newState = {"transitiontime":that.transitiontime,"hue":(newColor/199)*65535,"sat":255,"bri":this.bri};
 	    }
 
 		this.log.debug("Hue Value set to " + JSON.stringify(newState) );
