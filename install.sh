@@ -85,7 +85,7 @@ fi
 if [ ! -d "/home/hmvi/.hm_virtual_interface" ]; then
 
   CCUIP=$(whiptail --inputbox "Please enter your CCU IP" 20 60 "000.000.000.000" 3>&1 1>&2 2>&3)
-
+  sudo chown -R hmvi:hmvi /home/hmvi/.hm_*
   echo "build new configuration directory and config"
   mkdir /home/hmvi/.hm_virtual_interface
   touch /home/hmvi/.hm_virtual_interface/config.json
