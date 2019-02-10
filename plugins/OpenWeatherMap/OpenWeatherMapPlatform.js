@@ -86,7 +86,7 @@ OpenWeatherMapPlatform.prototype.saveSettings = function(settings) {
 OpenWeatherMapPlatform.prototype.fetchWeather = function () {
 	
 	var that = this
-	var rainCond = [200,201,202,230,231,232,300,301,302,310,311,312,313,314,321,500,510,502,503,504,511,520,521,522,531]
+	var rainCond = [200,201,202,230,231,232,300,301,302,310,311,312,313,314,321,500,501,502,503,504,510,502,503,504,511,520,521,522,531]
 	var api_key = this.config.getValueForPlugin(this.name,'api_key')
 	var locationId = this.config.getValueForPlugin(this.name,'locationId')
 	if ((api_key) && (locationId)) {
@@ -139,8 +139,8 @@ OpenWeatherMapPlatform.prototype.fetchWeather = function () {
 			 Mapping : 
 			 1:TEMPERATURE -> main.temp
 			 1:HUMIDITY -> main.humidity
-			 1:RAINING -> weather[0].id -> 200,201,202,230,231,232,300,301,302,310,311,312,313,314,321,500,510,502,503,504,511,520,521,522,531
-			 1:RAIN_COUNTER -> rain.3h
+			 1:RAINING -> weather[0].id -> https://openweathermap.org/weather-conditions
+			 1:RAIN_COUNTER -> rain.3h -> doesn't work anymore..
 			 1:WIND_SPEED -> wind.speed
 			 1:WIND_DIRECTION -> wind.deg
 			 1:WIND_DIRECTION_RANGE -> n/a
