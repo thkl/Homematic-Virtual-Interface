@@ -89,7 +89,7 @@
 			"name": "VALUES",
 			"id": "ks550_ch_values",
 			"parameter": [{
-				"unit": "¡C",
+				"unit": "&deg;C",
 				"max": 80,
 				"min": -40,
 				"tab_order": 0,
