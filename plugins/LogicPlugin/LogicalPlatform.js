@@ -362,6 +362,47 @@ LogicalPlatform.prototype.ccuEvent = function(adress,datapoint,value) {
 }
 
 
+LogicalPlatform.prototype.wasConditionfulfilled = function(oldValue,value,condition,change) {
+	if (typeof condition === 'function') {
+		let check = condition(value)
+		if (!check) {
+			return false
+		}
+	}
+
+	if (typeof condition === 'object') {
+				
+        if (condition.equals && !(condition.equals === value)) {
+        	return false
+        }
+
+		if (condition.gt && !(condition.gt > value)) {
+        	return false
+		}
+
+		if (condition.lt && !(condition.lt < value)) {
+        	return false
+        }
+	}
+
+	  		// check if value changed
+	if (change && (oldValue === value)) {
+        return false
+    }
+	return true
+}
+
+LogicalPlatform.prototype.logicalMatch = function(sourceObject,eventObject) {
+ var match = false
+ 
+ if (typeof sourceObject === 'string') {
+     match = (sourceObject.toLowerCase() == eventObject.toLowerCase());
+ } else if (sourceObject instanceof RegExp) {
+     match = eventObject.match(sourceObject);
+ }
+ return match
+}
+
 LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value) {
   var that = this;
   
@@ -372,51 +413,22 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
  	  var options = subs.options || {};
       var delay;
       var match;
-
-	  if (typeof subs.source === 'string') {
-            match = (subs.source.toLowerCase() == eventSource.toLowerCase());
-        } else if (subs.source instanceof RegExp) {
-            match = eventSource.match(subs.source);
-        }
+	  
+	  if ((typeof subs.source === 'string') || (subs.source instanceof RegExp)) {
+	  	
+	  	match = that.logicalMatch(subs.source,eventSource)
+		let oldValue = subs.val
+		subs.val = value
+	  	if (!(that.wasConditionfulfilled(oldValue,value,options.condition,options.change))) {
+				return
+		}
+		
+		
+	  }	 
+	  
 
       if (typeof subs.callback === 'function' && match) {
-	  		let oldValue = subs.val
-            // set the old value	
-			subs.val = value
-
-			if (typeof options.condition === 'function') {
-				logicLogger.debug("Condition check via function")
-				let check = options.condition(value)
-				logicLogger.debug("Condition check result is %s",check)
-				if (!check) {
-					return
-				}
-			}
-
-			if (typeof options.condition === 'object') {
-				logicLogger.debug("Condition check is an object")
-				
-            	if (options.condition.equals && !(options.condition.equals === value)) {
-                	return;
-            	}
-
-				if (options.condition.gt && !(options.condition.gt > value)) {
-                	return;
-				}
-
-				if (options.condition.lt && !(options.condition.lt < value)) {
-                	return;
-            	}
-			}
-            	logicLogger.debug("Condition check done ...")
-			
-
-	  		// check if value changed
-	  		if (options.change && (oldValue === value)) {
-                return;
-            }
-            
-
+	
       		logicLogger.debug("Subscription %s was triggered %s",subs.source);
       		delay = 0;
             if (options.shift) delay += ((parseFloat(options.shift) || 0) * 1000);
@@ -924,12 +936,17 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                 that.subscriptions.push({file:fn, source: source, options: options, callback: (typeof callback === 'function') && scriptDomain.bind(callback)});
 
             } else if (typeof source === 'object' && source.length) {
-
-                source = Array.prototype.slice.call(source);
-                source.forEach(function (tp) {
-	                Sandbox.subscribe(tp, options, callback);
-                });
-
+				
+				// in this case the elements should be like {source:'datapoint',condition:'condition',trigger:'change|update'}
+				source.forEach(function (item) {
+					that.log.debug("Subscribed multiple items %s",item.source)
+					logicLogger.info("Subscribed multiple items %s",item.source)
+					var options = {}
+					options.condition = item.condition
+					options.change = (item.trigger === 'change')
+					Sandbox.subscribe(item.source,options, callback);
+				})
+				
             }
 
         },
