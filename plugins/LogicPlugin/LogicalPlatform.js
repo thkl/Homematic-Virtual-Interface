@@ -368,7 +368,8 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
   var eventSource = adress+"."+datapoint;
   
   this.subscriptions.forEach(function (subs) {
-  	  var options = subs.options || {};
+
+ 	  var options = subs.options || {};
       var delay;
       var match;
 
@@ -379,10 +380,51 @@ LogicalPlatform.prototype.processSubscriptions = function(adress,datapoint,value
         }
 
       if (typeof subs.callback === 'function' && match) {
+	  		let oldValue = subs.val
+            // set the old value	
+			subs.val = value
+
+			if (typeof options.condition === 'function') {
+				logicLogger.debug("Condition check via function")
+				let check = options.condition(value)
+				logicLogger.debug("Condition check result is %s",check)
+				if (!check) {
+					return
+				}
+			}
+
+			if (typeof options.condition === 'object') {
+				logicLogger.debug("Condition check is an object")
+				
+            	if (options.condition.equals && !(options.condition.equals === value)) {
+                	return;
+            	}
+
+				if (options.condition.gt && !(options.condition.gt > value)) {
+                	return;
+				}
+
+				if (options.condition.lt && !(options.condition.lt < value)) {
+                	return;
+            	}
+			}
+            	logicLogger.debug("Condition check done ...")
+			
+
+	  		// check if value changed
+	  		if (options.change && (oldValue === value)) {
+                return;
+            }
+            
+
       		logicLogger.debug("Subscription %s was triggered %s",subs.source);
       		delay = 0;
             if (options.shift) delay += ((parseFloat(options.shift) || 0) * 1000);
             if (options.random) delay += ((parseFloat(options.random) || 0)  * Math.random() * 1000);
+
+
+
+
 
             delay = Math.floor(delay);
             setTimeout(function () {
@@ -822,7 +864,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 		 })
 
 	    },
-        
+                
         subscribe:  function Sandbox_subscribe(source, /* optional */ options, callback) {
 	     
             if (typeof source === 'undefined') {
@@ -851,6 +893,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 				
 				var tmp = source.split('.');
 				that.log.debug("Subscription %s",tmp.length)
+				logicLogger.info("Subscribed to %s",tmp[1])
 				// Check first Value for hmvirtual
 				if (tmp.length>2) {
 			
@@ -973,6 +1016,21 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 				});
 	        });
         },
+
+		setMQTT :   function Sandbox_setMQTT(topic,value) {
+			return new Promise(function (resolve,reject) {
+				
+			let mqtt_plugin = that.server.pluginWithName('MQTT')
+			
+			if (mqtt_plugin) {
+				logicLogger.info('Publish ' + value + ' to ' + topic);
+				mqtt_plugin.platform.publish(topic , value)	
+			} else {
+				logicLogger.error('MQTT Plugin not found');
+				logger.warn('No MQTT Plugin')
+			}
+			})
+		},
 
         setValue:   function Sandbox_setValue(target, val) {
 
@@ -1356,7 +1414,7 @@ LogicalPlatform.prototype.validateScript=function(data) {
 	try {
 		var name = "/tmp/hm_tmp_script.js"
 		fs.writeFileSync(name, data);
-	  
+	    
 		try {
 			if (!process.versions.node.match(/^0\.10\./)) {
             	// Node.js >= 0.12, io.js
@@ -1368,7 +1426,7 @@ LogicalPlatform.prototype.validateScript=function(data) {
 				return true;
         	}
 		} catch (e) {
-	      return  e;
+	      return  e.stack;
       	}
 	}	      
 	catch (err) {
@@ -1431,7 +1489,7 @@ LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 			  htmlfile = "editor.html";
 			  var scriptname = queryObject["file"];
 			  editorData["file"] = "newscript.js";
-			  editorData["content"] = ""; 
+			  editorData["content"] = "setName(\"__Name__\");\nsetDescription(\"___DESCRIPTION___\");\n\n"; 
 			  editorData["new"] = "true"; 
 		  }
 		  break;
@@ -1456,7 +1514,9 @@ LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 		    
 		    
 		    case "script.save": {
+			Error.stackTraceLimit = 1;
 			    var result = this.validateScript(content);
+			Error.stackTraceLimit = 10;
 			    if (result == true) {
 				   var l_path = this.configuration.storagePath()+"/scripts/";
 				   fileName = fileName.replace('..','');
@@ -1482,7 +1542,9 @@ LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_reque
 		    break;
 		    
 		    case "script.validate": {
+			Error.stackTraceLimit = 1;
 			    var result = this.validateScript(content);
+			Error.stackTraceLimit = 10;
 			    if (result == true) {
 					editorData["error"] = "Validation : ok";
 			    } else {
