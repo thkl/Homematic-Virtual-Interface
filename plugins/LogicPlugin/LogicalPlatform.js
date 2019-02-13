@@ -67,6 +67,7 @@ function LogicalPlatform(plugin,name,server,log,instance) {
 	this.sunEvents = [];
 	this.mqttEvents = [];
 	this.harmonyEvents = [];
+	this.delays = {};
 	this.sunTimes = [/* yesterday */ {}, /* today */ {}, /* tomorrow */ {}];
 }
 
@@ -371,7 +372,7 @@ LogicalPlatform.prototype.wasConditionfulfilled = function(oldValue,value,condit
 	}
 
 	if (typeof condition === 'object') {
-				
+
         if (condition.equals && !(condition.equals === value)) {
         	return false
         }
@@ -1018,54 +1019,89 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 	        script_object.description = description;
         },
 
-		regaCommand : function Sandbox_regaCommand(command) {
+		regaCommand : function Sandbox_regaCommand(command, /* optional */ delay) {
 	        return new Promise(function (resolve,reject) {
-				that.regaCommand(command,function(resp){
-					resolve(resp);
-				});
+		        
+		        let delayTme = (delay !== undefined) ? parseInt(delay) : 0
+		        
+		        if (delayTme === 0) {
+						that.regaCommand(command,function(resp){});
+			    } else {
+				    
+					let rndTx = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+			        	that.delays[rndTx] = Sandbox.setTimeout( function() {
+							Sandbox.regaCommand(command);    
+						},delayTme)
+			    }
+				resolve(resp);
 	        });
         },
 
-		executeCCUProgram : function Sandbox_executeCCUProgram(programName) {
+		executeCCUProgram : function Sandbox_executeCCUProgram(programName, /* optional */ delay) {
 	        return new Promise(function (resolve,reject) {
-				that.executeCCUProgram(programName,function(resp){
-					resolve(resp);
-				});
+		        let delayTme = (delay !== undefined) ? parseInt(delay) : 0
+		        
+		        if (delayTme === 0) {
+					that.executeCCUProgram(programName,function(resp){
+					
+					});	
+				} else {
+					that.delays[programName] = Sandbox.setTimeout( function() {
+							Sandbox.executeCCUProgram(programName);
+					}
+					, delayTme);
+				}
+
+				resolve(resp);
 	        });
         },
 
-		setMQTT :   function Sandbox_setMQTT(topic,value) {
+		setMQTT :   function Sandbox_setMQTT(topic,value, /* optional */ delay) {
 			return new Promise(function (resolve,reject) {
 				
 			let mqtt_plugin = that.server.pluginWithName('MQTT')
 			
 			if (mqtt_plugin) {
 				logicLogger.info('Publish ' + value + ' to ' + topic);
-				mqtt_plugin.platform.publish(topic , value)	
+				
+				let delayTme = (delay !== undefined) ? parseInt(delay) : 0
+				if (delayTme === 0) {
+					mqtt_plugin.platform.publish(topic , value)	
+				} else {
+					that.delays[topic] = Sandbox.setTimeout( function() {
+							Sandbox.setMQTT(topic,value);
+					}
+					, delayTme);
+				}
+				resolve();
 			} else {
 				logicLogger.error('MQTT Plugin not found');
 				logger.warn('No MQTT Plugin')
+				reject(undefined);
 			}
 			})
 		},
 
-        setValue:   function Sandbox_setValue(target, val) {
-
+        setValue:   function Sandbox_setValue(target, val, delay) {
+			
 			return new Promise(function (resolve,reject) {
-
             if (typeof target === 'object' && target.length) {
                 target = Array.prototype.slice.call(target);
                 target.forEach(function (tp) {
-                    Sandbox.setValue(tp, val);
+                    Sandbox.setValue(tp, val,delay);
                     resolve(value);
                 });
                 return;
             }
 
+            
+			let delayTme = (delay !== undefined) ? parseInt(delay) : 0
+			
 			var tmp = target.split('.');
 			// First Part should be the interface
 			// Second the Adress
 			// third the Datapoint
+			
 			if (tmp.length>2) {
 				
 				if (that.isVirtualPlatformDevice(tmp[0])) {
@@ -1073,9 +1109,11 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 					var datapointName = tmp[2];
 					var channel = that.hm_layer.channelWithAdress(adress);
 					if (channel) {
-						that.log.debug("Channel found set Value");
-						channel.setValue(datapointName,val);
-						channel.updateValue(datapointName,val,true);
+						setTimeout(function(){
+							channel.setValue(datapointName,val);
+							channel.updateValue(datapointName,val,true);
+						}, delayTme)
+						// the resolve will not called delayed
 						resolve();
 					} else {
 						that.log.error("Channel %s not found",adress);
@@ -1083,9 +1121,17 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 				} else {
 					var adress = tmp[1];
 					var datapointName = tmp[2];
-					that.sendValueRPC(tmp[0],adress,datapointName,val,function(){
-						resolve();
-					}); 
+					if (delayTme === 0) {
+						that.sendValueRPC(tmp[0],adress,datapointName,val,function(){
+						  resolve()
+						}); 
+					} else {
+						that.delays[target] = Sandbox.setTimeout( function() {
+							Sandbox.setValue(target, val);
+						}
+						, delayTme);
+						
+					}	
 				}
 				
 				
