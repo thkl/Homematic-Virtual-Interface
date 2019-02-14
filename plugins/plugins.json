@@ -153,6 +153,14 @@
 		"npm" :"homematic-virtual-mqttdevice",
 		"syname":"MQTT",
 		"description":{"de-de":"Verbindet Ger&auml;ete &uuml;ber MQTT mit der CCU","en-en":"connects MQTT devices to your CCU"}
+	  },
+	  {
+		  
+		"name":"DarkSkyWeather",
+		"npm" :"homematic-virtual-darkskyweather",
+		"syname":"DarkSky",
+		"description":{"de-de":"Legt ein CCU OC-3 Wetterstation an und speist es aus aktuellen DarkSky Daten","en-en":"setup a OC-3 weather station with data from DarkSky"}
+
 	  }
 	  
 	]
