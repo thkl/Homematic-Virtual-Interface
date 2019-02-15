@@ -4,38 +4,51 @@
 //  BMWConnectedDrive.js
 //  BMWConnectedDrive
 //
-//  Created by Thomas Kluge on 01.10.2017.
-//  Copyright © 2016 kSquare.de. All rights reserved.
+//  Created by Thomas Kluge on 15.02.2019.
+//  Copyright © 2019 kSquare.de. All rights reserved.
 //
-let url = require("url");
+const URL = require('url').URL;
 let http = require('https');
 let querystring = require('querystring');
 
 
-var BMWConnectedDrive = function (username,password,auth,logger) {
+var Vehicle = function() {}
+
+
+var BMWConnectedDrive = function (username,password,logger) {
 	this.username = username
 	this.password = password
-	this.auth = auth
 	this.logger = logger
+	this.vehicles = []
 }
 
 
 BMWConnectedDrive.prototype.login = function(callback) {
+	
+  let url = "https://customer.bmwgroup.com/gcdm/oauth/authenticate"
+	
   var post_data = querystring.stringify({
-      'grant_type' : 'password',
+      'state' : 'eyJtYXJrZXQiOiJkZSIsImxhbmd1YWdlIjoiZGUiLCJkZXN0aW5hdGlvbiI6ImxhbmRpbmdQYWdlIn0',
       'username': this.username,
-      'scope': 'vehicle_data',
-      'password' : this.password
+      'client_id': 'dbf0a542-ebd1-4ff0-a9a7-55172fbfce35',
+      'password' : this.password,
+      'redirect_uri' : 'https://www.bmw-connecteddrive.com/app/default/static/external-dispatch.html',
+      'response_type' : 'token',
+      'scope':'authenticate_user fupo',
+      'locale':'DE-de'
   });
  
- let path = '/webapi/oauth/token/'
  var that = this
  
  if (callback) {
- 	this.post_request(path,post_data,function(tokendata){
-	 	var t = JSON.parse(tokendata);
-	 	that.token = t['access_token']
-	 	callback(t['access_token'])
+	console.log('Post Request')
+ 	this.post_request(url,post_data,function(body,header){
+	 	if (header.location) {
+		 	let match = header.location.match(/&access_token=([a-zA-z0-9]{0,})/)
+		 	let token = match[1]
+		 	that.token = token
+		 	callback(token)
+	 	}
  	})
  } else {
 	 this.logger.error('missing callback')
@@ -43,14 +56,52 @@ BMWConnectedDrive.prototype.login = function(callback) {
 }
 
 
-BMWConnectedDrive.prototype.getVehicleData = function(vin,callback) {
+BMWConnectedDrive.prototype.getVehicles = function(callback) {
+	this.vehicles = []
+	let that = this
+	let path = 'https://www.bmw-connecteddrive.de/api/me/vehicles/v2?all=true&brand=BM'
+	if (callback) {
+ 		this.get_request(path,function(result){
+	 		
+	 		if (result !== undefined) {
+		 		let objResult = JSON.parse(result)
+		 		objResult.map(function (objVehicle){
+			 		let vehicle = new Vehicle()
+			 		vehicle.type = objVehicle['basicType']
+			 		vehicle.vin = objVehicle['vin']
+			 		vehicle.licensePlate = objVehicle['licensePlate']
+			 		that.vehicles.push(vehicle)
+		 		})
+	 		}	
+	 		callback(that.vehicles)
+		})
+	} else {
+	 this.logger.error('missing callback')
+ 	}
+}
+
+
+
+
+BMWConnectedDrive.prototype.getVehicleData = function(vehicle,callback) {
  
- let path = '/webapi/v1/user/vehicles/' + vin + '/status'
- var that = this
  if (callback) {
- 	this.get_request(path,function(result){
-	 	callback(JSON.parse(result))
- 	})
+	var that = this
+	let vin = vehicle.vin
+	let path = 'https://www.bmw-connecteddrive.de/api/vehicle/dynamic/v1/'+vin+'?offset=-60'
+	if (vin) {
+	  	this.get_request(path,function(result){
+		  	if (result !== undefined) {
+		 		let objResult = JSON.parse(result)
+		 		vehicle.battery = objResult['attributesMap']['chargingLevelHv']	
+		 		vehicle.range = objResult['attributesMap']['beRemainingRangeElectricKm']
+		 	}	
+	 		callback(vehicle)
+	 	})
+	}
+	else {
+		callback(undefined)
+	}
  } else {
 	 this.logger.error('missing callback')
  }
@@ -59,19 +110,22 @@ BMWConnectedDrive.prototype.getVehicleData = function(vin,callback) {
 }
 
 
-BMWConnectedDrive.prototype.get_request = function(path,callback) {
+BMWConnectedDrive.prototype.get_request = function(callurl,callback) {
 
   var that = this;
   if (this.token != undefined) {
   // An object of options to indicate where to post to
+  const myURL = new URL(callurl);
   var options = {
-      host: 'b2vapi.bmwgroup.com',
+      host: myURL.hostname,
       port: '443',
-      path: path,
+      path: myURL.pathname,
       method: 'GET',
       headers: {
           'Authorization': 'Bearer ' + this.token,
-          'User-Agent':'MCVApp/1.5.2 (iPhone; iOS 9.1; Scale/2.00)'
+          'Accept': 'application/json, text/plain, */*',
+          'Connection':'Close',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.2 Safari/605.1.15'
      }
   };
   
@@ -111,23 +165,25 @@ BMWConnectedDrive.prototype.get_request = function(path,callback) {
 }
 
 
-BMWConnectedDrive.prototype.post_request = function(path,post_data,callback) {
+BMWConnectedDrive.prototype.post_request = function(callurl,post_data,callback) {
 
   var that = this;
+  const myURL = new URL(callurl);
+  
   // An object of options to indicate where to post to
   var post_options = {
-      host: 'b2vapi.bmwgroup.com',
+      host: myURL.hostname,
       port: '443',
-      path: path,
+      path: myURL.pathname,
       method: 'POST',
       headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
           'Content-Length': Buffer.byteLength(post_data),
-          'Authorization': 'Basic ' + this.auth,
-          'User-Agent':'MCVApp/1.5.2 (iPhone; iOS 9.1; Scale/2.00)'
+          'Connection':'Close',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.2 Safari/605.1.15'
       }
   };
-  
+
   var post_req = http.request(post_options, function(res) {
       var data = "";
       
@@ -139,7 +195,7 @@ BMWConnectedDrive.prototype.post_request = function(path,post_data,callback) {
       });
       
       res.on("end", function() {
-        if (callback) {callback(data);}
+        if (callback) {callback(data,res.headers)}
       });
 
       
@@ -163,5 +219,6 @@ BMWConnectedDrive.prototype.post_request = function(path,post_data,callback) {
 
 
 module.exports = {
-  BMWConnectedDrive : BMWConnectedDrive
+  BMWConnectedDrive : BMWConnectedDrive,
+  Vehicle : Vehicle
 }
