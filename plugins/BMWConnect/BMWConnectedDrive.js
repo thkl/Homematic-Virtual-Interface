@@ -41,12 +41,13 @@ BMWConnectedDrive.prototype.login = function(callback) {
  var that = this
  
  if (callback) {
-	console.log('Post Request')
+	this.logger.debug('Connected Drive login')
  	this.post_request(url,post_data,function(body,header){
 	 	if (header.location) {
 		 	let match = header.location.match(/&access_token=([a-zA-z0-9]{0,})/)
 		 	let token = match[1]
 		 	that.token = token
+		 	that.logger.debug('login done access_token saved')
 		 	callback(token)
 	 	}
  	})
@@ -59,6 +60,8 @@ BMWConnectedDrive.prototype.login = function(callback) {
 BMWConnectedDrive.prototype.getVehicles = function(callback) {
 	this.vehicles = []
 	let that = this
+	
+	this.logger.debug('Connected Drive Fetch all vehicles')
 	let path = 'https://www.bmw-connecteddrive.de/api/me/vehicles/v2?all=true&brand=BM'
 	if (callback) {
  		this.get_request(path,function(result){
@@ -66,13 +69,19 @@ BMWConnectedDrive.prototype.getVehicles = function(callback) {
 	 		if (result !== undefined) {
 		 		let objResult = JSON.parse(result)
 		 		objResult.map(function (objVehicle){
-			 		let vehicle = new Vehicle()
-			 		vehicle.type = objVehicle['basicType']
-			 		vehicle.vin = objVehicle['vin']
-			 		vehicle.licensePlate = objVehicle['licensePlate']
-			 		that.vehicles.push(vehicle)
+			 		// Only save bmw i vehicles ... we do not want the clunky old combustion stuff ;)
+			 		if (objVehicle['brand'] === 'BMWi') {
+				 		let vehicle = new Vehicle()
+				 		vehicle.type = objVehicle['basicType']
+				 		vehicle.vin = objVehicle['vin']
+				 		vehicle.licensePlate = objVehicle['licensePlate']
+				 		that.vehicles.push(vehicle)
+			 		} else {
+				 		that.logger.debug('%s is not an BEV',objVehicle.brand)
+			 		}
 		 		})
 	 		}	
+	 		that.logger.debug('%s vehicles found',that.vehicles.length)
 	 		callback(that.vehicles)
 		})
 	} else {
