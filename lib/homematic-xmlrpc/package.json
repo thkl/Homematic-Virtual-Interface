@@ -56,7 +56,8 @@
   },
   "dependencies": {
     "sax": "0.4.x",
-    "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5"
+    "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5",
+    "iconv-lite": "^0.4.24"
   },
   "description": "A pure JavaScript XML-RPC client and server.",
   "devDependencies": {
