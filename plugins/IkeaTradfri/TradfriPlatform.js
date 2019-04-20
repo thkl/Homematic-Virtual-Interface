@@ -64,8 +64,15 @@ TradfriPlatform.prototype.init = function () {
 	*/
 	
 	this.configuration = this.server.configuration
-	this.tradfriUser = this.configuration.getValueForPlugin(this.name,'tradfri_user')
-	this.securityCode = this.configuration.getValueForPlugin(this.name,'tradfri_securityCode')
+	let cred = this.configuration.getValueForPlugin(this.name,'tradfri_user')
+	if (typeof cred === 'string') {
+		this.tradfriUser = cred
+		this.securityCode = this.configuration.getValueForPlugin(this.name,'tradfri_securityCode')
+	} else {
+		this.tradfriUser = cred['identity']
+		this.securityCode = cred['psk']
+	}
+	
 	this.bridgeIp = this.configuration.getValueForPlugin(this.name,'tradfri_ip')
 
 	this.heartBeatId = 'undefined'
