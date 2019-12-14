@@ -15,12 +15,12 @@
   },
   "engines": {
     "node": ">=6.0.0",
-    "homematic-virtual-interface" : ">=0.2.50"
+    "homematic-virtual-interface": ">=0.2.50"
   },
-  
-  "remark":"Version > 0.0.17 Requires NodeJS >= 6.x",
+
+  "remark": "Version > 0.0.17 Requires NodeJS >= 6.x",
 
   "dependencies": {
-    "node-tradfri-client" : "1.5.0"
+    "node-tradfri-client": "2.1.0"
   }
 }
