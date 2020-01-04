@@ -1,0 +1,51 @@
+{
+		"subscribe" : ["%name%/group/$properties","%name%/stat","%name%/result"],
+		"clazztype" : "SwitchDevice",
+		"type" : "Switch",
+		"hmdevice" : "HM-LC-SW1-FM",
+		"channels" : {
+			"0" : {
+				"hm_channeltype" : "MAINTENANCE",
+				"hm_datapoints" : ["UNREACH"],
+				"settings" : {
+					
+					"UNREACH" : {
+						"mqtt_topic_state" : "%name%/tele/LWT",
+						"mqtt_payload_state" : "",
+						"mqtt_representation_state" : {"online":false, "offline":true}
+					}
+				}
+			},
+			"1" : {
+				"hm_channeltype" : "SWITCH",
+				"hm_datapoints" : ["STATE"],
+				"settings" : {
+
+						"STATE" : {
+
+							"mqtt_payload_get" : "0|r",
+							"mqtt_topic_get" : "%name%/result/0/RGB",
+							"mqtt_representation_get" : {"127":true, "0":false},
+				
+				
+							"mqtt_topic_set" : "%name%/cmnd/0/RGB",
+							"mqtt_representation_set" : {"true": "127,255,0,1" , "false": "0,0,0,1"},
+				
+							"mqtt_topic_state" : "%name%/group/",
+							"mqtt_payload_state" : "0|r",
+							"mqtt_representation_state" : {"127":true, "0":false},
+				
+							"mqtt_command_getstate" : "%name%/stat/0/RGB",
+							"mqtt_topic_getstate" : "%name%/result/0/RGB",
+							"mqtt_payload_getstate" : "r",
+							"mqtt_representation_getstate" : {"127" : true , "0": false}
+
+							
+							
+						}
+				}
+				
+			}
+		}
+}
+	

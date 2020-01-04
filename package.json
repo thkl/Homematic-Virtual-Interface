@@ -18,7 +18,6 @@
   "bin": {
     "hmvi": "bin/hmvi"
   },
-  
   "dependencies": {
     "debug": "^2.2.0",
     "request": "^2.65.0",
@@ -27,21 +26,18 @@
     "chalk": "^1.1.1",
     "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5",
     "daemonize2": "^0.4.2",
-    "nedb" : "1.8.0",
-    "moment":"2.19.3",
-    "group-array":"0.3.1",
-    "nedb-logger":"0.1.0",
-    "qs":"6.3.1",
-    "xml2js":"0.4.17",
-    "pem":"latest",
-	"http-headers":"latest"
+    "nedb": "1.8.0",
+    "moment": "2.19.3",
+    "group-array": "0.3.1",
+    "nedb-logger": "0.1.0",
+    "qs": "6.3.1",
+    "xml2js": "0.4.17",
+    "pem": "latest",
+    "http-headers": "latest"
   },
-  
   "config": {
     "unsafe-perm": true
   },
-  
-  
   "files": [
     "addon/",
     "bin/",
@@ -50,5 +46,13 @@
     "devices/",
     "hvl_addon.tar.gz",
     "www/"
-  ]
+  ],
+  "devDependencies": {
+    "eslint": "^5.14.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0"
+  }
 }

@@ -24,7 +24,8 @@
     "promise":"latest",
     "moment":"2.19.3",
     "nedb-logger":"0.1.0",
-    "nedb" : "1.8.0"
+    "nedb" : "1.8.0",
+    "uuid": "latest"
   },
   
   "files": [

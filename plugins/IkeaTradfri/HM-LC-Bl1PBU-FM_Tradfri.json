@@ -180,9 +180,9 @@
             }, {
                 "flags": 1,
                 "control": "BLIND.STOP",
-                "operations": 2,
+                "operations": 6,
                 "name": "STOP",
-                "type": "",
+                "type": "ACTION",
                 "tab_order": 1
             }, {
                 "flags": 1,

@@ -1,0 +1,25 @@
+{
+    "name": "homematic-virtual-backupservice",
+    "version": "0.0.1",
+    "description": "A BackupService for HVL",
+    "license": "ISC",
+    "keywords": [
+        "homematic-virtual-plugin"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/"
+    },
+    "bugs": {
+        "url": "http://"
+    },
+    "engines": {
+        "node": ">=0.12.0",
+        "homematic-virtual-interface": ">=0.0.4"
+    },
+
+    "dependencies": {
+        "node-schedule": "1.3.2",
+        "dropbox-v2-api": "2.4.11"
+    }
+}

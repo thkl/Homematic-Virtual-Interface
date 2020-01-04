@@ -78,7 +78,13 @@ var NA_Module4 = require(__dirname + '/NA_Module4.js').NA_Module4
 var NA_ComboModule = require(__dirname + '/NA_ComboModule.js').NA_ComboModule
 
 api.getStationsData(function(err, devices) {
+	if (err) {
+		that.log.error(err)
+	} else {
+		that.log.info('NetAtmon %s Devices found.',devices.length)
+	}
 	devices.forEach(function (device) {
+		that.log.info('Found Device %s',JSON.stringify(device))
 		var hazCombo = false
 		var nadevice = new NA_Main(that,api,device,'NAT00'+i)
 		that.devices.push(nadevice)
@@ -181,7 +187,7 @@ NetAtmoPlatform.prototype.showSettings = function(dispatched_request) {
 
 	var ccu_bright_factor = this.configuration.getValueForPlugin(this.name,'ccu_bright_factor') || ''
 	var ccu_sunshine_factor = this.configuration.getValueForPlugin(this.name,'ccu_sunshine_factor') || ''
-
+	var co2_var = this.configuration.getValueForPlugin(this.name,'co2_var')
 
 	var auth = this.configuration.getValueForPlugin(this.name,'auth')
 
@@ -205,6 +211,8 @@ NetAtmoPlatform.prototype.showSettings = function(dispatched_request) {
 	
 	result.push({'control':'text','name':'var_bright','label':this.localization.localize('CCU brightness variable or datapoint'),'value':ccu_bright,'size':30})
 	result.push({'control':'text','name':'var_bright_factor','label':this.localization.localize('CCU brightness factor'),'value':ccu_bright_factor,'size':30})
+
+	result.push({'control':'text','name':'var_co2_var','label':this.localization.localize('CCU CO2 Variable'),'value':co2_var,'size':30})
 
 	
 	return result
@@ -239,6 +247,12 @@ NetAtmoPlatform.prototype.saveSettings = function(settings) {
 	if (settings.var_sunshine_factor) {
 		this.configuration.setValueForPlugin(this.name,'ccu_sunshine_factor',settings.var_sunshine_factor) 
 	}
+	
+	if (settings.var_co2_var) {
+		this.configuration.setValueForPlugin(this.name,'co2_var',settings.var_co2_var) 
+	}
+
+
 
 }
 

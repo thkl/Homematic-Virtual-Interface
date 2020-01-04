@@ -20,7 +20,6 @@ var TradfriBlind = function(plugin, id) {
     this.inhibit = false
     this.setLevel = 0
     this.curLevel = 0
-
     this.hmDevice = new HomematicDevice(this.plugin.getName())
     this.serial = 'Tradfri' + this.id
 
@@ -29,18 +28,8 @@ var TradfriBlind = function(plugin, id) {
 
     this.log.debug('Device: Setup new Tradfri Blind %s', this.serial)
 
-    var data = this.bridge.deviceDataWithSerial(this.serial)
-    if (data != undefined) {
-        this.hmDevice.initWithStoredData(data)
-    }
 
-    if (this.hmDevice.initialized === false) {
-        this.hmDevice.initWithType(this.HMType, this.serial)
-        this.hmDevice.serialNumber = this.serial
-        this.bridge.addDevice(this.hmDevice, true)
-    } else {
-        this.bridge.addDevice(this.hmDevice, false)
-    }
+    this.hmDevice = this.bridge.initDevice(this.plugin.getName(), this.serial, "HM-LC-Bl1PBU-FM_Tradfri", this.serial)
 
 
     // Update Tradfri Gateway Devices on Homematic changes //////////////////////////////////////////////////
@@ -115,6 +104,11 @@ var TradfriBlind = function(plugin, id) {
             that.updateHM(di_channel, parameter)
             that.bridge.sendMulticallEvents()
             that.plugin.updateBlindGroups()
+            clearTimeout(that.endMovingTimer)
+            that.endMovingTimer = setTimeout(function() {
+                var di_channel = that.hmDevice.getChannelWithTypeAndIndex(that.HMChannel, '1')
+                di_channel.updateValue('WORKING', 0, true, true)
+            }, 1000)
         }
     })
 
@@ -165,6 +159,8 @@ TradfriBlind.prototype.updateHM = function(di_channel, parameter, first) {
         di_channel.updateValue('LEVEL', parseFloat(hmLevel), true, true)
         if (first) {
             that.setLevel = that.curLevel
+        } else {
+            di_channel.updateValue('WORKING', 1, true, true)
         }
     }
 }

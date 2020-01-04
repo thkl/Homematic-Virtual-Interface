@@ -329,11 +329,14 @@ SonosPlatform.prototype.search = function() {
     device.getZoneInfo(function (err, info) {
 	    if (!err) {_.extend(data, info)}
       device.getTopology(function (err, info) {
-        if (!err) {
+        if ((!err) && (info.zones !== null)) {
           info.zones.forEach(function (group) {
             if (group.location === 'http://' + data.ip + ':' + data.port + '/xml/device_description.xml') {_.extend(data, group)}
           })
+        } else {
+	          that.log.debug("No Zones in %s for IP %s",JSON.stringify(info),device.host)
         }
+        that.log.debug("Will add %s",JSON.stringify(data))
         devices.push(data)
       })
     })

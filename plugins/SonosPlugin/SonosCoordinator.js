@@ -204,6 +204,17 @@ SonosCoordinator.prototype.toggle = function(deviceSerial) {
 SonosCoordinator.prototype.switchoff = function(deviceSerial) {
   // Remove from group if playing
   var that = this
+  if (deviceSerial.toLowerCase()==='all') {
+	  Object.keys(this.zonePlayer).forEach(function(playerId){
+		  that.switchoff(playerId)
+	  })
+  } else {
+	  this.switchoffIntern(deviceSerial)
+  }
+}
+
+SonosCoordinator.prototype.switchoffIntern = function(deviceSerial) {
+  var that = this
   this.log.info("SwitchOff %s",deviceSerial)
   var playerDevice = this.getZonePlayerDevice(deviceSerial)
   if (playerDevice) {
@@ -245,8 +256,10 @@ SonosCoordinator.prototype.playRandomFavPlayList = function(deviceSerial) {
 		  var items = result.items;
 		  items.forEach(function(item){
 			
-			if (item.uri.startsWith('x-rincon-cpcontainer')) {
+			if ((item.uri) && (item.uri.startsWith('x-rincon-cpcontainer'))) {
 				plitems.push(item)
+			} else {
+				that.log.warn("%s cannot be added",item.title)
 			}
 		  })
 		  

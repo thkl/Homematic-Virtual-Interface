@@ -12,6 +12,7 @@ var NA_Main = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 	this.api =  netAtmoApi;
 	this.log = plugin.log;
 	this.plugin = plugin;
+	this.name = plugin.name;
 	this.configuration = plugin.configuration;
 	this.bridge = plugin.server.getBridge();
 	this.modules = {};
@@ -48,7 +49,6 @@ var NA_Main = function(plugin, netAtmoApi ,naDevice,serialprefix) {
 	} else {
 		this.bridge.addDevice(this.hmCarbonDioxide,false);
 	}
-
 	this.hm_device_name = "HM-WDS40-TH-I-2 "+ serialprefix + "1 / HM-CC-SCD " + serialprefix + "2";
 }
 
@@ -57,7 +57,7 @@ util.inherits(NA_Main, NetAtmoDevice);
 
 NA_Main.prototype.refreshDevice = function() {
 	  var that = this;	
-      this.log.debug("Refresh NetAtmo Main Device with id %s",this.naId);
+      this.log.info("Refresh NetAtmo Main Device with id %s",this.naId);
       
 	  var options = {device_id: this.naId , date_end :'last', scale: 'max',type: ['Temperature','Humidity','CO2','Pressure','Noise']};
 
@@ -92,7 +92,8 @@ NA_Main.prototype.refreshDevice = function() {
 				
 				var lvlAdded = that.configuration.getPersistValueForPluginWithDefault(that.name,"CO2_ADDED",1000);
 				var lvlStrong = that.configuration.getPersistValueForPluginWithDefault(that.name,"CO2_ADDED_STRONG",1400);
-				
+				var co2_var = that.configuration.getValueForPlugin(that.name,'co2_var')
+				that.log.debug('CO2 Var is %s',co2_var)
 				if (co2 > lvlAdded) {
 					 co2State = 1;
 				}
@@ -101,6 +102,15 @@ NA_Main.prototype.refreshDevice = function() {
 				}
 				coChannel.updateValue("STATE",co2State,true,true);
 				coChannel.updateValue("CO2_LEVEL",co2,true,true);
+				
+				// Add CO2 to Variable
+				if (co2_var !== undefined) {
+					let script = 'var oV = dom.GetObject(ID_SYSTEM_VARIABLES).Get("' + co2_var + '");if (oV) {oV.State(' + co2 + ');}'
+					that.log.info('Run CO2 Update %s',script)
+					that.bridge.runRegaScript(script,function(result){
+						
+					})
+				}
 			} else {
 				that.log.warn("CO2 Channel not found");
 			}

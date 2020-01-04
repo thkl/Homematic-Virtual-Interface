@@ -86,6 +86,8 @@ SwitchDevice.prototype.getTopicsToSubscribe = function() {
 
 SwitchDevice.prototype.parseMqttResponse = function(settings,key,mqtt_topic, mqtt_payloadObject) {
 	let that = this
+	that.log.debug('parseMqttResponse Key %s , Topic %s Payload %s',key,mqtt_topic,JSON.stringify(mqtt_payloadObject))
+
 	var result = undefined
 	var s_mqtt_topic = settings['mqtt_topic_' + key]
 	let s_mqtt_payload = settings['mqtt_payload_' + key]
@@ -93,23 +95,37 @@ SwitchDevice.prototype.parseMqttResponse = function(settings,key,mqtt_topic, mqt
 	if (s_mqtt_topic) {
 		s_mqtt_topic = s_mqtt_topic.replace('%name%', that.mqtt_device)
 		if (mqtt_topic.match(s_mqtt_topic)) {
+			that.log.debug('Topic %s matches search %s',mqtt_topic,s_mqtt_topic)
+
 			var value = mqtt_payloadObject
 			if (typeof value != 'string') {
+				that.log.debug('value %s is not a string matching with %s',value,s_mqtt_payload)
+				
 				let payload_parts = s_mqtt_payload.split('|')
 				payload_parts.forEach(function (part){
 					if (value != undefined) {
 						value = value[part]				
-						}
+					}
 				})
+
+			} else {
+				that.log.debug('value is %s',typeof value)
 			} 
 			if (s_mqtt_representation == undefined) {
 				result = value		
 			} else {
+				that.log.debug('representations : %s',JSON.stringify(s_mqtt_representation))
+				that.log.debug('try to match  : %s',value)
 				let d_value = s_mqtt_representation[value]
 				result = d_value
 			}
+		} else {
+		   that.log.debug('Topic %s not match search %s',mqtt_topic,s_mqtt_topic)
 		}
+	} else {
+		that.log.debug('no mqtt_topic_%s found for message %s',key, mqtt_topic)
 	} 
+	that.log.debug('result is %s',result)
 	return result
 }
 

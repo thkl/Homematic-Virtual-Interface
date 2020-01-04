@@ -31,19 +31,8 @@ var TradfriBlindGroup = function(plugin, id, deviceIDsinGroup) {
     this.apiblinds = []
     this.log.debug('Device: Setup new Tradfri BlindGroup %s', this.serial)
 
-    var data = this.bridge.deviceDataWithSerial(this.serial)
-    if (data != undefined) {
-        this.hmDevice.initWithStoredData(data)
-    }
 
-    if (this.hmDevice.initialized === false) {
-        this.hmDevice.initWithType(this.HMType, this.serial)
-        this.hmDevice.serialNumber = this.serial
-        this.bridge.addDevice(this.hmDevice, true)
-    } else {
-        this.bridge.addDevice(this.hmDevice, false)
-    }
-
+    this.hmDevice = this.bridge.initDevice(this.plugin.getName(), this.serial, "HM-LC-Bl1PBU-FM_Tradfri", this.serial)
 
     // Update Tradfri Gateway Devices on Homematic changes //////////////////////////////////////////////////
     //
@@ -123,7 +112,7 @@ var TradfriBlindGroup = function(plugin, id, deviceIDsinGroup) {
     // that.log.debug('HM device first time init %s', that.id)
     that.bridge.startMulticallEvent(500)
     var in_channel = that.hmDevice.getChannelWithTypeAndIndex(that.HMChannel, '1')
-    that.updateHM(in_channel)
+    that.updateHM(in_channel, true)
     that.bridge.sendMulticallEvents()
 
 }
@@ -131,14 +120,15 @@ var TradfriBlindGroup = function(plugin, id, deviceIDsinGroup) {
 TradfriBlindGroup.prototype.stop = function() {
     let that = this
     this.devices.forEach(deviceID => {
-        that.log.info('Check Device %s', deviceID)
+        that.log.debug('Check Device %s', deviceID)
         let blind = that.trApiBlinds[deviceID]
         if (blind)  {
+            that.log.info('Blind %s found stop it', deviceID)
             that.api.operateBlind(blind, {
                     trigger: 0.0
-                })
+                }, true)
                 .then((result) => {
-
+                    that.log.info('Tradfri Blind STOP Result %s', result);
                 }).catch((error) => {
                     that.log.error('Tradfri Blind STOP Error %s', error);
                 })
@@ -151,20 +141,20 @@ TradfriBlindGroup.prototype.setNewLevel = function(newLevel) {
     let that = this
 
     this.devices.forEach(deviceID => {
-        that.log.debug('Check Device %s', deviceID)
+        that.log.info('Check Device %s', deviceID)
         let blind = that.trApiBlinds[deviceID]
         if (blind)  {
-            that.log.debug('Blind found check inhbit')
+            that.log.info('Blind %s found check inhbit', deviceID)
             let hmblind = that.plugin.mappedDevices[deviceID]
             if (hmblind.inhibit === false) {
-                that.log.debug('Operate to %s', newLevel)
+                that.log.info('Operate %s to %s', blind, newLevel)
                 that.api.operateBlind(blind, {
                         position: newLevel
                     })
                     .then((result) => {
-
+                        that.log.info('Tradfri Blind Operate Result %s', result);
                     }).catch((error) => {
-                        that.log.error('Tradfri Blind STOP Error %s', error);
+                        that.log.error('Tradfri Blind Operate Error %s', error);
                     })
             } else {
                 that.log.warn('Its inhibit')
@@ -184,7 +174,7 @@ TradfriBlindGroup.prototype.updateGroup = function() {
 //
 //
 //
-TradfriBlindGroup.prototype.updateHM = function(di_channel) {
+TradfriBlindGroup.prototype.updateHM = function(di_channel, first) {
     let that = this
     var sumlevel = 0
     var cnt = 0
@@ -202,9 +192,16 @@ TradfriBlindGroup.prototype.updateHM = function(di_channel) {
         }
     })
     let hmLevel = (sumlevel / cnt) / 100 // bring to 0 - 1
-    that.log.info('Set GroupLevel to %s', hmLevel)
-
+    that.log.debug('Set GroupLevel to %s', hmLevel)
     di_channel.updateValue('LEVEL', parseFloat(hmLevel), true, true)
+
+    if (!first) {
+        di_channel.updateValue('WORKING', 1, true, true)
+        clearTimeout(that.endMovingTimer)
+        that.endMovingTimer = setTimeout(function() {
+            di_channel.updateValue('WORKING', 0, true, true)
+        }, 1000)
+    }
 }
 
 module.exports = {

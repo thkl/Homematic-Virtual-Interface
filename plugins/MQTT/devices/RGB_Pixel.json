@@ -1,0 +1,164 @@
+{
+		"subscribe" : ["%name%/group/$properties","%name%/stat","%name%/result"],
+		"clazztype" : "RGBDevice",
+		"type" : "Color",
+		"hmdevice" : "HM-LC-RGBW",
+		"channels" : {
+			"0" : {
+				"hm_channeltype" : "MAINTENANCE",
+				"hm_datapoints" : ["UNREACH"],
+				"settings" : {
+					
+					"UNREACH" : {
+						"mqtt_topic_state" : "tele/%name%/LWT",
+						"mqtt_payload_state" : "",
+						"mqtt_representation_state" : {"online":false, "offline":true}
+					}
+				}
+			},
+			
+			"1" : {
+				"hm_channeltype" : "DIMMER",
+				"hm_datapoints" : ["LEVEL","OLD_LEVEL"],
+				"settings" : {
+
+						"LEVEL" : {
+
+							"mqtt_payload_get" : "Level",
+							"mqtt_topic_get" : "%name%/stat/0/RGB",
+				
+							"mqtt_topic_set" : "%name%/cmnd/0/LEVEL",
+
+							"mqtt_topic_set_special" : {
+								"0" : {"topic" : "%name%/cmnd/*/OFF" , "payload" : "0"}
+							},
+
+				
+							"mqtt_topic_state" : "%name%/group/",
+							"mqtt_payload_state" : "0|c|l",
+								
+							"mqtt_command_getstate" : "%name%/stat/0/RGB",
+							"mqtt_topic_getstate" : "%name%/result/0/RGB",
+							"mqtt_payload_getstate" : "0|c|l"
+							
+						},
+						
+						"OLD_LEVEL" : {
+							
+							"mqtt_topic_set_special" : {
+								"true" : {"topic" : "%name%/cmnd/1/ON" , "payload" : "3"},
+								"false" : {"topic" : "%name%/cmnd/1/OFF" , "payload" : "3"}
+							}
+						}
+				}
+				
+			},
+			"2" : {
+				"hm_channeltype" : "RGBW_COLOR",
+				"hm_datapoints" : ["COLOR","USER_COLOR"],
+				"settings" : {
+
+						"COLOR" : {
+
+							"mqtt_payload_get" : "RGB",
+							"mqtt_topic_get" : "%name%/stat/0/RGB",
+				
+							"mqtt_topic_set" : "%name%/cmnd/1/RGB",
+				
+							"mqtt_topic_state" : "%name%/group/",
+							"mqtt_payload_state" : "1|c",
+								
+							"mqtt_command_getstate" : "%name%/stat/1/RGB",
+							"mqtt_topic_getstate" : "%name%/result/1/RGB",
+							"mqtt_payload_getstate" : "1"
+							
+						},
+						"USER_COLOR" : {
+							"mqtt_topic_set" : "%name%/cmnd/1/RGB"
+						}
+				}
+				
+			},
+			"4" : {
+				"hm_channeltype" : "RGBW_COLOR",
+				"hm_datapoints" : ["COLOR","USER_COLOR"],
+				"settings" : {
+
+						"COLOR" : {
+
+							"mqtt_payload_get" : "RGB",
+							"mqtt_topic_get" : "%name%/stat/0/RGB",
+				
+							"mqtt_topic_set" : "%name%/cmnd/2/RGB",
+				
+							"mqtt_topic_state" : "%name%/group/",
+							"mqtt_payload_state" : "2|c",
+								
+							"mqtt_command_getstate" : "%name%/stat/2/RGB",
+							"mqtt_topic_getstate" : "%name%/result/2/RGB",
+							"mqtt_payload_getstate" : "2"
+							
+						},
+						"USER_COLOR" : {
+							"mqtt_topic_set" : "%name%/cmnd/2/RGB"
+						}
+				}
+				
+			},
+			"5" : {
+				"hm_channeltype" : "RGBW_COLOR",
+				"hm_datapoints" : ["COLOR","USER_COLOR"],
+				"settings" : {
+
+						"COLOR" : {
+
+							"mqtt_payload_get" : "RGB",
+							"mqtt_topic_get" : "%name%/stat/1/SET",
+				
+							"mqtt_topic_set" : "%name%/cmnd/1/SET",
+				
+							"mqtt_topic_state" : "%name%/group/",
+							"mqtt_payload_state" : "1|s",
+								
+							"mqtt_command_getstate" : "%name%/stat/1/SET",
+							"mqtt_topic_getstate" : "%name%/result/1/SET",
+							"mqtt_payload_getstate" : "1"
+							
+						},
+						
+						"USER_COLOR" : {
+							"mqtt_topic_set" : "%name%/cmnd/1/SET"
+						}
+				}
+				
+			},
+			"6" : {
+				"hm_channeltype" : "RGBW_COLOR",
+				"hm_datapoints" : ["COLOR","USER_COLOR"],
+				"settings" : {
+
+						"COLOR" : {
+
+							"mqtt_payload_get" : "RGB",
+							"mqtt_topic_get" : "%name%/stat/2/SET",
+				
+							"mqtt_topic_set" : "%name%/cmnd/2/SET",
+				
+							"mqtt_topic_state" : "%name%/group/",
+							"mqtt_payload_state" : "2|s",
+								
+							"mqtt_command_getstate" : "%name%/stat/2/SET",
+							"mqtt_topic_getstate" : "%name%/result/2/SET",
+							"mqtt_payload_getstate" : "2"
+							
+						},
+						"USER_COLOR" : {
+							"mqtt_topic_set" : "%name%/cmnd/2/SET"
+						}
+
+				}
+				
+			}
+	}
+}
+	

@@ -78,14 +78,15 @@ TradfriPlatform.prototype.init = function() {
 
     this.configuration = this.server.configuration
     let cred = this.configuration.getValueForPlugin(this.name, 'tradfri_user')
-    if (typeof cred === 'string') {
-        this.tradfriUser = cred
-        this.securityCode = this.configuration.getValueForPlugin(this.name, 'tradfri_securityCode')
-    } else {
-        this.tradfriUser = cred['identity']
-        this.securityCode = cred['psk']
+    if (cred) {
+        if (typeof cred === 'string') {
+            this.tradfriUser = cred
+            this.securityCode = this.configuration.getValueForPlugin(this.name, 'tradfri_securityCode')
+        } else {
+            this.tradfriUser = cred['identity']
+            this.securityCode = cred['psk']
+        }
     }
-
     this.bridgeIp = this.configuration.getValueForPlugin(this.name, 'tradfri_ip')
 
     this.heartBeatId = 'undefined'
@@ -129,7 +130,13 @@ TradfriPlatform.prototype.reconnect = function() {
         this.securityCode = undefined
     }
 
-    this.tradfri = new TradfriClient(that.bridgeIp);
+
+
+    this.tradfri = new TradfriClient(that.bridgeIp, function(message, severity) {
+        if (severity !== 'silly') {
+            that.log.debug('%s - %s', severity, message)
+        }
+    });
 
     // Check if we have to authenticate
     if ((this.securityCode == undefined) || (this.tradfriUser == undefined)) {
@@ -138,6 +145,7 @@ TradfriPlatform.prototype.reconnect = function() {
 
         this.tradfri.authenticate(this.securityID).then((identity, psk) => {
             // work with the result
+            that.log.info('Identity is %s psk is %s', identity, psk)
             that.tradfriUser = identity
             that.securityCode = psk
             that.configuration.setValueForPlugin(that.name, "tradfri_securityCode", that.securityCode);
@@ -165,6 +173,9 @@ TradfriPlatform.prototype.reconnect = function() {
             .catch((e) => {
                 // handle error
                 that.log.error("Gateway connection error %s", e)
+                setTimeout(function() {
+                    that.reconnect()
+                }, 10000)
             })
     }
 
