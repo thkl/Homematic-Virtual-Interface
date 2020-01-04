@@ -163,6 +163,20 @@ TradfriBlind.prototype.updateHM = function(di_channel, parameter, first) {
             di_channel.updateValue('WORKING', 1, true, true)
         }
     }
+    if (parameter.deviceInfo.battery) {
+        // Update Maintenance 
+        var mi_channel = that.hmDevice.getChannelWithTypeAndIndex('MAINTENANCE', '0')
+        if (mi_channel) {
+            let bp = parseInt(parameter.deviceInfo.battery)
+                // Only update new values .. do not notifiy on old ones
+            mi_channel.updateValue('BAT_PERCENT', bp, true, false)
+            if (bp < 20) {
+                mi_channel.updateValue('LOWBAT', true, true, false)
+            } else {
+                mi_channel.updateValue('LOWBAT', false, true, false)
+            }
+        }
+    }
 }
 
 module.exports = {
