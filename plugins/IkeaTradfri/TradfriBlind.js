@@ -73,9 +73,6 @@ var TradfriBlind = function(plugin, id) {
                 that.stop()
             } else {
                 that.log.debug("Processing inhibit is false")
-                if ((that.inhibit === false) && (that.curLevel != that.setLevel)) {
-                    that.setNewLevel(that.setLevel)
-                }
             }
         }
 
