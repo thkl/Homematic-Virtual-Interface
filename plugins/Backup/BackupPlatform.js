@@ -55,9 +55,17 @@ BackupPlatform.prototype.shutdown = function() {
 BackupPlatform.prototype.schedule = function() {
     let that = this
     if ((this.cron != "") && (this.token != "")) {
-        scheduler.scheduleJob('[Backup] create a backup', this.cron, function() {
-            that.createBackup()
+
+        let job = scheduler.scheduleJob("[BACKUP]", this.cron, function() {
+
         })
+
+        job.callback = function() {
+            that.createBackup()
+        }
+
+        this.log.info(JSON.stringify(job))
+        this.log.info(JSON.stringify(job.nextInvocation()))
     }
 }
 
@@ -83,7 +91,9 @@ BackupPlatform.prototype.createBackup = function() {
 BackupPlatform.prototype.createHVLBackup = function() {
     let that = this
     let backupfile = path.join('/tmp', 'hvl_backup.tar.gz')
-    fs.unlinkSync(backupfile)
+    if (fs.existsSync(backupfile)) {
+        fs.unlinkSync(backupfile)
+    }
     this.server.createHVLBackup()
         // Upload to Dropbox
     var lastID = this.configuration.getValueForPlugin(this.name, "lastid", 0);
