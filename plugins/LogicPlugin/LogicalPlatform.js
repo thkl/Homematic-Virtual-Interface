@@ -121,55 +121,30 @@ LogicalPlatform.prototype.init = function() {
         }
     }
 
-    this.reInitScripts()
-    this.processMQTTBinding()
-    this.processHarmonyBinding()
+    const LocalStorage = require(path.join(__dirname, 'LocalStorage.js')).LocalStorage;
+    this.localStorage = new LocalStorage(this.server, appRoot)
 
-    this.subscriptions.forEach(function(sbs) {
-        logicLogger.info('Subscribed to %s', sbs.source)
+    const LogicUIHandler = require(path.join(__dirname, 'LogicUIHandler.js')).LogicUIHandler;
+    this.uihandler = new LogicUIHandler(this)
+    this.uihandler.scheduler = scheduler
+
+    // wait until the database is populated 
+    this.localStorage.on('local_storage_init_done', function() {
+        that.reInitScripts()
+        that.processMQTTBinding()
+        that.processHarmonyBinding()
     })
-}
 
-LogicalPlatform.prototype.initDatabase = function() {
-    let that = this
-    let dbPath = path.join(this.configuration.storagePath(), 'devices.db')
-    this.deviceDB = require('better-sqlite3')(dbPath);
+    this.localStorage.init()
 }
 
 LogicalPlatform.prototype.channelName = function(datapoint) {
     // Split Datapoint into channel
-    let that = this
-    let cadra = datapoint.split('.')
-    let adr = (cadra.length > 2) ? cadra[1] : undefined
-
-    if (adr) {
-        let sql = 'select name from channels where address = ?'
-        let row = this.deviceDB.prepare(sql).get(adr);
-        if (row) {
-            return row.name
-        }
-    }
-    return undefined
+    return this.localStorage.channelName(datapoint)
 }
 
 LogicalPlatform.prototype.getAddress = function(arg1, arg2, arg3) {
-
-    if (arg3 === undefined) {
-        // Fetch the channel
-        let row = this.deviceDB.prepare('select devices.interface , channels.address from devices inner join channels on devices.uuid = channels.device where channels.name = ?').get(arg1)
-        if (row) {
-            let adr = row.interface + '.' + row.address + '.' + arg2
-            return adr
-        }
-    } else {
-        let row = this.deviceDB.prepare('select interface,address from devices where devices.name = ?').get(arg1)
-        if (row) {
-            let adr = row.interface + '.' + row.address + ':' + arg2 + '.' + arg3
-            return adr
-        }
-    }
-    this.log.error("No Address found for %s - %s - %s", arg1, arg2, arg3)
-    return undefined
+    return this.localStorage.getAddress(arg1, arg2, arg3)
 }
 
 
@@ -207,7 +182,7 @@ LogicalPlatform.prototype.reInitScripts = function() {
 
         that.log.info('re-scheduled', that.sunEvents.length, 'sun events')
     })
-    this.initDatabase()
+
 }
 
 LogicalPlatform.prototype.loadScriptDir = function(pathName) {
@@ -250,6 +225,7 @@ LogicalPlatform.prototype.loadScript = function(filename) {
                 // Javascript
                 that.scripts[filename] = {}
                 that.scripts[filename].file = filename
+                that.scripts[filename].tags = []
                 that.scripts[filename].script = that.createScript(src, filename)
             }
             if (that.scripts[filename]) {
@@ -279,6 +255,13 @@ LogicalPlatform.prototype.createScript = function(source, name) {
 
 LogicalPlatform.prototype.sendValueRPC = function(interf, adress, datapoint, value, callback) {
     var that = this
+    if ((this.localStorage) && (typeof value !== 'object')) {
+        if (this.localStorage.isDouble(interf + '.' + adress + '.' + datapoint)) {
+            value = {
+                explicitDouble: value
+            }
+        }
+    }
     this.bridge.callRPCMethod(interf, 'setValue', [adress, datapoint.toUpperCase(), value], function(error, value) {
         that.bridge.doCache(interf, adress, datapoint, value)
         callback()
@@ -329,9 +312,9 @@ LogicalPlatform.prototype.isTrue = function(toCheck) {
 LogicalPlatform.prototype.set_Variable = function(name, value, callback) {
     var script = ''
     if (typeof value === 'string') {
-        script = "var x = dom.GetObject('" + name + "');if (x){x.State('" + value + "');}"
+        script = "var x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + name + "');if (x){x.State('" + value + "');}"
     } else {
-        script = "var x = dom.GetObject('" + name + "');if (x){x.State(" + value + ');}'
+        script = "var x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + name + "');if (x){x.State(" + value + ');}'
     }
     this.regaCommand(script, callback)
 }
@@ -342,7 +325,7 @@ LogicalPlatform.prototype.getVariable = function(name) {
 
 LogicalPlatform.prototype.get_Variable = function(name, callback) {
     let that = this
-    var script = "var x = dom.GetObject('" + name + "');if (x){Write(x.Variable());}"
+    var script = "var x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + name + "');if (x){Write(x.Variable());}"
     this.regaCommand(script, function(result) {
         that.ccuVariables[name] = result
         if (callback) {
@@ -355,7 +338,7 @@ LogicalPlatform.prototype.get_Variables = function(variables, callback) {
     let that = this
     var script = 'object x;'
     variables.forEach(function(variable) {
-        script = script + "x=dom.GetObject('" + variable + "');if (x){WriteLine(x#'\t\t'#x.Variable()#'\t\t'#x.Timestamp());}"
+        script = script + "x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + variable + "');if (x){WriteLine(x#'\t\t'#x.Variable()#'\t\t'#x.Timestamp());}"
     })
 
     var vr_result = {}
@@ -380,15 +363,18 @@ LogicalPlatform.prototype.get_Variables = function(variables, callback) {
 }
 
 LogicalPlatform.prototype.set_Variables = function(variables, callback) {
-    var script = 'object x;'
+    var script = 'var x;'
+    let that = this
     Object.keys(variables).forEach(function(key) {
         var vv = variables[key]
-        if (vv) {
+        if (vv !== undefined) {
             if (typeof vv === 'string') {
-                script = script + "x=dom.GetObject('" + key + "');if (x){x.State('" + vv + "');}"
+                script = script + "x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + key + "');if (x){x.State('" + vv + "');Write(x.State());}"
             } else {
-                script = script + "x=dom.GetObject('" + key + "');if (x){x.State(" + vv + ');}'
+                script = script + "x = dom.GetObject(ID_SYSTEM_VARIABLES).Get('" + key + "');if (x){x.State(" + vv + ");Write(x.State());}"
             }
+        } else {
+            that.log.warn('unable to set %s value is undefined', key)
         }
     })
     this.regaCommand(script, function(result) {
@@ -730,22 +716,49 @@ LogicalPlatform.prototype.internalGetValue = function(target) {
 }
 
 LogicalPlatform.prototype.getDpsInGroup = function(id_group, section, dpname, callback) {
-    let script = 'Write(\"{\\"sources\\":[\");string cid; var secObj=dom.GetObject(' + id_group + ').Get(\"' + section + '\"); boolean df = true;foreach(cid, secObj.EnumUsedIDs()){var cObj = dom.GetObject(cid);var dpN = cObj.DPByHssDP(\"' + dpname + '\");if (dpN) {if(df) {df = false;} else {Write(\",\");}Write(\"\\"\" # dpN.Name() # \"\\"\");}}Write(\"]}\");'
+    if (this.localStorage) {
+        this.log.info('DB Fetch Grouptype %s name %s dpName %s', id_group, section, dpname)
+        callback(this.localStorage.getDpsInGroup(id_group, section, dpname))
+    } else {
+        let script = 'Write(\"{\\"sources\\":[\");string cid; var secObj=dom.GetObject(' + id_group + ').Get(\"' + section + '\"); boolean df = true;foreach(cid, secObj.EnumUsedIDs()){var cObj = dom.GetObject(cid);var dpN = cObj.DPByHssDP(\"' + dpname + '\");if (dpN) {if(df) {df = false;} else {Write(\",\");}Write(\"\\"\" # dpN.Name() # \"\\"\");}}Write(\"]}\");'
+        let that = this
+        var resultList = []
+        new RegaRequest(this.hm_layer, script, function(result) {
+            try {
+                let oResult = JSON.parse(result)
+                if ((oResult) && (oResult.sources)) {
+                    oResult.sources.forEach(sourceObject => {
+                        resultList.push(sourceObject)
+                    })
+                }
+                if (callback) {
+                    callback(resultList)
+                }
+            } catch (err) {
+                that.log.error('JSON Parsing error for %s', result)
+            }
+        })
+    }
+}
+
+LogicalPlatform.prototype.subscribeToGroup = function(options, subscribefkt) {
     let that = this
-    var resultList = []
-    new RegaRequest(this.hm_layer, script, function(result) {
-        try {
-            let oResult = JSON.parse(result)
-            if ((oResult) && (oResult.sources)) {
-                oResult.sources.forEach(sourceObject => {
-                    resultList.push(sourceObject)
-                })
-            }
-            if (callback) {
-                callback(resultList)
-            }
-        } catch (err) {
-            that.log.error('JSON Parsing error for %s', result)
+    that.log.debug('Subscribed multiple items in group %s', options.group)
+    logicLogger.info('Subscribed multiple items in group %s', options.group)
+    var tmp_options = {}
+    tmp_options.condition = options.condition
+    tmp_options.change = (options.trigger === 'change')
+        // Fetch all DPs from local datastorage
+    options.dpname.split(',').forEach(dapointname => {
+        let list = that.localStorage.getDpsInGroup(options.type, options.group, dapointname)
+        if (list) {
+            list.forEach(adr => {
+                if (subscribefkt) {
+                    subscribefkt(adr, tmp_options, options.callback)
+                }
+            })
+        } else {
+            that.log.warn('List is empty')
         }
     })
 }
@@ -755,6 +768,9 @@ LogicalPlatform.prototype.getDpsInGroup = function(id_group, section, dpname, ca
 
 LogicalPlatform.prototype.runScript = function(script_object, name) {
     var script = script_object.script
+
+    // set to filename if no name provided
+    var scriptName = path.basename(name)
 
     var scriptDir = path.dirname(path.resolve(name))
     var that = this
@@ -774,6 +790,17 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
         clearInterval: clearInterval,
 
         Buffer: Buffer,
+
+        wait: function Sandbox_wait(time, callback) {
+            if ((time === undefined) ||  (time === 0))  {
+                // if not defined use a random value between 200 and 500ms
+                time = Math.floor(Math.random() * (500 - 200) + 200)
+            } else {
+                time = time * 1000
+            }
+            let timer = setTimeout(callback, time * 1000)
+            return timer
+        },
 
         require: function(md) {
             if (modules[md]) return modules[md]
@@ -799,7 +826,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                     if (lines[i].match(/runInContext/)) break
                     stack.push(lines[i])
                 }
-                that.log.error(name + ': ' + e.message + '\n' + stack)
+                that.log.error(scriptName + ': ' + e.message + '\n' + stack)
             }
         },
 
@@ -821,7 +848,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                         return (subst)
                     })
                 }
-                logicLogger.debug(name + '[' + script_object.name + ']:' + output)
+                logicLogger.debug('[Script:' + scriptName + ']:' + output)
             },
             /**
              * Log an info message
@@ -841,7 +868,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                     })
                 }
 
-                logicLogger.info(name + '[' + script_object.name + ']:' + output)
+                logicLogger.info('[Script:' + scriptName + ']:' + output)
             },
             /**
              * Log a warning message
@@ -860,7 +887,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                         return (subst)
                     })
                 }
-                logicLogger.warn(name + '[' + script_object.name + ']:' + output)
+                logicLogger.warn('[Script:' + scriptName + ']:' + output)
             },
             /**
              * Log an error message
@@ -879,7 +906,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                         return (subst)
                     })
                 }
-                logicLogger.error(name + '[' + script_object.name + ']:' + output)
+                logicLogger.error('[Script:' + scriptName + ']:' + output)
             }
         },
 
@@ -1106,8 +1133,8 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 
 
                 var tmp = source.split('.')
-                that.log.debug('Subscription %s', tmp.length)
-                logicLogger.debug('Subscribed to %s', tmp[1])
+                that.log.debug('Single Subscription: %s', tmp.length)
+                logicLogger.info('Single Subscription: %s', tmp[1])
                     // Check first Value for hmvirtual
                 if (tmp.length > 2) {
                     if (tmp[0].toLowerCase() === 'mqtt') {
@@ -1162,33 +1189,34 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                 source.forEach(function(item) {
 
                     if (item.source) {
-                        that.log.debug('Subscribed multiple items %s', item.source)
-                        logicLogger.info('Subscribed multiple items %s', item.source)
+                        that.log.debug('Subscribed multiple items in %s', item.source)
+                        logicLogger.info('Subscribed multiple items in %s', item.source)
                         var options = {}
                         options.condition = item.condition
                         options.change = (item.trigger === 'change')
                         Sandbox.subscribe(item.source, options, callback)
                     }
 
-                    if (item.section) {
-                        that.log.debug('Subscribed multiple items in section %s', item.section)
-                        logicLogger.info('Subscribed multiple items in section %s', item.section)
-                        var options = {}
-                        options.condition = item.condition
-                        options.change = (item.trigger === 'change')
+                    if (item.room) {
+                        that.subscribeToGroup({
+                            type: 'ID_ROOMS',
+                            group: item.room,
+                            condition: item.condition,
+                            trigger: item.trigger,
+                            callback: callback,
+                            dpname: item.dpname
+                        }, Sandbox.subscribe)
+                    }
 
-                        // get all channels in section
-                        let script = 'Write(\"{\\"sources\\":[\");string cid; var secObj=dom.GetObject(ID_FUNCTIONS).Get(\"' + item.section + '\");boolean df = true;foreach(cid, secObj.EnumUsedIDs()){if(df) {df = false;} else {Write(\",\");}var cObj = dom.GetObject(cid);var idf = dom.GetObject(cObj.Interface());string adr = idf.Name();adr = adr # \".\" # cObj.Address();Write(\"\\"\";Write(adr);Write(\"\\"\");}Write(\"]}\");'
-                        new RegaRequest(that.hm_layer, script, function(result) {
-                            let oResult = JSON.parse(result)
-                            if ((oResult) && (oResult.sources)) {
-                                oResult.sources.forEach(sourceObject => {
-                                    let dp = sourceObject + '.' + item.dpname
-                                    logicLogger.info('Subscribed to %s', dp)
-                                    Sandbox.subscribe(dp, options, callback)
-                                });
-                            }
-                        })
+                    if (item.section) {
+                        that.subscribeToGroup({
+                            type: 'ID_FUNCTIONS',
+                            group: item.section,
+                            condition: item.condition,
+                            trigger: item.trigger,
+                            callback: callback,
+                            dpname: item.dpname
+                        }, Sandbox.subscribe)
                     }
 
                 })
@@ -1270,10 +1298,20 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 
         setName: function Sandbox_setName(nameOfScript) {
             script_object.name = nameOfScript
+            scriptName = nameOfScript
         },
 
         setDescription: function Sandbox_setDescription(description) {
             script_object.description = description
+        },
+
+        addTag: function Sandbox_addTag(tagName) {
+            if (script_object.tags === undefined) {
+                script_object.tags = []
+            }
+            if (script_object.tags.indexOf(tagName) === -1) {
+                script_object.tags.push(tagName)
+            }
         },
 
         regaCommand: function Sandbox_regaCommand(command, /* optional */ delay) {
@@ -1318,7 +1356,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 
                     let delayTme = (delay !== undefined) ? parseInt(delay) : 0
                     if (delayTme === 0) {
-                        mqtt_plugin.platform.publish(topic, value)
+                        mqtt_plugin.platform.publish(topic, String(value))
                     } else {
                         that.delays[topic] = Sandbox.setTimeout(function() {
                             Sandbox.setMQTT(topic, value)
@@ -1701,7 +1739,7 @@ LogicalPlatform.prototype.processLogicalBinding = function(source_adress) {
     var that = this
     if (channel) {
         that.log.debug('uhh someone is intrested in my value changes %s', source_adress)
-        logicLogger.info('Subscribed to %s', source_adress)
+        logicLogger.debug('Subscribed to %s', source_adress)
         channel.removeAllListeners('logicevent_channel_value_change')
 
         channel.on('logicevent_channel_value_change', function(parameter) {
@@ -1867,167 +1905,7 @@ LogicalPlatform.prototype.handleWebHook = function(dispatched_request) {
 }
 
 LogicalPlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
-    var requesturl = dispatched_request.request.url
-    var queryObject = url.parse(requesturl, true).query
-    var htmlfile = 'index.html'
-    var editorData = {
-        'error': ''
-    }
-    var that = this
-    let hookurl = '/' + this.name + '/Hook/'
-
-    if (requesturl.toLowerCase().indexOf(hookurl.toLocaleLowerCase()) === 0) {
-        this.handleWebHook(dispatched_request)
-    } else {
-
-        if (queryObject['do'] !== undefined) {
-            switch (queryObject['do']) {
-                case 'reload':
-                    this.reInitScripts()
-                    break
-
-                case 'trigger':
-                    this.triggerScript(queryObject['script'])
-                    break
-
-                case 'showlog':
-                    htmlfile = 'log.html'
-                    var LoggerQuery = require(path.join(appRoot, 'logger.js')).LoggerQuery
-                    new LoggerQuery('LogicLogger').query(function(err, result) {
-                        var str = ''
-                        result.some(function(msg) {
-                            str = str + msg.time + '  [' + msg.level + '] - ' + msg.msg + '\n'
-                        })
-
-                        editorData['content'] = str
-                        dispatched_request.dispatchFile(that.plugin.pluginPath, htmlfile, {
-                            'editor': editorData
-                        })
-                    })
-                    return
-
-                case 'edit':
-                    htmlfile = 'editor.html'
-                    var scriptname = queryObject['file']
-                    var script = this.getScript(scriptname)
-                    editorData['file'] = scriptname
-                    editorData['content'] = script
-                    editorData['new'] = 'false'
-
-                    break
-
-                case 'new':
-                    htmlfile = 'editor.html'
-                    scriptname = queryObject['file']
-                    editorData['file'] = uuidv4() + '.js'
-                    editorData['content'] = 'setName("__Name__");\nsetDescription("___DESCRIPTION___");\n\n'
-                    editorData['new'] = 'true'
-
-                    break
-
-                case 'delete':
-                    scriptname = queryObject['file']
-                    this.deleteScript(scriptname)
-                    this.reInitScripts()
-                    htmlfile = 'reinit.html'
-
-                    break
-            }
-        }
-
-        if (dispatched_request.post !== undefined) {
-            var content = dispatched_request.post['editor.content']
-            var fileName = dispatched_request.post['script.filename']
-            var isNew = dispatched_request.post['editor.new']
-            switch (dispatched_request.post['do']) {
-                case 'script.save':
-                    Error.stackTraceLimit = 1
-                    var result = this.validateScript(content)
-                    Error.stackTraceLimit = 10
-                    if (result === true) {
-                        var l_path = this.configuration.storagePath() + '/scripts/'
-                        fileName = fileName.replace('..', '')
-                        if ((isNew === 'true') && (this.existsScript(l_path + fileName))) {
-                            htmlfile = 'editor.html'
-                            editorData['error'] = 'File ' + fileName + ' exists.'
-                            editorData['content'] = content
-                            editorData['file'] = fileName
-                            editorData['new'] = isNew
-                        } else {
-                            this.saveScript(content, l_path + fileName)
-                            htmlfile = 'reinit.html'
-                        }
-                    } else {
-                        htmlfile = 'editor.html'
-                        editorData['error'] = result
-                        editorData['content'] = content
-                        editorData['file'] = fileName
-                        editorData['new'] = isNew
-                    }
-
-                    break
-
-                case 'script.validate':
-                    Error.stackTraceLimit = 1
-                    result = this.validateScript(content)
-                    Error.stackTraceLimit = 10
-                    if (result === true) {
-                        editorData['error'] = 'Validation : ok'
-                    } else {
-                        editorData['error'] = 'Validation : ' + result
-                    }
-
-                    htmlfile = 'editor.html'
-                    editorData['content'] = content
-                    editorData['file'] = fileName
-                    editorData['new'] = isNew
-
-                    break
-            }
-        }
-
-        var strScripts = ''
-        var strSchedulers = ''
-
-        var itemtemplate = dispatched_request.getTemplate(this.plugin.pluginPath, 'list_item_tmp.html', null)
-        var scripttemplate = dispatched_request.getTemplate(this.plugin.pluginPath, 'list_script_tmp.html', null)
-
-        Object.keys(scheduler.scheduledJobs).forEach(function(job) {
-            strSchedulers = strSchedulers + dispatched_request.fillTemplate(itemtemplate, {
-                'item': job
-            })
-        })
-
-        that.log.debug(Object.keys(this.scripts))
-
-        var sorted = Object.keys(this.scripts).sort(function(a, b) {
-            a = that.scripts[a].name || path.basename(a)
-            b = that.scripts[b].name || path.basename(b)
-            if (a < b) return -1
-            if (a > b) return 1
-            return 0
-        })
-
-        that.log.debug(sorted)
-
-        sorted.forEach(function(key) {
-            var script_object = that.scripts[key]
-            var data = {
-                'script.filename': path.basename(script_object.file),
-                'script.desc': script_object.description || '',
-                'script.name': script_object.name || path.basename(script_object.file)
-            }
-
-            strScripts = strScripts + dispatched_request.fillTemplate(scripttemplate, data)
-        })
-
-        dispatched_request.dispatchFile(this.plugin.pluginPath, htmlfile, {
-            'scripts': strScripts,
-            'schedules': strSchedulers,
-            'editor': editorData
-        })
-
-    }
+    this.uihandler.run(dispatched_request, appRoot)
 }
 
 module.exports = LogicalPlatform
