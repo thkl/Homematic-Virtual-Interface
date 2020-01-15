@@ -115,7 +115,8 @@ BackupPlatform.prototype.createHVLBackup = function() {
         dropbox({
             resource: 'files/upload',
             parameters: {
-                path: '/' + that.dropboxFolder + '/hvl_backup.tar_' + (id || 0) + '.gz'
+                path: '/' + that.dropboxFolder + '/hvl_backup.tar_' + (id || 0) + '.gz',
+                mode: 'overwrite'
             },
             readStream: fs.createReadStream(backupfile)
         }, (err, result, response) => {
