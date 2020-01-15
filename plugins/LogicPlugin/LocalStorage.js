@@ -283,7 +283,7 @@ LocalStorage.prototype.isDouble = function(datapoint) {
         let dps = datapoint.toUpperCase()
         let row = this.deviceDB.prepare('Select vtype,vstype from datapoints Where address like ?').get(dps)
         if (row) {
-            return ((row.vtype === 6) && (row.vstype === 0))
+            return (((row.vtype === 6) && (row.vstype === 0)) || (row.vtype === 4))
         } else {
             this.log.warn('Nothing found for %s', dps)
         }

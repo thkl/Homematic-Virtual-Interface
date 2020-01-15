@@ -256,7 +256,9 @@ LogicalPlatform.prototype.createScript = function(source, name) {
 LogicalPlatform.prototype.sendValueRPC = function(interf, adress, datapoint, value, callback) {
     var that = this
     if ((this.localStorage) && (typeof value !== 'object')) {
+        this.log.info('Check type %s', interf + '.' + adress + '.' + datapoint)
         if (this.localStorage.isDouble(interf + '.' + adress + '.' + datapoint)) {
+            this.log.info('isdouble')
             value = {
                 explicitDouble: value
             }
@@ -377,9 +379,11 @@ LogicalPlatform.prototype.set_Variables = function(variables, callback) {
             that.log.warn('unable to set %s value is undefined', key)
         }
     })
+    that.log.info("Script %s", script)
     this.regaCommand(script, function(result) {
         callback()
     })
+
 }
 
 LogicalPlatform.prototype.executeCCUProgram = function(programName, callback) {
@@ -778,6 +782,10 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
     this.log.debug('creating domain %s', name)
     var scriptDomain = domain.create()
 
+    if (script_object.timers === undefined) {
+        script_object.timers = []
+    }
+
     this.log.debug('creating sandbox %s', name)
 
     var Sandbox = {
@@ -791,6 +799,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 
         Buffer: Buffer,
 
+        clearTimers: function Sandbox_clearTimers()  {
+            script_object.timers.forEach(timer => {
+                clearTimeout(timer)
+            })
+            script_object.timers = []
+        },
+
         wait: function Sandbox_wait(time, callback) {
             if ((time === undefined) ||  (time === 0))  {
                 // if not defined use a random value between 200 and 500ms
@@ -798,7 +813,17 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
             } else {
                 time = time * 1000
             }
-            let timer = setTimeout(callback, time * 1000)
+            that.log.debug("Settings Timer to %s", time)
+
+            let timer = setTimeout(function() {
+                that.log.debug("Timer is done")
+
+                if (callback) {
+                    callback()
+                }
+            }, (time))
+
+            script_object.timers.push(timer)
             return timer
         },
 
