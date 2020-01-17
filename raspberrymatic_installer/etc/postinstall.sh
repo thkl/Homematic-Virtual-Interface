@@ -15,20 +15,22 @@ echo "[Installer]Program Dir is ${ADDON_DIR}" >>/var/log/hvl.log
 #install node and fetch the core module
 cd ${ADDON_DIR}
 
-echo "[Installer]Installing node" >>/var/log/hvl.log
+#
+#
+#echo "[Installer]Installing node" >>/var/log/hvl.log
 
 
-if $(uname -m | grep -Eq ^armv6); then
- wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv6l.tar.xz -Onode.tar.xz --no-check-certificate
- tar xf node.tar.xz
- rm node.tar.xz
- mv node-v6.10.0-linux-armv6l node
-else
- wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -Onode.tar.xz --no-check-certificate
- tar xf node.tar.xz
- rm node.tar.xz
- mv node-v6.10.0-linux-armv7l node
-fi
+#if $(uname -m | grep -Eq ^armv6); then
+# wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv6l.tar.xz -Onode.tar.xz --no-check-certificate
+# tar xf node.tar.xz
+# rm node.tar.xz
+# mv node-v6.10.0-linux-armv6l node
+#else
+# wget https://nodejs.org/dist/v6.10.0/node-v6.10.0-linux-armv7l.tar.xz -Onode.tar.xz --no-check-certificate
+# tar xf node.tar.xz
+# rm node.tar.xz
+# mv node-v6.10.0-linux-armv7l node
+#fi
 
 
 
@@ -48,24 +50,25 @@ echo "path=/usr/local/addons/hvl/.npm" >> /root/.npmrc
 
 
 
-#install log rotator
+install log rotator
 echo "[Installer]Add logrotator" >>/var/log/hvl.log
 cp ${ADDON_DIR}/etc/hvl.conf /etc/logrotate.d/hvl.conf
 
 
-#make .npm
+make .npm
 echo "[Installer]Build cache " >>/var/log/hvl.log
-${ADDON_DIR}/node/bin/node ${ADDON_DIR}/node/bin/npm config set cache ${ADDON_DIR}/.npm >>/var/log/hvl.log
+npm config set cache ${ADDON_DIR}/.npm >>/var/log/hvl.log
 
 echo "[Installer]Check cache " >>/var/log/hvl.log
-${ADDON_DIR}/node/bin/node ${ADDON_DIR}/node/bin/npm config get cache >>/var/log/hvl.log
+npm config get cache >>/var/log/hvl.log
 
-#install the core system
+install the core system
 echo "[Installer]Install Core system" >>/var/log/hvl.log
-${ADDON_DIR}/node/bin/node ${ADDON_DIR}/node/bin/npm install homematic-virtual-interface >>/var/log/hvl.log
+cd ${ADDON_DIR}
+npm install homematic-virtual-interface >>/var/log/hvl.log
 
 echo "[Installer]Switch Root FS back to RO" >>/var/log/hvl.log
-#switch back to read only
+switch back to read only
 mount -o remount,ro /
 
 
@@ -100,9 +103,9 @@ if [ $(cat ${CONFIG_DIR}/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) 
 fi
 
 #Rebuild .npmrc on ever boot
-mount -o remount,rw /
-echo "cache=/usr/local/addons/hvl/.npm" > /root/.npmrc
-echo "init-module=/usr/local/addons/hvl/.npm-init.js" >> /root/.npmrc
-echo "userconfig=/usr/local/addons/hvl/.npmrc" >> /root/.npmrc
-echo "path=/usr/local/addons/hvl/.npm" >> /root/.npmrc
-mount -o remount,ro /
+#mount -o remount,rw /
+#echo "cache=/usr/local/addons/hvl/.npm" > /root/.npmrc
+#echo "init-module=/usr/local/addons/hvl/.npm-init.js" >> /root/.npmrc
+#echo "userconfig=/usr/local/addons/hvl/.npmrc" >> /root/.npmrc
+#echo "path=/usr/local/addons/hvl/.npm" >> /root/.npmrc
+#mount -o remount,ro /

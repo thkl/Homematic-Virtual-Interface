@@ -21,7 +21,7 @@ case "$1" in
 
 	if [ "$PSPID" = "" ]
 	then
-	  $HVLDIR/node/bin/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/ >>/var/log/hvl.log &
+	  node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/ >>/var/log/hvl.log &
 	  logger -t homematic -p user.info "started homematic virtual layer"
 	fi
 	;;
@@ -54,7 +54,7 @@ case "$1" in
 	  fi
 	  logger -t homematic -p user.info "stopped homematic virtual layer for restart"
 	fi
-	$HVLDIR/node/bin/node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/ >>/dev/null &
+	node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/ >>/dev/null &
 	logger -t homematic -p user.info "started (restart) homematic virtual layer"
 	;;
 
