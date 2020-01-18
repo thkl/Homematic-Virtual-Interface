@@ -40,7 +40,7 @@ var SonosDevice = function(plugin, sonosIP, sonosPort, playername, serial) {
         });
 
         that.player.on('error', function(error) {
-            that.log.error("Sonos Event Listener Error %s", error)
+            //that.log.error("Sonos Event Listener Error %s", error)
         })
 
         that.player.on('serviceEvent', function(endpoint, sid, event) {
@@ -621,7 +621,7 @@ SonosDevice.prototype.refreshZoneGroupAttrs = function() {
 
             }
         } else {
-            that.log.error("Result %s Error %s", JSON.stringify(result), JSON.stringify(error))
+            //that.log.error("Result %s Error %s", JSON.stringify(result), JSON.stringify(error))
         }
     })
 }
