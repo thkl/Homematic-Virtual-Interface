@@ -14,11 +14,20 @@
 			"npm": "homematic-virtual-tradfridevice",
 			"syname": "IkeaTradfri",
 			"description": {
-				"de-de": "Steuert Ikea Tradfri Lampen",
-				"en-en": "Control IKEA Tradfri bulbs"
+				"de-de": "Steuert Ikea Tradfri Lampen & Rollos",
+				"en-en": "Control IKEA Tradfri bulbs & blinds"
 			}
 		},
 
+		{
+			"name": "Backup Plugin",
+			"npm": "homematic-virtual-backupservice",
+			"syname": "Backup",
+			"description": {
+				"de-de": "Erzeugt ein tgl. Backup der CCU & HVL und lädt das zu Dropbox",
+				"en-en": "Creates a daily backup from ccu and hvl and will upload this to dropbox"
+			}
+		},
 
 
 		{
