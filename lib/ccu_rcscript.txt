@@ -8,7 +8,7 @@ case "$1" in
   	start)
   	  if [ $(cat /usr/local/etc/config/InterfacesList.xml | grep "<name>HVL</name>" | wc -l ) -eq 0 ]
         then
-		sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/myIP:7000<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
+		sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/myIP:myPort<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
 	  fi
    ;;
 
@@ -33,7 +33,7 @@ case "$1" in
 	mount -o remount,rw /
 	rm -r /etc/init.d/S59hvl
 	mount -o remount,ro /
-	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/myIP:7000<\/url><info>HVL<\/info><\/ipc>//"
+	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/myIP:myPort<\/url><info>HVL<\/info><\/ipc>//"
 	;;
  
    *)

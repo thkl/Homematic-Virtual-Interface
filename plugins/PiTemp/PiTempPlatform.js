@@ -53,15 +53,15 @@ PiTempPlatform.prototype.init = function() {
 
 PiTempPlatform.prototype.loadValues = function(dispatchedRequest) {
     let that = this
+    let fileName = '/sys/class/thermal/thermal_zone0/temp'
+    var coreTemperature = 0
 
-    //var regex = /temp=([^'C]+)/;
-    //    var cmd = spawn("/opt/vc/bin/vcgencmd", ["measure_temp"]);
+    try {
 
-    var regex = /[0-9]{5}/
-    var cmd = spawn("cat", ["/sys/class/thermal/thermal_zone0/temp"]);
+        if (fs.existsSync(fileName)) {
+            coreTemperature = parseFloat(fs.readFileSync(fileName))
+        }
 
-    cmd.stdout.on("data", function(buf) {
-        var coreTemperature = parseFloat(regex.exec(buf.toString("utf8"))[0]);
         coreTemperature = (coreTemperature / 1000)
         that.bridge.startMulticallEvent(500)
         let channel = that.hmDevice.getChannelWithTypeAndIndex("WEATHER", "1")
@@ -70,13 +70,10 @@ PiTempPlatform.prototype.loadValues = function(dispatchedRequest) {
         }
         that.bridge.sendMulticallEvents()
 
-    });
 
-    cmd.stderr.on("data", function(buf) {
-        callback(new Error(buf.toString("utf8")));
-    });
-
-
+    } catch (e) {
+        this.log.error(e)
+    }
 
     setTimeout(function() {
         that.loadValues()

@@ -213,7 +213,7 @@ LogicalPlatform.prototype.loadScript = function(filename) {
         return
     }
 
-    this.log.info('loading script %s', filename)
+    this.log.debug('loading script %s', filename)
 
     fs.readFile(filename, function(err, src) {
         if (err && err.code === 'ENOENT') {
@@ -721,7 +721,7 @@ LogicalPlatform.prototype.internalGetValue = function(target) {
 
 LogicalPlatform.prototype.getDpsInGroup = function(id_group, section, dpname, callback) {
     if (this.localStorage) {
-        this.log.info('DB Fetch Grouptype %s name %s dpName %s', id_group, section, dpname)
+        this.log.debug('DB Fetch Grouptype %s name %s dpName %s', id_group, section, dpname)
         callback(this.localStorage.getDpsInGroup(id_group, section, dpname))
     } else {
         let script = 'Write(\"{\\"sources\\":[\");string cid; var secObj=dom.GetObject(' + id_group + ').Get(\"' + section + '\"); boolean df = true;foreach(cid, secObj.EnumUsedIDs()){var cObj = dom.GetObject(cid);var dpN = cObj.DPByHssDP(\"' + dpname + '\");if (dpN) {if(df) {df = false;} else {Write(\",\");}Write(\"\\"\" # dpN.Name() # \"\\"\");}}Write(\"]}\");'
@@ -748,7 +748,7 @@ LogicalPlatform.prototype.getDpsInGroup = function(id_group, section, dpname, ca
 LogicalPlatform.prototype.subscribeToGroup = function(options, subscribefkt) {
     let that = this
     that.log.debug('Subscribed multiple items in group %s', options.group)
-    logicLogger.info('Subscribed multiple items in group %s', options.group)
+    logicLogger.debug('Subscribed multiple items in group %s', options.group)
     var tmp_options = {}
     tmp_options.condition = options.condition
     tmp_options.change = (options.trigger === 'change')
@@ -1008,80 +1008,127 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                         mode = options['mode'] || 'toggle'
                     }
 
-                    logicLogger.info('Processing lightlink %s with %s', source, target)
                     var isOn = false
-                    var tmp = target.split('.')
-                    if (tmp.length < 2) {
-                        return
+                    var targets = target
+
+                    // if target is a string create a dummy array
+                    if (typeof target === 'string') {
+                        targets = []
+                        targets.push(target)
                     }
-                    // first get the current taget Level
-                    if (tmp[2] === 'LEVEL') {
-                        Sandbox.getValue(target).then(function(value) {
-                            logicLogger.debug('target %s is currently %s', target, value)
-                            let ivalue = parseInt(value)
-                            let dirTarget = tmp[0] + '.' + tmp[1] + '.DIRECTION'
-                            Sandbox.getValue(dirTarget).then(function(dirvalue) {
-                                logicLogger.debug('direction %s is currently %s ; mode is %s', target, dirvalue, mode)
+
+                    targets.forEach(function(starget) {
+                        logicLogger.debug('Processing lightlink %s with %s', source, starget)
+
+                        var tmp = starget.split('.')
+                        if (tmp.length < 2) {
+                            return
+                        }
+                        // first get the current taget Level
+                        if (tmp[2] === 'LEVEL') {
+                            Sandbox.getValue(starget).then(function(value) {
+                                logicLogger.debug('target %s is currently %s', starget, value)
+                                let ivalue = parseInt(value)
+                                let dirTarget = tmp[0] + '.' + tmp[1] + '.DIRECTION'
+                                Sandbox.getValue(dirTarget).then(function(dirvalue) {
+                                    logicLogger.debug('direction %s is currently %s ; mode is %s', starget, dirvalue, mode)
+                                    var tvalue = 0
+                                    switch (mode) {
+                                        case 'level_both':
+                                            if (ivalue === 0) {
+                                                dirvalue = 1
+                                            } else if (ivalue === 1) {
+                                                dirvalue = 0
+                                            }
+                                            ivalue = ivalue - (dirvalue === 1) ? 0.1 : -0.1
+                                            break
+
+                                        case 'level_up':
+                                            if (ivalue < 1) {
+                                                dirvalue = 1
+                                                ivalue = ivalue + 0.1
+                                                isOn = true
+                                            } else {
+                                                dirvalue = 0
+                                            }
+
+                                            break
+
+                                        case 'level_down':
+                                            if (ivalue > 0) {
+                                                ivalue = ivalue - 0.1
+                                                dirvalue = 0
+                                                isOn = true
+                                            } else {
+                                                dirvalue = 1
+                                                isOn = false
+                                            }
+
+                                            break
+
+                                        case 'toggle':
+                                            if (ivalue > 0) {
+                                                tvalue = 0
+                                            }
+                                            if (ivalue === 0) {
+                                                tvalue = 1
+                                                isOn = true
+                                            }
+
+                                            break
+
+                                        default:
+                                            if (ivalue > 0) {
+                                                tvalue = 0
+                                            }
+                                            if (ivalue === 0) {
+                                                tvalue = 1
+                                                isOn = true
+                                            }
+
+                                            break
+                                    }
+
+                                    logicLogger.debug('set %s to %s', starget, JSON.stringify(tvalue))
+                                    Sandbox.setValue(dirTarget, dirvalue)
+                                    Sandbox.setValue(starget, tvalue).then(function() {
+                                        if ((options !== undefined) && (isOn === true)) {
+                                            Object.keys(options).forEach(function(ok) {
+                                                if ((ok.toLocaleString() === 'mode') && (options[ok])) {
+                                                    logicLogger.info('set %s to %s', ok, options[ok])
+                                                    Sandbox.setValue(ok, options[ok])
+                                                }
+                                            })
+                                        }
+
+                                        if (callback !== undefined) {
+                                            callback()
+                                        }
+                                    })
+                                })
+                            })
+
+                        }
+
+                        if (starget.indexOf('STATE') > -1) {
+                            logicLogger.debug('target %s is binary', starget)
+                            Sandbox.getValue(starget).then(function(value) {
                                 var tvalue = 0
-                                switch (mode) {
-                                    case 'level_both':
-                                        if (ivalue === 0) {
-                                            dirvalue = 1
-                                        } else if (ivalue === 1) {
-                                            dirvalue = 0
-                                        }
-                                        ivalue = ivalue - (dirvalue === 1) ? 0.1 : -0.1
-                                        break
-
-                                    case 'level_up':
-                                        if (ivalue < 1) {
-                                            dirvalue = 1
-                                            ivalue = ivalue + 0.1
-                                            isOn = true
-                                        } else {
-                                            dirvalue = 0
-                                        }
-
-                                        break
-
-                                    case 'level_down':
-                                        if (ivalue > 0) {
-                                            ivalue = ivalue - 0.1
-                                            dirvalue = 0
-                                            isOn = true
-                                        } else {
-                                            dirvalue = 1
-                                            isOn = false
-                                        }
-
-                                        break
-
-                                    case 'toggle':
-                                        if (ivalue > 0) {
-                                            tvalue = 0
-                                        }
-                                        if (ivalue === 0) {
-                                            tvalue = 1
-                                            isOn = true
-                                        }
-
-                                        break
-
-                                    default:
-                                        if (ivalue > 0) {
-                                            tvalue = 0
-                                        }
-                                        if (ivalue === 0) {
-                                            tvalue = 1
-                                            isOn = true
-                                        }
-
-                                        break
+                                if (value === 0) {
+                                    tvalue = 1
+                                    isOn = true
                                 }
-
-                                logicLogger.info('set %s to %s', target, JSON.stringify(tvalue))
-                                Sandbox.setValue(dirTarget, dirvalue)
-                                Sandbox.setValue(target, tvalue).then(function() {
+                                if (value === 1) {
+                                    tvalue = 0
+                                }
+                                if (value === true) {
+                                    tvalue = false
+                                }
+                                if (value === false) {
+                                    tvalue = true
+                                    isOn = true
+                                }
+                                Sandbox.setValue(starget, tvalue).then(function() {
                                     if ((options !== undefined) && (isOn === true)) {
                                         Object.keys(options).forEach(function(ok) {
                                             if ((ok.toLocaleString() === 'mode') && (options[ok])) {
@@ -1090,48 +1137,13 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                                             }
                                         })
                                     }
-
                                     if (callback !== undefined) {
                                         callback()
                                     }
                                 })
                             })
-                        })
-                    }
-
-                    if (target.indexOf('STATE') > -1) {
-                        logicLogger.info('target %s is binary', target)
-                        Sandbox.getValue(target).then(function(value) {
-                            var tvalue = 0
-                            if (value === 0) {
-                                tvalue = 1
-                                isOn = true
-                            }
-                            if (value === 1) {
-                                tvalue = 0
-                            }
-                            if (value === true) {
-                                tvalue = false
-                            }
-                            if (value === false) {
-                                tvalue = true
-                                isOn = true
-                            }
-                            Sandbox.setValue(target, tvalue).then(function() {
-                                if ((options !== undefined) && (isOn === true)) {
-                                    Object.keys(options).forEach(function(ok) {
-                                        if ((ok.toLocaleString() === 'mode') && (options[ok])) {
-                                            logicLogger.info('set %s to %s', ok, options[ok])
-                                            Sandbox.setValue(ok, options[ok])
-                                        }
-                                    })
-                                }
-                                if (callback !== undefined) {
-                                    callback()
-                                }
-                            })
-                        })
-                    }
+                        }
+                    })
                 })
             })
         },
@@ -1159,22 +1171,22 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 
                 var tmp = source.split('.')
                 that.log.debug('Single Subscription: %s', tmp.length)
-                logicLogger.info('Single Subscription: %s', tmp[1])
+                logicLogger.debug('Single Subscription: %s', tmp[1])
                     // Check first Value for hmvirtual
                 if (tmp.length > 2) {
                     if (tmp[0].toLowerCase() === 'mqtt') {
-                        that.log.info('MQTT Subscription %s', tmp[1])
+                        that.log.debug('MQTT Subscription %s', tmp[1])
                         that.mqttEvents.push(tmp[1])
                         that.hm_layer.emit('mqtt_add_topic', tmp[1])
                     } else
 
                     if (tmp[0].toLowerCase() === 'harmony') {
-                        that.log.info('Harmony Subscription %s', tmp[1])
+                        that.log.debug('Harmony Subscription %s', tmp[1])
                         that.harmonyEvents.push(tmp[1])
                     } else
 
                     if (tmp[0].toLowerCase() === 'webhook') {
-                        that.log.info('WebHook Subscription %s', tmp[1])
+                        that.log.debug('WebHook Subscription %s', tmp[1])
                         that.webhookEvents.push(tmp[1])
                     } else
 
@@ -1215,7 +1227,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
 
                     if (item.source) {
                         that.log.debug('Subscribed multiple items in %s', item.source)
-                        logicLogger.info('Subscribed multiple items in %s', item.source)
+                        logicLogger.debug('Subscribed multiple items in %s', item.source)
                         var options = {}
                         options.condition = item.condition
                         options.change = (item.trigger === 'change')
@@ -1410,6 +1422,7 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                 let delayTme = (delay !== undefined) ? parseInt(delay) : 0
                     // Check if its a datapoint name 
                 if (!that.hm_layer.isCCUDatapoint(target)) {
+                    that.log.info("%s not a ccu dp", target)
                     target = that.fetchCCUDatapointStructure(target)
                     if (target === undefined) {
                         that.log.error('Cannot parse target %s', target)
@@ -1429,11 +1442,11 @@ LogicalPlatform.prototype.runScript = function(script_object, name) {
                         var channel = that.hm_layer.channelWithAdress(adress)
                         if (channel) {
                             setTimeout(function() {
-                                    channel.setValue(datapointName, val)
-                                    channel.updateValue(datapointName, val, true)
-                                }, delayTme)
-                                // the resolve will not called delayed
-                            resolve()
+                                that.log.info("Set Internal DP %s with %s", target, val)
+                                channel.setValue(datapointName, val)
+                                channel.updateValue(datapointName, val, true)
+                                resolve()
+                            }, delayTme)
                         } else {
                             that.log.error('Channel %s not found', adress)
                         }

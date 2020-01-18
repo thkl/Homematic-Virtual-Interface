@@ -11,7 +11,7 @@ var DeviceImporter = function(database, rega, logger) {
 
 DeviceImporter.prototype.run = function(hm_layer, callback) {
     let that = this
-    that.logger.info('Creating tables')
+    that.logger.debug('Creating tables')
     that.database.prepare('CREATE TABLE if not exists "devices" ("name" varchar,"address" varchar,"type" varchar,"interface" varchar, "regaid" integer, PRIMARY KEY ("regaid"));').run()
     that.database.prepare('CREATE TABLE if not exists "channels" ("device" integer ,"regaid" integer,"address" varchar,"type" varchar,"name" varchar,"index" integer,"internal" int,"direction" int,"archive" int,"visible" int,"acl" int, PRIMARY KEY (regaid));').run()
     that.database.prepare('CREATE TABLE if not exists "datapoints" ("regaid" integer,"channel" integer,"name" varchar,"address" varchar,"internal" integer,"operations" integer,"type" varchar,"vstype" integer,"vtype" integer,"unit" varchar, PRIMARY KEY (regaid));').run()
@@ -21,7 +21,7 @@ DeviceImporter.prototype.run = function(hm_layer, callback) {
     fetchDevices = fetchDevices + 'Write("\\"dp\\":[");if (oChannel.ChnDirection()==2) {object oDP = oChannel.DPByHssDP("WORKING");if (oDP) {dpFirst = false;Write("{\\"id\\": " # oDP.ID() # ", \\"name\\": \\"" # oDP.Name().StrValueByIndex(".", 2) # "\\", \\"address\\":\\"" # oDP.Name() # "\\",");Write(" \\"type\\": \\"" # oDP.TypeName() # "\\", \\"operations\\": " # oDP.Operations() # ",");Write("\\"internal\\": " # oDP.Internal().ToString() # ", \\"vtype\\": " # oDP.ValueType() # ", \\"vstype\\": " # oDP.ValueSubType() # "}");}}foreach(sDpId, oChannel.DPs().EnumUsedIDs()) {object oDP = dom.GetObject(sDpId);if (dpFirst) {dpFirst = false;} else {WriteLine(",");}Write("{\\"id\\": " # sDpId # ", \\"name\\": \\"" # oDP.Name().StrValueByIndex(".", 2) # "\\", \\"address\\":\\"" # oDP.Name() # "\\",");Write(" \\"internal\\": " # oDP.Internal().ToString() # ", \\"type\\": \\"" # oDP.TypeName() # "\\", \\"operations\\": " # oDP.Operations() # ",");if (oDP.ValueUnit() != "") {Write("\\"vunit\\":\\"");WriteURL(oDP.ValueUnit());Write("\\",");}Write("\\"vtype\\": " # oDP.ValueType() # ", \\"vstype\\": " # oDP.ValueSubType() # "}");}Write("]}");}Write("]}");}Write("]}");'
     const Rega = this.rega
     let rr = new Rega(hm_layer, fetchDevices, function(result) {
-        that.logger.info("Rega result fetched")
+        that.logger.debug("Rega result fetched")
         let dbid = 'INSERT INTO "devices" ("regaid", "name", "address", "type", "interface") VALUES (@regaid,@name,@address,@type,@interface);'
         let dbic = 'INSERT INTO "channels" ("device", "regaid", "address", "type", "name", "index", "internal", "direction", "archive", "visible", "acl") VALUES (@device,@regaid,@address,@type,@name,@index,@internal,@direction,@archive,@visible,@acl);'
         let dbidp = 'INSERT INTO "datapoints" ("regaid", "channel", "name", "address", "internal", "operations", "type", "vstype", "vtype", "unit") VALUES (@id, @cid, @name, @address,@internal,@operations,@type,@vstype,@vtype,@vunit);'
@@ -118,7 +118,7 @@ var RoomImporter = function(database, rega, logger) {
 RoomImporter.prototype.run = function(hm_layer, type, callback) {
     let that = this
     const Rega = this.rega
-    that.logger.info('Build Group %s', type)
+    that.logger.debug('Build Group %s', type)
     let fetchGroups = 'Write("{\\"items\\":[");var roomVar=dom.GetObject(ID_' + type + 'S);string rid;string sChannelId;string cid;boolean df = true;foreach(rid, dom.GetObject(ID_' + type + 'S).EnumIDs()){var roomObj = dom.GetObject(rid);if(df) {df = false;} else { Write(",");}Write("{");Write("\\"id\\":"#rid#",");Write("\\"name\\":\\"" # roomObj.Name() # "\\","); Write("\\"channels\\":[");boolean df1 = true;foreach(cid, roomObj.EnumUsedIDs()){if(df1) {df1 = false;} else { Write(",");}Write(cid);}Write("]");Write("}");}Write("]}");'
     let rr = new Rega(hm_layer, fetchGroups, function(result) {
         let dbir = 'INSERT INTO  "groups" ("regaid", "name", "type") VALUES (@regaid, @name, @type);'
@@ -153,7 +153,7 @@ RoomImporter.prototype.run = function(hm_layer, type, callback) {
                     })
                 })
             })
-            that.logger.info('Committing %s to filedb', type)
+            that.logger.debug('Committing %s to filedb', type)
             insertGroup(grpinserts)
             insertGroupItem(grpIteminserts)
             that.logger.debug('Committing done')
@@ -178,7 +178,7 @@ function LocalStorage(server, appRoot) {
     if (!fs.existsSync(this.dbPath)) {
         this.log.error("Missing logic databases. Will trigger a rebuild from ccu in about 30 seconds")
         setTimeout(function() {
-            that.log.info("Autobuild logic database")
+            that.log.debug("Autobuild logic database")
             that.refreshDatabaseFromCCU()
         }, 30000)
     }
@@ -197,15 +197,15 @@ LocalStorage.prototype.init = function() {
         this.deviceDB = require('better-sqlite3')('memory', {
             memory: true
         });
-        this.log.info('Attaching fileDB %s', this.dbPath)
+        this.log.debug('Attaching fileDB %s', this.dbPath)
         this.deviceDB.prepare('ATTACH "' + this.dbPath + '" AS sourceDB;').run()
 
-        this.log.info('Copying data')
+        this.log.debug('Copying data')
         let tables = ['channels', 'datapoints', 'devices', 'groupitems', 'groups']
         tables.forEach(tablename => {
             that.deviceDB.prepare('CREATE TABLE ' + tablename + ' AS SELECT * FROM sourceDB.' + tablename).run()
         })
-        this.log.info('Detaching from filedb')
+        this.log.debug('Detaching from filedb')
         this.deviceDB.prepare('DETACH DATABASE sourceDB;').run()
         this.emit('local_storage_init_done')
     }

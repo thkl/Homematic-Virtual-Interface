@@ -68,9 +68,6 @@ cd ${ADDON_DIR}
 npm install homematic-virtual-interface >>/var/log/hvl.log
 
 echo "[Installer]Switch Root FS back to RO" >>/var/log/hvl.log
-#switch back to read only
-mount -o remount,ro /
-
 
 echo "[Installer]Add Menu Buttons" >>/var/log/hvl.log
 #add the menu button
@@ -101,6 +98,9 @@ if [ $(cat ${CONFIG_DIR}/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) 
 fi
 # end check install needed
 fi
+
+#switch back to read only
+mount -o remount,ro /
 
 #Rebuild .npmrc on ever boot
 #mount -o remount,rw /
