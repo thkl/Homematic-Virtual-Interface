@@ -35,9 +35,7 @@ PiTempPlatform.prototype.init = function() {
 
     var that = this
     this.configuration = this.server.configuration
-
-    var devfile = path.join(__dirname, 'HM-WDS40-TH-I-2.json');
-    this.server.publishHMDevice(this.getName(), 'HM-WDS40-TH-I-2', devfile, 1);
+        // Core has the termostate file
     var serial = 'PiTemp'
     this.hmDevice = this.bridge.initDevice(this.getName(), serial, "HM-WDS40-TH-I-2", serial)
 
@@ -62,11 +60,11 @@ PiTempPlatform.prototype.loadValues = function(dispatchedRequest) {
             coreTemperature = parseFloat(fs.readFileSync(fileName))
         }
 
-        coreTemperature = (coreTemperature / 1000)
+        this.coreTemp = (coreTemperature / 1000)
         that.bridge.startMulticallEvent(500)
         let channel = that.hmDevice.getChannelWithTypeAndIndex("WEATHER", "1")
         if (channel) {
-            channel.updateValue("TEMPERATURE", coreTemperature, true, true);
+            channel.updateValue("TEMPERATURE", this.coreTemp, true, true);
         }
         that.bridge.sendMulticallEvents()
 
@@ -85,7 +83,7 @@ PiTempPlatform.prototype.handleConfigurationRequest = function(dispatchedRequest
     var template = 'index.html'
     var requesturl = dispatchedRequest.request.url
     var queryObject = url.parse(requesturl, true).query
-    var deviceList = ''
+    var coreTemp = ''
 
     if (queryObject['do'] !== undefined) {
         switch (queryObject['do']) {
@@ -99,8 +97,10 @@ PiTempPlatform.prototype.handleConfigurationRequest = function(dispatchedRequest
         }
     }
 
+    coreTemp = 'Temp: ' + this.coreTemp + ' °C'
+
     dispatchedRequest.dispatchFile(this.plugin.pluginPath, template, {
-        'listDevices': deviceList
+        'coreTemp': coreTemp
     })
 }
 

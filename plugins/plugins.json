@@ -1,167 +1,230 @@
 {
- 	"plugins":	
- 	[
-	  {
-		"name":"Hue Plugin",
-		"npm" :"homematic-virtual-huedevice",
-		"syname":"Hue",
-		"description":{"de-de":"Stellt HUE Lampen als RGBW Ger&auml;te der CCU zur Verf&uuml;gung","en-en":"Creates RGBW Devices from your HUE Bulbs"}
-	  }	,
+	"plugins": [{
+			"name": "Hue Plugin",
+			"npm": "homematic-virtual-huedevice",
+			"syname": "Hue",
+			"description": {
+				"de-de": "Stellt HUE Lampen als RGBW Ger&auml;te der CCU zur Verf&uuml;gung",
+				"en-en": "Creates RGBW Devices from your HUE Bulbs"
+			}
+		},
 
-	  {
-		"name":"IkeaTradfri Plugin",
-		"npm" :"homematic-virtual-tradfridevice",
-		"syname":"IkeaTradfri",
-		"description":{"de-de":"Steuert Ikea Tradfri Lampen","en-en":"Control IKEA Tradfri bulbs"}
-	  }	,
-
-
-
-	  {
-		"name":"Duty Cycle Plugin",
-		"npm" :"homematic-virtual-ccudutycylcle",
-		"syname":"DutyCycle",
-		"description":{"de-de":"Ermittelt den RFD Duty Cycle aller CCU Interfaces und loggt diesen","en-en":"Reads the duty cycle for all ccu interfaces."}
-	  }	,
-
-	  {
-		"name":"HTTP Plugin",
-		"npm" :"homematic-virtual-httpdevice",
-		"syname":"HTTPCalls",
-		"description":{"de-de":"Stellt ein HTTP Ger&auml;t in der CCU zur Verf&uuml;gung","en-en":"Creates an Device to make http Calls."}
-	  },
-
-	  {
-		"name":"Logic Plugin",
-		"npm" :"homematic-virtual-logicmanager",
-		"syname":"Logic",
-		"description":{"de-de":"Stellt eine Scriptengine zur Verf&uuml;gung","en-en":"Provides a script engine"}
-	  }
-	  ,
-
-	  {
-		"name":"NetAtmo Plugin",
-		"npm" :"homematic-virtual-netatmodevice",
-		"syname":"Netatmo",
-		"description":{"de-de":"Sellt Netatmo Innen und Aussen Sensor als CCU Ger&auml;te zur Verf&uuml;gung","en-en":"Creates CCU devices from weather modules"}
-	  }
-	  ,
-
-	  {
-		"name":"Sonos Plugin",
-		"npm" :"homematic-virtual-sonosdevice",
-		"syname":"Sonos",
-		"description":{"de-de":"Sellt Sonos Zoneplayer als CCU Ger&auml;te zur Verf&uuml;gung","en-en":"Creates CCU devices from sonos zone players"}
-	  }
-	  
-	  ,
-
-	  {
-		"name":"Logitech Harmony",
-		"npm" :"homematic-virtual-harmonydevice",
-		"syname":"Harmony",
-		"description":{"de-de":"Steuerung der Harmony durch die CCU und umgekehr.","en-en":"Control Harmony Activities from CCU and vise versa"}
-	  },
-	  
-	  {
-		  
-		"name":"OpenWeatherMap",
-		"npm" :"homematic-virtual-openweathermapdevice",
-		"syname":"OpenWeatherMap",
-		"description":{"de-de":"Legt ein CCU KS500 Ger&auml;t an und speist es aus aktuellen OpenWeatherMap Daten","en-en":"setup a KS500 device with data from OpenWeatherMap"}
-	  },
-	  
-
-	  {
-		  
-		"name":"NanoLeafAurora",
-		"npm" :"homematic-virtual-nanoleafauroradevice",
-		"syname":"Aurora",
-		"description":{"de-de":"Verbindet ein NanoLeaf Aurora mit der CCU","en-en":"connects a nanoleaf aurora to your CCU"}
-	  },
+		{
+			"name": "IkeaTradfri Plugin",
+			"npm": "homematic-virtual-tradfridevice",
+			"syname": "IkeaTradfri",
+			"description": {
+				"de-de": "Steuert Ikea Tradfri Lampen",
+				"en-en": "Control IKEA Tradfri bulbs"
+			}
+		},
 
 
-	  {
-		  
-		"name":"WeatherUnderground",
-		"npm" :"homematic-virtual-weatherundergrounddevice",
-		"syname":"WeatherUnderground",
-		"description":{"de-de":"Erstellt ein KS500 Ger&auml;t aus den Daten einer WeatherUnderground Station","en-en":"build a KS500 Device from data of a weatherunderground station"}
-	  },
 
-	  	  {
-		  
-		"name":"Pioneer AVR Remote",
-		"npm" :"homematic-virtual-pioneeravrdevice",
-		"syname":"PioneerAVR",
-		"description":{"de-de":"Erstellt eine 19er FB zur Steuerung eines PioneerAVR","en-en":"build a 19 key remote to control a Pioneer AVR"}
-	  },
-	  
-	  {
-		  
-		"name":"Roomba 980",
-		"npm" :"homematic-virtual-cleanomat980",
-		"syname":"Roomba980",
-		"description":{"de-de":"Verbindet den Roomba 980 mit der CCU","en-en":"connects your roomba 980 to the ccu"}
-	  } ,
+		{
+			"name": "Duty Cycle Plugin",
+			"npm": "homematic-virtual-ccudutycylcle",
+			"syname": "DutyCycle",
+			"description": {
+				"de-de": "Ermittelt den RFD Duty Cycle aller CCU Interfaces und loggt diesen",
+				"en-en": "Reads the duty cycle for all ccu interfaces."
+			}
+		},
 
-	  {
-		  
-		"name":"Lightify",
-		"npm" :"homematic-virtual-lightifydevice",
-		"syname":"Lightify",
-		"description":{"de-de":"Verbindet ein Lightify System mit der CCU","en-en":"connects your lightify to the ccu"}
-	  } ,
-	  
-	  {
-		  
-		"name":"Raumfeld",
-		"npm" :"homematic-virtual-raumfelddevice",
-		"syname":"Raumfeld",
-		"description":{"de-de":"Verbindet Deine Raumfeld Lautsprecher mit der CCU","en-en":"Put your Raumfeld players into your CCU and control them"}
-	  } 
- ,
-	  
-	  {
-		  
-		"name":"iCal",
-		"npm" :"homematic-virtual-ical",
-		"syname":"iCal",
-		"description":{"de-de":"Anzeige von Kalendern in Systemvariablen","en-en":"Show next appointments as system variables"}
-	  },
-	  
-	  
-	  {
-		  
-		"name":"Dash-Button",
-		"npm" :"homematic-virtual-dashbutton",
-		"syname":"DashButton",
-		"description":{"de-de":"F&uuml;gt Amazon Dash Buttons hinzu","en-en":"adds amazon Dash buttons"}
-	  },
-	  
-	  
-	  {
-		  
-		"name":"Google-Cast",
-		"npm" :"homematic-virtual-google-cast",
-		"syname":"GoogleCast",
-		"description":{"de-de":"F&uuml;gt Google Cast hinzu","en-en":"adds Google Cast support"}
-	  },
-	  {
-		  
-		"name":"MQTT",
-		"npm" :"homematic-virtual-mqttdevice",
-		"syname":"MQTT",
-		"description":{"de-de":"Verbindet Ger&auml;ete &uuml;ber MQTT mit der CCU","en-en":"connects MQTT devices to your CCU"}
-	  },
-	  {
-		  
-		"name":"DarkSkyWeather",
-		"npm" :"homematic-virtual-darkskyweather",
-		"syname":"DarkSky",
-		"description":{"de-de":"Legt ein CCU OC-3 Wetterstation an und speist es aus aktuellen DarkSky Daten","en-en":"setup a OC-3 weather station with data from DarkSky"}
+		{
+			"name": "HTTP Plugin",
+			"npm": "homematic-virtual-httpdevice",
+			"syname": "HTTPCalls",
+			"description": {
+				"de-de": "Stellt ein HTTP Ger&auml;t in der CCU zur Verf&uuml;gung",
+				"en-en": "Creates an Device to make http Calls."
+			}
+		},
 
-	  }
-	  
+		{
+			"name": "Logic Plugin",
+			"npm": "homematic-virtual-logicmanager",
+			"syname": "Logic",
+			"description": {
+				"de-de": "Stellt eine Scriptengine zur Verf&uuml;gung",
+				"en-en": "Provides a script engine"
+			}
+		},
+
+		{
+			"name": "NetAtmo Plugin",
+			"npm": "homematic-virtual-netatmodevice",
+			"syname": "Netatmo",
+			"description": {
+				"de-de": "Sellt Netatmo Innen und Aussen Sensor als CCU Ger&auml;te zur Verf&uuml;gung",
+				"en-en": "Creates CCU devices from weather modules"
+			}
+		},
+
+		{
+			"name": "Sonos Plugin",
+			"npm": "homematic-virtual-sonosdevice",
+			"syname": "Sonos",
+			"description": {
+				"de-de": "Sellt Sonos Zoneplayer als CCU Ger&auml;te zur Verf&uuml;gung",
+				"en-en": "Creates CCU devices from sonos zone players"
+			}
+		}
+
+		,
+
+		{
+			"name": "Logitech Harmony",
+			"npm": "homematic-virtual-harmonydevice",
+			"syname": "Harmony",
+			"description": {
+				"de-de": "Steuerung der Harmony durch die CCU und umgekehr.",
+				"en-en": "Control Harmony Activities from CCU and vise versa"
+			}
+		},
+
+		{
+
+			"name": "OpenWeatherMap",
+			"npm": "homematic-virtual-openweathermapdevice",
+			"syname": "OpenWeatherMap",
+			"description": {
+				"de-de": "Legt ein CCU KS500 Ger&auml;t an und speist es aus aktuellen OpenWeatherMap Daten",
+				"en-en": "setup a KS500 device with data from OpenWeatherMap"
+			}
+		},
+
+
+		{
+
+			"name": "NanoLeafAurora",
+			"npm": "homematic-virtual-nanoleafauroradevice",
+			"syname": "Aurora",
+			"description": {
+				"de-de": "Verbindet ein NanoLeaf Aurora mit der CCU",
+				"en-en": "connects a nanoleaf aurora to your CCU"
+			}
+		},
+
+
+		{
+
+			"name": "WeatherUnderground",
+			"npm": "homematic-virtual-weatherundergrounddevice",
+			"syname": "WeatherUnderground",
+			"description": {
+				"de-de": "Erstellt ein KS500 Ger&auml;t aus den Daten einer WeatherUnderground Station",
+				"en-en": "build a KS500 Device from data of a weatherunderground station"
+			}
+		},
+
+		{
+
+			"name": "Pioneer AVR Remote",
+			"npm": "homematic-virtual-pioneeravrdevice",
+			"syname": "PioneerAVR",
+			"description": {
+				"de-de": "Erstellt eine 19er FB zur Steuerung eines PioneerAVR",
+				"en-en": "build a 19 key remote to control a Pioneer AVR"
+			}
+		},
+
+		{
+
+			"name": "Roomba 980",
+			"npm": "homematic-virtual-cleanomat980",
+			"syname": "Roomba980",
+			"description": {
+				"de-de": "Verbindet den Roomba 980 mit der CCU",
+				"en-en": "connects your roomba 980 to the ccu"
+			}
+		},
+
+		{
+
+			"name": "Lightify",
+			"npm": "homematic-virtual-lightifydevice",
+			"syname": "Lightify",
+			"description": {
+				"de-de": "Verbindet ein Lightify System mit der CCU",
+				"en-en": "connects your lightify to the ccu"
+			}
+		},
+
+		{
+
+			"name": "Raumfeld",
+			"npm": "homematic-virtual-raumfelddevice",
+			"syname": "Raumfeld",
+			"description": {
+				"de-de": "Verbindet Deine Raumfeld Lautsprecher mit der CCU",
+				"en-en": "Put your Raumfeld players into your CCU and control them"
+			}
+		},
+
+		{
+
+			"name": "iCal",
+			"npm": "homematic-virtual-ical",
+			"syname": "iCal",
+			"description": {
+				"de-de": "Anzeige von Kalendern in Systemvariablen",
+				"en-en": "Show next appointments as system variables"
+			}
+		},
+
+
+		{
+
+			"name": "Dash-Button",
+			"npm": "homematic-virtual-dashbutton",
+			"syname": "DashButton",
+			"description": {
+				"de-de": "F&uuml;gt Amazon Dash Buttons hinzu",
+				"en-en": "adds amazon Dash buttons"
+			}
+		},
+
+
+		{
+
+			"name": "Google-Cast",
+			"npm": "homematic-virtual-google-cast",
+			"syname": "GoogleCast",
+			"description": {
+				"de-de": "F&uuml;gt Google Cast hinzu",
+				"en-en": "adds Google Cast support"
+			}
+		},
+		{
+
+			"name": "MQTT",
+			"npm": "homematic-virtual-mqttdevice",
+			"syname": "MQTT",
+			"description": {
+				"de-de": "Verbindet Ger&auml;ete &uuml;ber MQTT mit der CCU",
+				"en-en": "connects MQTT devices to your CCU"
+			}
+		},
+		{
+
+			"name": "DarkSkyWeather",
+			"npm": "homematic-virtual-darkskyweather",
+			"syname": "DarkSky",
+			"description": {
+				"de-de": "Legt ein CCU OC-3 Wetterstation an und speist es aus aktuellen DarkSky Daten",
+				"en-en": "setup a OC-3 weather station with data from DarkSky"
+			}
+
+		},
+		{
+			"name": "Pi Core Temp",
+			"npm": "homematic-virtual-picoretempdevice",
+			"syname": "PiTemp",
+			"description": {
+				"de-de": "&Uuml;bertr&auml;gt die Prozessortemperatur des Raspberrys zur CCU",
+				"en-en": "Will transmit the raspberry cpu temperaure into the ccu"
+			}
+		}
 	]
 }
