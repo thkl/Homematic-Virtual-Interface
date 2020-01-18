@@ -4,8 +4,8 @@ CONFIG_URL=/addons/hvl/index.html
 CONFIG_DIR=/usr/local/etc/config
 PIDFILE=/var/run/hvl.pid
 STARTRC=/etc/init.d/S51hvl
-VER=0.0.7
-PSPID=`ps -o pid,comm,args | awk '{if ($2=="node" && $3 ~ /hvl/){print $1}}'`
+VER=0.0.9
+PSPID=`ps -o pid,comm,args | awk '{if ($2=="node" && $4 ~ /hvl/){print $1}}'`
 
 case "$1" in
   ""|start)
@@ -69,7 +69,7 @@ case "$1" in
   uninstall)
 	logger -t homematic -p user.info "removing homematic virtual layer"
 	kill -KILL $PSPID 2>/dev/null
-	/usr/local/addons/hvl/etc/update_addon hvl
+	node /usr/local/addons/hvl/etc/hm_addon.js hvl
 	rm -R /usr/local/addons/hvl
     rm /usr/local/etc/config/rc.d/hvl 
 	mount -o remount,rw /

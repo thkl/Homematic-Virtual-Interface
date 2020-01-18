@@ -35,7 +35,6 @@ chmod +x ${RCD_DIR}/hvl
 
 #make postinstall executable / will launch via rc.d
 chmod +x ${ADDON_DIR}/etc/postinstall.sh
-chmod +x ${ADDON_DIR}/etc/update_addons
 
 
 fi

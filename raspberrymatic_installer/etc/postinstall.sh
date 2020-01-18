@@ -50,25 +50,25 @@ echo "path=/usr/local/addons/hvl/.npm" >> /root/.npmrc
 
 
 
-install log rotator
+#install log rotator
 echo "[Installer]Add logrotator" >>/var/log/hvl.log
 cp ${ADDON_DIR}/etc/hvl.conf /etc/logrotate.d/hvl.conf
 
 
-make .npm
+#make .npm
 echo "[Installer]Build cache " >>/var/log/hvl.log
 npm config set cache ${ADDON_DIR}/.npm >>/var/log/hvl.log
 
 echo "[Installer]Check cache " >>/var/log/hvl.log
 npm config get cache >>/var/log/hvl.log
 
-install the core system
+#install the core system
 echo "[Installer]Install Core system" >>/var/log/hvl.log
 cd ${ADDON_DIR}
 npm install homematic-virtual-interface >>/var/log/hvl.log
 
 echo "[Installer]Switch Root FS back to RO" >>/var/log/hvl.log
-switch back to read only
+#switch back to read only
 mount -o remount,ro /
 
 
@@ -77,8 +77,8 @@ echo "[Installer]Add Menu Buttons" >>/var/log/hvl.log
 cd /usr/local/addons/hvl/etc/
 chmod +x update_addon
 chmod +x remove_hvl_object
-touch /usr/local/etc/config/hm_addons.cfg
-/usr/local/addons/hvl/etc/update_addon hvl /usr/local/addons/hvl/etc/hvl_addon.cfg
+#touch /usr/local/etc/config/hm_addons.cfg
+node /usr/local/addons/hvl/etc/hm_addon.js hvl /usr/local/addons/hvl/etc/hvl_addon.cfg
 
 
 #link redirector
@@ -90,8 +90,6 @@ if [ ! -f ${CONFIG_DIR}/hvl/config.json ]; then
 	sed -i ${CONFIG_DIR}/hvl/config.json -e "s/ADDON_DIR/\/usr\/local\/addons\/hvl/g"
 fi
 
-fi
-
 # Add Interface Template
 if [ $(cat /etc/config_templates/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
 	sed -i /etc/config_templates/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
@@ -100,6 +98,8 @@ fi
 # Add Interface 
 if [ $(cat ${CONFIG_DIR}/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
 	sed -i ${CONFIG_DIR}/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
+fi
+# end check install needed
 fi
 
 #Rebuild .npmrc on ever boot
