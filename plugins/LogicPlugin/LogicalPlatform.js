@@ -1885,6 +1885,7 @@ LogicalPlatform.prototype.deleteScript = function(scriptName) {
         var l_path = this.configuration.storagePath() + '/scripts/'
         scriptName = scriptName.replace('..', '')
         var file = fs.unlink(l_path + scriptName)
+        this.reportUsageToCCU()
         return file
     } catch (err) {
         this.log.debug(err)
