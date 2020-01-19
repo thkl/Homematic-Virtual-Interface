@@ -379,7 +379,7 @@ LogicalPlatform.prototype.set_Variables = function(variables, callback) {
             that.log.warn('unable to set %s value is undefined', key)
         }
     })
-    that.log.info("Script %s", script)
+    that.log.debug("Script %s", script)
     this.regaCommand(script, function(result) {
         callback()
     })
@@ -743,6 +743,60 @@ LogicalPlatform.prototype.getDpsInGroup = function(id_group, section, dpname, ca
             }
         })
     }
+}
+
+/*
+ * creates a list of all datapoints used in logic by interface to report to the ccu with method 
+ * Boolean reportValueUsage(String address, String value_id, Integer ref_counter) in the xmlrpc layer
+ */
+LogicalPlatform.prototype.reportUsageToCCU = function() {
+
+    var ifdplist = {}
+    var that = this
+    that.hm_layer.resetUsageReportFlags()
+    this.subscriptions.forEach(dapointname => {
+        // Split the dp
+        let parts = dapointname.source.split('.')
+        if (parts.length === 3) {
+            let intf = parts[0]
+            let address = parts[1]
+            let value_id = parts[2]
+
+            if (ifdplist[intf] === undefined) {
+                ifdplist[intf] = {} // create a new list for that interface
+            }
+            // check we have this address
+            if (ifdplist[intf][address] === undefined) {
+                ifdplist[intf][address] = {}
+            }
+
+            // check we have this datapoint
+            if (ifdplist[intf][address][value_id] === undefined) {
+                ifdplist[intf][address][value_id] = 1
+            } else {
+                ifdplist[intf][address][value_id] = ifdplist[intf][address][value_id] + 1
+            }
+
+        }
+
+    })
+
+    Object.keys(ifdplist).forEach(ifName => {
+        // only cover ccu interfaces and not mine
+        if ((that.hm_layer.isCCUInterfaceName(ifName)) && (ifName != that.hm_layer.getCcuInterfaceName())) {
+
+            let ifObjects = ifdplist[ifName]
+
+            Object.keys(ifObjects).forEach(address => {
+                let adrObject = ifdplist[ifName][address]
+                Object.keys(adrObject).forEach(dpName => {
+                    let usage = ifdplist[ifName][address][dpName]
+                    that.hm_layer.doReportUsageToCCU(ifName, address, dpName, usage)
+                })
+            })
+        }
+    })
+    that.hm_layer.removeNotUsedDPsFromCCUReport()
 }
 
 LogicalPlatform.prototype.subscribeToGroup = function(options, subscribefkt) {
@@ -1857,9 +1911,11 @@ LogicalPlatform.prototype.isVirtualPlatformDevice = function(interfaceName) {
 LogicalPlatform.prototype.saveScript = function(data, filename) {
     try {
         fs.writeFileSync(filename, data)
+        this.reportUsageToCCU()
         this.reInitScripts()
     } catch (e) {
         this.log.error('Save script error %s', e)
+        this.log.error(e.stack)
     }
 }
 
