@@ -19,6 +19,6 @@
   },
 
   "dependencies": {
-    "node-hue-api": "2.4.2"
+    "node-hue-api": "4.0.3"
   }
 }

@@ -1,293 +1,253 @@
-"use strict";
+'use strict'
 
-var hueconf = require("node-hue-api");
-const EventEmitter = require('events');
-const util = require('util');
+const LightState = require('node-hue-api').v3.lightStates.LightState
+const GroupLightState = require('node-hue-api').v3.model.lightStates.GroupLightState
 
-var HomematicDevice;
+const EventEmitter = require('events')
+const util = require('util')
 
-var HueDimmableDevice = function(plugin, hueApi ,light,serialprefix) {
+var HomematicDevice
 
+var HueDimmableDevice = function(plugin, hueApi, light, serialprefix) {
 
-		var that = this;
-		this.api =  hueApi;
-		this.log = plugin.log;
-		this.bridge = plugin.server.getBridge();
-		this.plugin = plugin;
-		
-		HomematicDevice = plugin.server.homematicDevice;
-		
-		this.lightId = light["id"];
-		this.isGroup = (light["uniqueid"] == undefined);
-		this.transitiontime = 4; // Default Hue
-		this.onTime = 0;
-		this.lastLevel = 0;
+    var that = this
+    this.api = hueApi
+    this.log = plugin.log
+    this.bridge = plugin.server.getBridge()
+    this.plugin = plugin
 
-		this.config = plugin.server.configuration;
-		this.reportFaults = false;
+    HomematicDevice = plugin.server.homematicDevice
 
-		if (this.config!=undefined) {
-			this.log.debug("Config is valid");
-			this.reportFaults = this.config.getValueForPluginWithDefault(this.plugin.name,"reportFaults",false);
-		}
+    this.lightId = light["id"]
+    this.isGroup = (light["uniqueid"] == undefined)
+    this.transitiontime = 4 // Default Hue
+    this.onTime = 0
+    this.lastLevel = 0
 
-		this.log.debug("Setup new HUE Bridged Device %s",serialprefix + this.lightId );
-		
-		this.reload();
-		 
-		var serial = light["uniqueid"];
+    this.config = plugin.server.configuration
+    this.reportFaults = false
 
-		this.hmDevice = new HomematicDevice(this.plugin.name);
+    if (this.config != undefined) {
+        this.log.debug("Config is valid")
+        this.reportFaults = this.config.getValueForPluginWithDefault(this.plugin.name, "reportFaults", false)
+    }
 
-	// try to load persistant object
-		if (serial != undefined) {
-			this.log.debug("Serial %s",serial);
-			var data = this.bridge.deviceDataWithSerial(serial);
-			if (data!=undefined) {
-				this.hmDevice.initWithStoredData(data);
-			}
-		} 
-		
-		if (this.hmDevice.initialized == false) {
-	// not found create a new one
-			this.log.debug("no Stored Object");
-			this.hmDevice.initWithType("HM-LC-Dim1T-Pl", serialprefix  + this.lightId);
-			this.hmDevice.firmware = light["swversion"];
-			var uniqueid = light["uniqueid"];
-	
-			if (uniqueid!=undefined) {
-				this.hmDevice.serialNumber = uniqueid
-			}
-			this.bridge.addDevice(this.hmDevice,true);
-		} else {
-			this.bridge.addDevice(this.hmDevice,false);
-		}
-		
-		this.hmDevice.on('device_channel_install_test', function(parameter){
-			that.alert();
-			var channel = that.hmDevice.getChannel(parameter.channel);
-			channel.endUpdating("INSTALL_TEST");
-		});
+    this.log.debug("Setup new HUE Bridged Device %s", serialprefix + this.lightId)
+    this.reload()
+    var serial = light["uniqueid"]
+    this.hmDevice = this.bridge.initDevice(this.plugin.name, serial, "HM-LC-Dim1T-Pl", serialprefix + this.lightId)
+    var uniqueid = light["uniqueid"]
+
+    if (uniqueid != undefined) {
+        this.hmDevice.serialNumber = uniqueid
+    }
+    this.hmDevice.firmware = light["swversion"]
+
+    this.hmDevice.on('device_channel_install_test', function(parameter) {
+        that.alert()
+        var channel = that.hmDevice.getChannel(parameter.channel)
+        channel.endUpdating("INSTALL_TEST")
+    })
 
 
-		this.hmDevice.on('device_channel_value_change', function(parameter){
-			
-			that.log.debug("Value was changed %s", JSON.stringify(parameter) );
-			var newValue = parameter.newValue;
-			
-			var channel = that.hmDevice.getChannel(parameter.channel);
+    this.hmDevice.on('device_channel_value_change', function(parameter) {
 
-			if (parameter.name == "PROGRAM") {
-				switch(newValue) {
-					case 0:
-						that.effect("none");
-					break;
-					case 1:
-					case 2:
-					case 3:
-					break;
-					case 4:
-						that.alert();
-					break;
-    			}
-				channel.endUpdating("PROGRAM");
-	      	}
+        that.log.debug("Value was changed %s", JSON.stringify(parameter))
+        var newValue = parameter.newValue
+        var channel = that.hmDevice.getChannel(parameter.channel)
 
-	      if (parameter.name == "LEVEL") {
-	       that.setLevel(newValue);
-		   if ((that.onTime > 0) && (newValue>0)) {
-		    setTimeout(function() {that.setLevel(0);}, that.onTime * 1000);
-	       }
-	       // reset the transition and on time 
-	       that.transitiontime = 4;
-	       that.onTime = 0;
-	       if (newValue > 0) {
-		       that.lastLevel = newValue;
-	       }
-	     }
+        if (parameter.name == "PROGRAM") {
+            switch (newValue) {
+                case 0:
+                    that.effect("none")
+                    break
+                case 1:
+                case 2:
+                case 3:
+                    break
+                case 4:
+                    that.alert()
+                    break
+            }
+            channel.endUpdating("PROGRAM")
+        }
 
-	
-		 if (parameter.name == "OLD_LEVEL") {
-		   if (newValue==true) {
-		      if (that.lastLevel == 0) {
-			      that.lastLevel = 1;
-		      }
-		      that.setLevel(that.lastLevel); 
-	       
-	       }
-	       
-	     }
-
-	    if ((parameter.name == "RAMP_TIME") && (channel.index == "1")) {
-		  that.transitiontime = newValue*10;
-		}
-
-	    if ((parameter.name == "ON_TIME") && (channel.index == "1")) {
-		  that.onTime = newValue;
-		}
-
-	    });
-
-	    /* 
-	     this.updateTimer = setTimeout(function() {
-		 	that.refreshDevice();
-		 }, 1000);
-		*/
-		
-		EventEmitter.call(this);
-				
-	}
-	
-	util.inherits(HueDimmableDevice, EventEmitter);
-	
-	
-	
-	HueDimmableDevice.prototype.reload = function() {
-		if (this.config!=undefined) {
-			this.log.debug("Reload Lamp Configuration ...");
-			this.refresh = (this.config.getValueForPluginWithDefault(this.plugin.name,"refresh",60))*1000;
-			this.log.debug("Refresh Rate is %s ms",this.refresh);
-		}
-	}
-	
-	HueDimmableDevice.prototype.alert = function() {
-		if (this.isGroup == true) {
-		     this.api.setGroupLightState(this.lightId,{"alert":"lselect"}, function(err, result) {});
-		} else {
-			this.api.setLightState(this.lightId,{"alert":"lselect"}, function(err, result) {});
-		}
-	}
+        if (parameter.name == "LEVEL") {
+            that.setLevel(newValue)
+            if ((that.onTime > 0) && (newValue > 0)) {
+                setTimeout(function() {
+                    that.setLevel(0)
+                }, that.onTime * 1000)
+            }
+            // reset the transition and on time 
+            that.transitiontime = 4
+            that.onTime = 0
+            if (newValue > 0) {
+                that.lastLevel = newValue
+            }
+        }
 
 
-	HueDimmableDevice.prototype.effect = function(effectname) {
-		if (this.isGroup == true) {
-		     this.api.setGroupLightState(this.lightId,{"effect":effectname}, function(err, result) {});
-		} else {
-			this.api.setLightState(this.lightId,{"effect":effectname}, function(err, result) {});
-		}
-	}
+        if (parameter.name == "OLD_LEVEL") {
+            if (newValue == true)  {
+                if (that.lastLevel == 0) {
+                    that.lastLevel = 1
+                }
+                that.setLevel(that.lastLevel)
+            }
+
+        }
+
+        if ((parameter.name == "RAMP_TIME") && (channel.index == "1")) {
+            that.transitiontime = newValue * 10
+        }
+
+        if ((parameter.name == "ON_TIME") && (channel.index == "1")) {
+            that.onTime = newValue
+        }
+
+    })
+
+    EventEmitter.call(this)
+}
+
+util.inherits(HueDimmableDevice, EventEmitter)
 
 
-	HueDimmableDevice.prototype.setLevel = function(newLevel) {
-	    var that = this;
-	    
-	    this.emit('direct_light_event', this);
-	    
-	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-		di_channel.startUpdating("LEVEL");
-		di_channel.updateValue("LEVEL",newLevel);
-		var newState = {"transitiontime":that.transitiontime};
-	      if (newLevel > 0) {
-	        newState["on"] = true;
-	        newState["bri"] = (newLevel/1)*255;
 
-	      } else {
-	        newState["on"] = false;
-	        newState["bri"] = 0;
-	    }
-		this.log.debug(JSON.stringify(newState));
-		
-		
-		if (that.isGroup == true) {
+HueDimmableDevice.prototype.reload = function() {
+    if (this.config != undefined) {
+        this.log.debug("Reload Lamp Configuration ...")
+        this.refresh = (this.config.getValueForPluginWithDefault(this.plugin.name, "refresh", 60)) * 1000
+        this.log.debug("Refresh Rate is %s ms", this.refresh)
+    }
+}
 
-	    that.api.setGroupLightState(that.lightId,newState, function(err, result) {
-	     if (di_channel != undefined) {
-	        di_channel.endUpdating("LEVEL");
-	      }
-	    });
-
-		} else {
-
-		that.api.setLightState(that.lightId,newState, function(err, result) {
-	      if (di_channel != undefined) {
-	        di_channel.endUpdating("LEVEL");
-	      }
-	    });
-	    }
-	}
-
-	HueDimmableDevice.prototype.refreshDevice = function(device) {
-	  var that = this;
-	  that.log.debug("Refreshing Devices");
-	  
-	  if (that.isGroup == true) {
-	  
-	  this.api.getGroup(this.lightId, function(err, result) {
-		this.log.debug(JSON.stringify(result));
-	    var state = result["lastAction"]["on"];
-	    var bri = result["lastAction"]["bri"];
-
-	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-
-	    if (di_channel!=undefined) {
-		    if (state==true) {
-		        di_channel.updateValue("LEVEL",(bri/254),true);
-	    	}
-	    }
-	  });
-
-	}
-	  else {
-	
-
-	  this.api.lightStatus(this.lightId, function(err, result) {
-	    var state = result["state"]["on"];
-	    var bri = result["state"]["bri"];
-	  	
-		if (that.reportFaults == true) {
-			var reachable = result["state"]["reachable"];
-			var ch_maintenance = that.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);
-			var postToCCU = (ch_maintenance.getValue("UNREACH")==reachable);
-			ch_maintenance.updateValue("UNREACH", !reachable,true);
-			if (reachable == false) {
-				ch_maintenance.updateValue("STICKY_UNREACH", true ,true);
-			}
-		}
-	    
-	    var di_channel = that.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-	  
-	    if (di_channel!=undefined) {
-		    if (state==true) {
-	        	di_channel.updateValue("LEVEL",(bri/254),true);
-			}
-	    }
-
-	  });
-	}
-
-	 this.updateTimer = setTimeout(function() {
-		 	that.refreshDevice();
-		 }, that.refresh);
-	}
+HueDimmableDevice.prototype.alert = function() {
+    this.log.debug('Alerting')
+    if (this.isGroup == true) {
+        this.api.groups.setGroupState(this.lightId, {
+            "alert": "lselect"
+        }, function(err, result) {})
+    } else {
+        this.api.lights.setLightState(this.lightId, {
+            "alert": "lselect"
+        }, function(err, result) {})
+    }
+}
 
 
-	HueDimmableDevice.prototype.refreshWithData = function (data) {
-		var state = data["state"]["on"];
-	    var bri = data["state"]["bri"];
-	  	
-		if (this.reportFaults == true) {
-			var reachable = data["state"]["reachable"];
-			var ch_maintenance = this.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE",0);
-			var postToCCU = (ch_maintenance.getValue("UNREACH")==reachable);
-			ch_maintenance.updateValue("UNREACH", !reachable,true);
-			if (reachable == false) {
-				ch_maintenance.updateValue("STICKY_UNREACH", true ,true);
-			}
-		}
-	    
-	    var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER","1");
-	  
-	    if (di_channel!=undefined) {
-		    if (state==true) {
-	        	di_channel.updateValue("LEVEL",(bri/254),true);
-			} else {
-	        	di_channel.updateValue("LEVEL",0,true);
-			}
-	    }
-
-	}
+HueDimmableDevice.prototype.effect = function(effectname) {
+    if (this.isGroup == true) {
+        this.api.groups.setGroupState(this.lightId, {
+            "effect": effectname
+        }, function(err, result) {})
+    } else {
+        this.api.lights.setLightState(this.lightId, {
+            "effect": effectname
+        }, function(err, result) {})
+    }
+}
 
 
-	module.exports = {
-	  HueDimmableDevice : HueDimmableDevice
-	}
+HueDimmableDevice.prototype.setLevel = function(newLevel) {
+    this.emit('direct_light_event', this)
+    var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER", "1")
+    di_channel.startUpdating("LEVEL")
+    di_channel.updateValue("LEVEL", newLevel)
+
+    if (this.isGroup == true) {
+
+        var newState = new GroupLightState().transitiontime(this.transitiontime)
+        if (newLevel > 0) {
+            newState.on().bri((newLevel / 1) * 254)
+        } else {
+            newState.off().bri(1)
+        }
+
+        this.api.groups.setGroupState(this.lightId, newState).then(function(result) {
+            if (di_channel != undefined)  {
+                di_channel.endUpdating("LEVEL")
+            }
+        })
+
+    } else {
+        var newState = new LightState().transitiontime(this.transitiontime)
+        if (newLevel > 0) {
+            newState.on().bri((newLevel / 1) * 254)
+        } else {
+            newState.off().bri(1)
+        }
+        this.api.lights.setLightState(this.lightId, newState).then(function(result) {
+            if (di_channel != undefined)  {
+                di_channel.endUpdating("LEVEL")
+            }
+        })
+
+    }
+}
+
+HueDimmableDevice.prototype.refreshDevice = function() {
+    let that = this
+    this._refreshDevice()
+    this.updateTimer = setTimeout(function() {
+        that.refreshDevice()
+    }, this.refresh)
+}
+
+HueDimmableDevice.prototype._updateHMLightState = function(lightState) {
+
+    if (this.reportFaults == true) {
+        var reachable = lightState.reachable
+        var ch_maintenance = this.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE", 0)
+        var postToCCU = (ch_maintenance.getValue("UNREACH") == reachable)
+        ch_maintenance.updateValue("UNREACH", !reachable, true)
+        if (reachable == false) {
+            ch_maintenance.updateValue("STICKY_UNREACH", true, true)
+        }
+    }
+
+    var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER", "1")
+    if (di_channel != undefined) {
+        if (lightState.on === true)  {
+            di_channel.updateValue("LEVEL", (lightState.bri / 254), true)
+        } else {
+            di_channel.updateValue("LEVEL", 0, true)
+        }
+    }
+}
+
+HueDimmableDevice.prototype.setLightData = function(lightData) {
+    this.api.lights.setLightState(this.lightId, lightData, function(err, result) {
+        // HM SEND
+    })
+}
+
+HueDimmableDevice.prototype._refreshDevice = function() {
+    var that = this
+
+    if (that.isGroup == true) {
+        that.api.groups.getGroupState(that.lightId).then(function(groupState) {
+            that._updateHMLightState(groupState)
+        })
+    } else {
+        that.api.lights.getLightState(that.lightId).then(function(lightState) {
+            that._updateHMLightState(lightState)
+        })
+    }
+}
+
+
+HueDimmableDevice.prototype.refreshLight = function() {
+    let that = this
+    setTimeout(function() {
+
+        that._refreshDevice()
+
+    }, Math.random * 1000)
+}
+
+
+module.exports = {
+    HueDimmableDevice: HueDimmableDevice
+}
