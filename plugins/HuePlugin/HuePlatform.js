@@ -608,7 +608,7 @@ HuePlatform.prototype.refreshAll = function() {
             mdevice.refreshSensor()
         }
     })
-
+    this.lastUpdate = new Date()
     this.refreshTimer = setTimeout(function() {
         that.refreshAll()
     }, refreshrate)

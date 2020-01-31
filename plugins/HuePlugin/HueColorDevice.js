@@ -200,7 +200,7 @@ HueColorDevice.prototype.setColor = function(newColor) {
     if (that.isGroup == true) {
         var newState = new GroupLightState().transitiontime(this.transitiontime)
         newState.sat(sat)
-        newState.bri(this.bri)
+        newState.bri(that.bri)
         newState.hue(hue)
 
         this.api.groups.setGroupState(that.lightId, newState).then(function(result) {
@@ -213,7 +213,7 @@ HueColorDevice.prototype.setColor = function(newColor) {
 
         var newState = new LightState().transitiontime(this.transitiontime)
         newState.sat(sat)
-        newState.bri(this.bri)
+        newState.bri(that.bri)
         newState.hue(hue)
 
         this.api.lights.setLightState(that.lightId, newState).then(function(result) {
@@ -254,8 +254,6 @@ HueColorDevice.prototype.setSaturation = function(newSaturation) {
         co_channel.startUpdating("SATURATION")
     }
 
-
-
     if (that.isGroup == true) {
 
         that.api.setGroupLightState(that.lightId, newState, function(err, result) {
@@ -275,7 +273,9 @@ HueColorDevice.prototype.setSaturation = function(newSaturation) {
 
 
 HueColorDevice.prototype.setLevel = function(newLevel) {
+    let that = this
     this.emit('direct_light_event', this)
+    this.log.info('setLevel %s', newLevel)
     var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER", "1")
     di_channel.startUpdating("LEVEL")
     di_channel.updateValue("LEVEL", newLevel)
@@ -284,8 +284,10 @@ HueColorDevice.prototype.setLevel = function(newLevel) {
 
         var newState = new GroupLightState().transitiontime(this.transitiontime)
         if (newLevel > 0) {
-            newState.on().bri((newLevel / 1) * 254)
+            that.bri = (newLevel / 1) * 254
+            newState.on().bri(that.bri)
         } else {
+            that.bri = 1
             newState.off().bri(1)
         }
 
@@ -298,8 +300,11 @@ HueColorDevice.prototype.setLevel = function(newLevel) {
     } else {
         var newState = new LightState().transitiontime(this.transitiontime)
         if (newLevel > 0) {
-            newState.on().bri((newLevel / 1) * 254)
+            that.bri = (newLevel / 1) * 254
+            this.log.info('Set bri %s', that.bri)
+            newState.on().bri(that.bri)
         } else {
+            that.bri = 1
             newState.off().bri(1)
         }
         this.api.lights.setLightState(this.lightId, newState).then(function(result) {
@@ -336,7 +341,13 @@ HueColorDevice.prototype._updateHMLightState = function(lightState) {
             ch_maintenance.updateValue("STICKY_UNREACH", true, true)
         }
     }
-    this.bri = lightState.bri
+    this.bri = (lightState.bri / 254)
+    if (this.bri < 1) {
+        this.bri = 1
+    }
+    if (this.bri > 254) {
+        this.bri = 254
+    }
     let di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER", "1")
     let co_channel = this.hmDevice.getChannelWithTypeAndIndex("RGBW_COLOR", "2")
     let white = co_channel.getParamsetValueWithDefault("MASTER", "WHITE_HUE_VALUE", 39609)
