@@ -195,6 +195,12 @@ HueEffectServer.prototype.runStaticScene = function(frame) {
         var bri = this.hs360(frame.brightness, 254, 100);
         var sat = this.hs360(frame.saturation, 254, 100);
         var isOn = (bri == 0) ? false : true;
+        if (bri < 1) {
+            bri = 1
+        }
+        if (bri > 254) {
+            bri = 254
+        }
         var transition = this.getArgument(frame.transition) || 5;
         var lightstate = {
             "transitiontime": transition,
@@ -215,6 +221,12 @@ HueEffectServer.prototype.runStaticScene = function(frame) {
             var bri = that.hs360(frame.brightness, 254, 100);
             var sat = that.hs360(frame.saturation, 254, 100);
             var isOn = (bri == 0) ? false : true;
+            if (bri < 1) {
+                bri = 1
+            }
+            if (bri > 254) {
+                bri = 254
+            }
             var transition = that.getArgument(frame.transition) || 5;
             var lightstate = {
                 "transitiontime": transition,
@@ -260,6 +272,12 @@ HueEffectServer.prototype.runFXScene = function(loop, frames, curFrame) {
                 var sat = this.hs360(frame.saturation, 254, 100);
                 var transition = this.getArgument(frame.transition) || 5;
                 var isOn = (bri == 0) ? false : true;
+                if (bri < 1) {
+                    bri = 1
+                }
+                if (bri > 254) {
+                    bri = 254
+                }
 
                 var lightstate = {
                     "transitiontime": transition,
@@ -280,6 +298,12 @@ HueEffectServer.prototype.runFXScene = function(loop, frames, curFrame) {
                     var sat = that.hs360(frame.saturation, 254, 100);
                     var transition = that.getArgument(frame.transition) || 5;
                     var isOn = (bri == 0) ? false : true;
+                    if (bri < 1) {
+                        bri = 1
+                    }
+                    if (bri > 254) {
+                        bri = 254
+                    }
 
                     var lightstate = {
                         "transitiontime": transition,

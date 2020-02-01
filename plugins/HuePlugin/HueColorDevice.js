@@ -170,8 +170,8 @@ HueColorDevice.prototype.effect = function(effectname) {
 
 HueColorDevice.prototype.setColor = function(newColor) {
     var that = this
-    var hue = 0
-    var sat = 0
+    this.hue = 0
+    this.sat = 0
 
 
     this.emit('direct_light_event', this)
@@ -181,14 +181,14 @@ HueColorDevice.prototype.setColor = function(newColor) {
     if (newColor == 200) {
         // SpeZiale
         var white = co_channel.getParamsetValueWithDefault("MASTER", "WHITE_HUE_VALUE", 39609)
-        var sat = co_channel.getParamsetValueWithDefault("MASTER", "DEFAULT_SATURATION", 128)
-        hue = white
-        if (sat > 254) {
-            sat = 254
+        this.sat = co_channel.getParamsetValueWithDefault("MASTER", "DEFAULT_SATURATION", 128)
+        this.hue = white
+        if (this.sat > 254) {
+            this.sat = 254
         }
     } else {
-        hue = (newColor / 199) * 65535
-        sat = 254
+        this.hue = (newColor / 199) * 65535
+        this.sat = 254
     }
 
     this.log.debug("Hue Value set to " + JSON.stringify(newState))
@@ -198,27 +198,35 @@ HueColorDevice.prototype.setColor = function(newColor) {
     }
 
     if (that.isGroup == true) {
-        var newState = new GroupLightState().transitiontime(this.transitiontime)
-        newState.sat(sat)
-        newState.bri(that.bri)
-        newState.hue(hue)
 
-        this.api.groups.setGroupState(that.lightId, newState).then(function(result) {
-            if (co_channel != undefined)  {
-                co_channel.endUpdating("COLOR")
+        var newState = new GroupLightState().transitiontime(this.transitiontime)
+        newState.sat(this.at)
+        newState.bri(this.bri)
+        newState.hue(this.hue)
+
+
+        this.api.groups.getGroupState(that.lightId).then(function(groupState) {
+            if (groupState.on === true) {
+                that.api.groups.setGroupState(that.lightId, newState).then(function(result) {
+                    if (co_channel != undefined)  {
+                        co_channel.endUpdating("COLOR")
+                    }
+                })
             }
         })
-
     } else {
 
         var newState = new LightState().transitiontime(this.transitiontime)
-        newState.sat(sat)
-        newState.bri(that.bri)
-        newState.hue(hue)
-
-        this.api.lights.setLightState(that.lightId, newState).then(function(result) {
-            if (co_channel != undefined)  {
-                co_channel.endUpdating("COLOR")
+        newState.sat(this.sat)
+        newState.bri(this.bri)
+        newState.hue(this.hue)
+        this.api.lights.getLightState(that.lightId).then(function(lightState) {
+            if (lightState.on === true) {
+                that.api.lights.setLightState(that.lightId, newState).then(function(result) {
+                    if (co_channel != undefined)  {
+                        co_channel.endUpdating("COLOR")
+                    }
+                })
             }
         })
     }
@@ -264,6 +272,7 @@ HueColorDevice.prototype.setSaturation = function(newSaturation) {
 
     } else {
         that.api.setLightState(that.lightId, newState, function(err, result) {
+
             if (co_channel != undefined)  {
                 co_channel.endUpdating("SATURATION")
             }
@@ -288,7 +297,10 @@ HueColorDevice.prototype.setLevel = function(newLevel) {
             this.bri = 1
             newState.off()
         } else {
-            newState.on().bri(this.bri)
+            newState.on(true)
+            newState.bri(this.bri)
+            newState.sat(this.sat)
+            newState.hue(this.hue)
         }
 
         this.api.groups.setGroupState(this.lightId, newState).then(function(result) {
@@ -304,7 +316,10 @@ HueColorDevice.prototype.setLevel = function(newLevel) {
             this.bri = 1
             newState.off()
         } else {
-            newState.on().bri(this.bri)
+            newState.on(true)
+            newState.bri(this.bri)
+            newState.sat(this.sat)
+            newState.hue(this.hue)
         }
 
         this.api.lights.setLightState(this.lightId, newState).then(function(result) {

@@ -164,7 +164,7 @@ HueDimmableDevice.prototype.setLevel = function(newLevel) {
             this.bri = 1
             newState.off()
         } else {
-            newState.on().bri(this.bri)
+            newState.on(true).bri(this.bri)
         }
 
         this.api.groups.setGroupState(this.lightId, newState).then(function(result) {
@@ -180,7 +180,7 @@ HueDimmableDevice.prototype.setLevel = function(newLevel) {
             this.bri = 1
             newState.off()
         } else {
-            newState.on().bri(this.bri)
+            newState.on(true).bri(this.bri)
         }
 
         this.api.lights.setLightState(this.lightId, newState).then(function(result) {
