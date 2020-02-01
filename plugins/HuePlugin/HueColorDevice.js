@@ -275,7 +275,7 @@ HueColorDevice.prototype.setSaturation = function(newSaturation) {
 HueColorDevice.prototype.setLevel = function(newLevel) {
     let that = this
     this.emit('direct_light_event', this)
-    this.log.info('setLevel %s', newLevel)
+    this.log.debug('setLevel %s', newLevel)
     var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER", "1")
     di_channel.startUpdating("LEVEL")
     di_channel.updateValue("LEVEL", newLevel)
@@ -283,12 +283,12 @@ HueColorDevice.prototype.setLevel = function(newLevel) {
     if (this.isGroup == true) {
 
         var newState = new GroupLightState().transitiontime(this.transitiontime)
-        if (newLevel > 0) {
-            that.bri = (newLevel / 1) * 254
-            newState.on().bri(that.bri)
+        this.bri = (newLevel / 1) * 254
+        if (this.bri < 1) {
+            this.bri = 1
+            newState.off()
         } else {
-            that.bri = 1
-            newState.off().bri(1)
+            newState.on().bri(this.bri)
         }
 
         this.api.groups.setGroupState(this.lightId, newState).then(function(result) {
@@ -299,14 +299,14 @@ HueColorDevice.prototype.setLevel = function(newLevel) {
 
     } else {
         var newState = new LightState().transitiontime(this.transitiontime)
-        if (newLevel > 0) {
-            that.bri = (newLevel / 1) * 254
-            this.log.info('Set bri %s', that.bri)
-            newState.on().bri(that.bri)
+        this.bri = (newLevel / 1) * 254
+        if (this.bri < 1) {
+            this.bri = 1
+            newState.off()
         } else {
-            that.bri = 1
-            newState.off().bri(1)
+            newState.on().bri(this.bri)
         }
+
         this.api.lights.setLightState(this.lightId, newState).then(function(result) {
             if (di_channel != undefined)  {
                 di_channel.endUpdating("LEVEL")
@@ -331,7 +331,6 @@ HueColorDevice.prototype.refreshDevice = function() {
 }
 
 HueColorDevice.prototype._updateHMLightState = function(lightState) {
-
     if (this.reportFaults == true) {
         var reachable = lightState.reachable
         var ch_maintenance = this.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE", 0)
@@ -341,7 +340,7 @@ HueColorDevice.prototype._updateHMLightState = function(lightState) {
             ch_maintenance.updateValue("STICKY_UNREACH", true, true)
         }
     }
-    this.bri = (lightState.bri / 254)
+    this.bri = lightState.bri
     if (this.bri < 1) {
         this.bri = 1
     }

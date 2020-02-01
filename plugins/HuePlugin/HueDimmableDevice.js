@@ -159,10 +159,12 @@ HueDimmableDevice.prototype.setLevel = function(newLevel) {
     if (this.isGroup == true) {
 
         var newState = new GroupLightState().transitiontime(this.transitiontime)
-        if (newLevel > 0) {
-            newState.on().bri((newLevel / 1) * 254)
+        this.bri = (newLevel / 1) * 254
+        if (this.bri < 1) {
+            this.bri = 1
+            newState.off()
         } else {
-            newState.off().bri(1)
+            newState.on().bri(this.bri)
         }
 
         this.api.groups.setGroupState(this.lightId, newState).then(function(result) {
@@ -173,11 +175,14 @@ HueDimmableDevice.prototype.setLevel = function(newLevel) {
 
     } else {
         var newState = new LightState().transitiontime(this.transitiontime)
-        if (newLevel > 0) {
-            newState.on().bri((newLevel / 1) * 254)
+        this.bri = (newLevel / 1) * 254
+        if (this.bri < 1) {
+            this.bri = 1
+            newState.off()
         } else {
-            newState.off().bri(1)
+            newState.on().bri(this.bri)
         }
+
         this.api.lights.setLightState(this.lightId, newState).then(function(result) {
             if (di_channel != undefined)  {
                 di_channel.endUpdating("LEVEL")
@@ -196,7 +201,6 @@ HueDimmableDevice.prototype.refreshDevice = function() {
 }
 
 HueDimmableDevice.prototype._updateHMLightState = function(lightState) {
-
     if (this.reportFaults == true) {
         var reachable = lightState.reachable
         var ch_maintenance = this.hmDevice.getChannelWithTypeAndIndex("MAINTENANCE", 0)
@@ -206,7 +210,7 @@ HueDimmableDevice.prototype._updateHMLightState = function(lightState) {
             ch_maintenance.updateValue("STICKY_UNREACH", true, true)
         }
     }
-
+    this.bri = lightState.bri
     var di_channel = this.hmDevice.getChannelWithTypeAndIndex("DIMMER", "1")
     if (di_channel != undefined) {
         if (lightState.on === true)  {
