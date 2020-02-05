@@ -10,7 +10,10 @@
 
 "use strict";
 
-var harmony = require('hvl_harmonyhubjs-client');
+//var harmony = require('hvl_harmonyhubjs-client');
+
+var harmony = require('@harmonyhub/client').getHarmonyClient;
+
 var HomematicDevice;
 const util = require('util');
 

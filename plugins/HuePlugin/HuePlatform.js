@@ -57,6 +57,7 @@ function HuePlatform(plugin, name, server, log, instance) {
     this.sfxDevice
     this.authorized
     this.lastUpdate = undefined
+    this.observer = {}
 }
 
 util.inherits(HuePlatform, HomematicVirtualPlatform)
@@ -91,7 +92,7 @@ HuePlatform.prototype.init = function() {
             if (err) throw err
             if (that.hue_ipAdress != undefined) {
                 that.configuration.setValueForPlugin(that.name, "hue_bridge_ip", that.hue_ipAdress)
-                that.log.info("Saved the Philips Hue bridge ip address " + that.hue_ipAdress + " to your config to skip discovery.")
+                that.log.debug("Saved the Philips Hue bridge ip address " + that.hue_ipAdress + " to your config to skip discovery.")
                 if (that.checkUsername() == true) {
                     that.queryBridgeAndMapDevices()
                 }
@@ -227,7 +228,7 @@ HuePlatform.prototype.locateBridge = function(callback) {
     var that = this
 
 
-    that.log.info("trying to find your Hue bridge ...")
+    that.log.debug("trying to find your Hue bridge ...")
 
     HueV3.discovery.nupnpSearch().then(function(results) {
         if ((results === undefined) ||  (results.length === 0)) {
@@ -247,14 +248,14 @@ HuePlatform.prototype.checkUsername = function() {
     var that = this
     var user = this.configuration.getValueForPlugin(this.name, "hue_username")
     if ((user == undefined) || (user == "")) {
-        this.log.info("trying to create a new user at your bridge")
+        this.log.debug("trying to create a new user at your bridge")
         HueV3.createLocal(that.hue_ipAdress).connect().then(function(unauthenticatedApi) {
             try {
                 let deviceName = that.configuration.getMacAddress().toString().replace(/:/g, '')
                 unauthenticatedApi.users.createUser('HVL', deviceName).then(function(createdUser) {
                     that.authorized = true
                     that.configuration.setValueForPlugin(that.name, "hue_username", createdUser.username)
-                    that.log.info("saved your user to config.json")
+                    that.log.debug("saved your user to config.json")
                     that.hue_userName = createdUser.username
                 })
             } catch (err) {
@@ -358,10 +359,10 @@ HuePlatform.prototype.checkReady = function() {
 
 HuePlatform.prototype.querySensors = function() {
     var that = this
-    this.log.info("Query sensors")
+    this.log.debug("Query sensors")
     this.hue_api.sensors.getAll().then(function(results) {
         if (results != undefined) {
-            that.log.info('%s sensors found', results.length)
+            that.log.debug('%s sensors found', results.length)
             results.forEach(function(sensor) {
                 that.log.debug("Try adding sensor %s", sensor['modelid'])
                 switch (sensor['type'].toLowerCase()) {
@@ -416,12 +417,12 @@ HuePlatform.prototype.persistantName = function(devName, id, uniqueid) {
 
 HuePlatform.prototype.queryLights = function() {
     var that = this
-    this.log.info("Query Lights")
+    this.log.debug("Query Lights")
     this.hue_api.lights.getAll().then(function(lights) {
         if (lights != undefined) {
             try {
                 lights.forEach(function(light) {
-                    that.log.info('processing %s', light.id)
+                    that.log.debug('processing %s', light.id)
                     var hd = undefined
 
                     switch (light["type"].toLowerCase()) {
@@ -666,6 +667,38 @@ HuePlatform.prototype.saveEffectScenes = function(publishedscenes) {
     this.configuration.setPersistValueForPlugin(this.name, "EffectServer", s)
 }
 
+
+HuePlatform.prototype.message = function(message, callback) {
+    if ((message) && (message.name) && (callback)) {
+        this.log.debug('Core message received : %s', message.name)
+        if (message.name === 'getLights') {
+            callback(undefined, this.lights)
+            return
+        }
+
+        if ((message.name === 'getLightState') && (message.lightId)) {
+            if (this.hue_api) {
+                this.hue_api.lights.getLightState(message.lightId).then(function(lightState) {
+                    callback(undefined, lightState)
+                })
+            } else {
+                callback('api not initialized', undefined)
+            }
+            return
+        }
+
+        if ((message.name === 'setLightState') && (message.lightId) && (message.newState)) {
+            if (this.hue_api) {
+                this.hue_api.lights.setLightState(message.lightId, message.newState).then(function(err, result) {
+                    callback(err, result)
+                })
+            } else {
+                callback('api not initialized', undefined)
+            }
+            return
+        }
+    }
+}
 
 HuePlatform.prototype.handleConfigurationRequest = function(dispatched_request) {
     var listLights = ""

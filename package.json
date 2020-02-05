@@ -19,22 +19,23 @@
     "hmvi": "bin/hmvi"
   },
   "dependencies": {
-    "debug": "^2.2.0",
-    "request": "^2.65.0",
-    "commander": "2.8.1",
-    "sax": "0.4.x",
     "chalk": "^1.1.1",
-    "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5",
+    "commander": "2.8.1",
     "daemonize2": "^0.4.2",
-    "nedb": "1.8.0",
-    "moment": "2.19.3",
+    "debug": "^2.2.0",
     "group-array": "0.3.1",
-    "nedb-logger": "0.1.0",
-    "qs": "6.3.1",
-    "xml2js": "0.4.17",
-    "pem": "latest",
     "http-headers": "latest",
-    "iconv-lite": "0.5.1"
+    "iconv-lite": "0.5.1",
+    "moment": "2.19.3",
+    "nedb": "1.8.0",
+    "nedb-logger": "0.1.0",
+    "node-ssdp": "^4.0.0",
+    "pem": "latest",
+    "qs": "6.3.1",
+    "request": "^2.65.0",
+    "sax": "0.4.x",
+    "xml2js": "0.4.17",
+    "xmlbuilder": "https://github.com/hobbyquaker/xmlbuilder-js/tarball/29fe5030dc6852007dc8d1bfd5109d75f8da58d5"
   },
   "config": {
     "unsafe-perm": true

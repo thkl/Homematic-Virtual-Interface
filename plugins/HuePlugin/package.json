@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-huedevice",
-  "version": "0.0.48",
+  "version": "0.0.50",
   "description": "Virtual Hue Device",
   "license": "ISC",
   "keywords": [
