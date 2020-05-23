@@ -200,7 +200,7 @@ HueColorDevice.prototype.setColor = function(newColor) {
     if (that.isGroup == true) {
 
         var newState = new GroupLightState().transitiontime(this.transitiontime)
-        newState.sat(this.at)
+        newState.sat(this.sat || 0)
         newState.bri(this.bri)
         newState.hue(this.hue)
 
@@ -217,7 +217,7 @@ HueColorDevice.prototype.setColor = function(newColor) {
     } else {
 
         var newState = new LightState().transitiontime(this.transitiontime)
-        newState.sat(this.sat)
+        newState.sat(this.sat || 0)
         newState.bri(this.bri)
         newState.hue(this.hue)
         this.api.lights.getLightState(that.lightId).then(function(lightState) {
@@ -299,8 +299,8 @@ HueColorDevice.prototype.setLevel = function(newLevel) {
         } else {
             newState.on(true)
             newState.bri(this.bri)
-            newState.sat(this.sat)
-            newState.hue(this.hue)
+            newState.sat(this.sat || 0)
+            newState.hue(this.hue || 0)
         }
 
         this.api.groups.setGroupState(this.lightId, newState).then(function(result) {
@@ -318,8 +318,8 @@ HueColorDevice.prototype.setLevel = function(newLevel) {
         } else {
             newState.on(true)
             newState.bri(this.bri)
-            newState.sat(this.sat)
-            newState.hue(this.hue)
+            newState.sat(this.sat || 0)
+            newState.hue(this.hue || 0)
         }
 
         this.api.lights.setLightState(this.lightId, newState).then(function(result) {
