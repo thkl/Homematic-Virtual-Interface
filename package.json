@@ -19,7 +19,7 @@
     "hmvi": "bin/hmvi"
   },
   "dependencies": {
-    "chalk": "^1.1.1",
+    "chalk": "^2.0.0",
     "commander": "2.8.1",
     "daemonize2": "^0.4.2",
     "debug": "^2.2.0",
@@ -31,7 +31,7 @@
     "nedb-logger": "0.1.0",
     "node-ssdp": "^4.0.0",
     "pem": "latest",
-    "qs": "6.3.1",
+    "qs": "6.9.3",
     "request": "^2.65.0",
     "sax": "0.4.x",
     "xml2js": "0.4.17",
