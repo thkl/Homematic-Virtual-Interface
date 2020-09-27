@@ -4,7 +4,7 @@ const path = require('path')
 const fs = require('fs')
 
 module.exports = class Gateway {
-  constructor (host, port,log) {
+  constructor (host, port, log) {
     log.info('Booting up gateway')
     this.host = host
     this.port = port
@@ -20,6 +20,7 @@ module.exports = class Gateway {
 
   apiCall (type, method, data) {
     let self = this
+    this.log.debug('Api Call %s %s', type, method)
     return new Promise((resolve, reject) => {
       let urlPath = '/api/'
       if (self.key) {
@@ -88,6 +89,27 @@ module.exports = class Gateway {
     } catch (e) {
       return {error: e}
     }
+  }
+
+  registerApplication (application) {
+    let self = this
+    return new Promise((resolve, reject) => {
+      self.apiCall('POST', '', {devicetype: application}).then((result, error) => {
+        if (error) {
+          reject(error)
+        } else {
+          if (result.error) {
+            if (result.error.description) {
+              reject(new Error(result.error.description))
+            } else {
+              reject(new Error('error while obtaining an api key'))
+            }
+          } else {
+            resolve(result)
+          }
+        }
+      })
+    })
   }
 
   getConfig () {
@@ -163,6 +185,21 @@ module.exports = class Gateway {
     return this.lights
   }
 
+  updateLightState (light) {
+    let self = this
+    return new Promise((resolve, reject) => {
+      self.apiCall('GET', 'lights/' + light.id).then((result, error) => {
+        if (error) {
+          reject(error)
+        } else {
+          self.log.debug('Current LightState is %s', JSON.stringify(result))
+          light.lightState = result.state
+          resolve(result.state)
+        }
+      })
+    })
+  }
+
   _addNewLight (id, lightData) {
     let self = this
     let light
@@ -170,8 +207,9 @@ module.exports = class Gateway {
     let LightClazz = require(clazzFile)
     light = new LightClazz(id)
     light._populate(lightData)
-    light.on('lightstatechanged', (newState) => {
+    light.on('populate', (newState) => {
       let pl = newState.getReducedPayload()
+      self.log.debug('Send new State %s', JSON.stringify(pl))
       self.apiCall('PUT', 'lights/' + light.id + '/state', pl).then((result, error) => {
         if (error) {
           console.log(error)
@@ -207,7 +245,6 @@ module.exports = class Gateway {
     if (event) {
       if ((event.id) && (event.t) && (event.e) && (event.r)) {
         if ((event.e === 'changed') && (event.t === 'event')) {
-          //          console.log(event.r)
           switch (event.r) {
             case 'sensors':
               {
@@ -222,10 +259,8 @@ module.exports = class Gateway {
               break
             case 'lights':
               let light = this.getLight(event.id)
-              if (light) {
-                light.state = event.state
-              } else {
-                this.log.warn('light %s not found', event.id)
+              if ((light) && (event.state)) {
+                light.updateFromGateway(event.state)
               }
               break
           }
@@ -271,7 +306,7 @@ module.exports = class Gateway {
           }
         }
       } catch (e) {
-      
+        self.log.error(e)
       }
     } else {
       self.log.error('unable to connect to socked server')

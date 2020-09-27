@@ -65,15 +65,27 @@ module.exports = class BaseStates extends States {
   }
 
   ct (value) {
-    return this._setStateValue('ct', value)
+    if (value === undefined) {
+      return this._getStateValue('ct')
+    } else {
+      return this._setStateValue('ct', value)
+    }
   }
 
   effect (value) {
-    return this._setStateValue('effect', value)
+    if (value === undefined) {
+      return this._getStateValue('effect')
+    } else {
+      return this._setStateValue('effect', value)
+    }
   }
 
   transitiontime (value) {
-    return this._setStateValue('transitiontime', value)
+    if (value === undefined) {
+      return this._getStateValue('transitiontime')
+    } else {
+      return this._setStateValue('transitiontime', value)
+    }
   }
 
   /**
@@ -124,5 +136,15 @@ module.exports = class BaseStates extends States {
 
   transitionDefault () {
     return this.transitiontime(4)
+  }
+
+  max (stateName) {
+    let stateDefinition = this._getStateDefinition(stateName)
+    return stateDefinition.max
+  }
+
+  min (stateName) {
+    let stateDefinition = this._getStateDefinition(stateName)
+    return stateDefinition.min
   }
 }

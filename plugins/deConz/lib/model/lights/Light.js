@@ -58,11 +58,16 @@ module.exports = class Light extends GatewayObjectWithId {
   set lightState (newState) {
     if (newState instanceof LightState) {
       this._lightState = newState
+      // send this to the Gateway
+      this.emit('populate', this._lightState)
     } else {
       this._populateState(newState)
     }
-    // send this to the Gateway
-    this.emit('lightstatechanged', this._lightState)
+  }
+
+  updateFromGateway (newState) {
+    this._populateState(newState)
+    this.emit('change')
   }
 
   _populate (light) {
