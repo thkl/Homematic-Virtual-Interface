@@ -125,14 +125,14 @@ WeatherUndergroundPlatform.prototype.fetchWeather = function() {
                                 channel.updateValue('RAIN_COUNTER', 0, true)
                             }
 
-                            if (observation.metric.precipRate > 0) {
+                            if (parseFloat(observation.metric.precipRate) > 0) {
                                 channel.updateValue('RAINING', true, true)
                             } else {
                                 channel.updateValue('RAINING', false, true)
                             }
 
                             channel.updateValue('WIND_SPEED', (observation.metric.windSpeed), true)
-                                //channel.updateValue('WIND_DIRECTION', observation.wind_degrees, true)
+                            channel.updateValue('WIND_DIRECTION', observation.winddir, true)
 
                             channel.updateValue('WIND_DIRECTION_RANGE', 0, true)
                             channel.updateValue('SUNSHINEDURATION', 0, true)
