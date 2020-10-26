@@ -3,11 +3,10 @@
 ADDON_NAME=hvl
 CONFIG_DIR=/usr/local/etc/config
 ADDON_DIR=/usr/local/etc/config/addons/www/${ADDON_NAME}
-
 case "$1" in
 
   
-  ""|start)
+  init)
   #make it only when user configurated the ip
   if [ -f ${ADDON_DIR}/ip ] 
   then 
@@ -15,12 +14,14 @@ case "$1" in
         then
 		echo "Updating InterfaceList.xml"
 		my_url=$(cat ${ADDON_DIR}/ip)
-		sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/${my_url}<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
+		sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<\/interfaces>/\t<ipc>\n\t\t<name>HVL<\/name>\n\t\t<url>xmlrpc:\/\/${my_url}<\/url>\n\t\t<info>HVL<\/info>\n\t<\/ipc>\n<\/interfaces>/"
 	  fi
    fi
    ;;
  
- 
+   start)
+   ;;
+
    stop)
    ;;
    
@@ -41,19 +42,15 @@ case "$1" in
    
    
    uninstall)
-	logger -t homematic -p user.info "removing homematic virtual layer"
-	my_url=$(cat ${ADDON_DIR}/ip)
-	sed -i /usr/local/etc/config/InterfacesList.xml -e "s/<ipc><name>HVL<\/name><url>xmlrpc:\/\/${my_url}<\/url><info>HVL<\/info><\/ipc>//"
-	rm -r ${ADDON_DIR}
-	rm -r /usr/local/etc/config/rc.d/ccu_hvl
-	mount -o remount,rw /
-	rm -r /etc/init.d/S59hvl
-	mount -o remount,ro /
-	
-	;;
+  	logger -t homematic -p user.info "removing homematic virtual layer"
+	  my_url=$(cat ${ADDON_DIR}/ip)
+	  sed -i /usr/local/etc/config/InterfacesList.xml -e "s/\t<ipc>\n\t\t<name>HVL<\/name>\n\t\t<url>xmlrpc:\/\/${my_url}<\/url>\n\t\t<info>HVL<\/info>\n\t<\/ipc>\n//"
+	  rm -r ${ADDON_DIR}
+	  rm -r /usr/local/etc/config/rc.d/ccu_hvl
+	 ;;
 
   *)
-	echo "Usage: $0 {start|stop|restart|info|uninstall}" >&2
+	echo "Usage: $0 {init|start|stop|restart|info|uninstall}" >&2
 	exit 1
 	;;
 esac
