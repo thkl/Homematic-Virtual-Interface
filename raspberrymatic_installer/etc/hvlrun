@@ -1,0 +1,4 @@
+#!/bin/sh
+HVLDIR=/usr/local/addons/hvl
+CONFIG_DIR=/usr/local/etc/config
+node $HVLDIR/node_modules/homematic-virtual-interface/lib/index.js -C $CONFIG_DIR/hvl/

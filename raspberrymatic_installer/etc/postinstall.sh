@@ -87,15 +87,6 @@ if [ ! -f ${CONFIG_DIR}/hvl/config.json ]; then
 	sed -i ${CONFIG_DIR}/hvl/config.json -e "s/ADDON_DIR/\/usr\/local\/addons\/hvl/g"
 fi
 
-# Add Interface Template
-if [ $(cat /etc/config_templates/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
-	sed -i /etc/config_templates/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
-fi
-
-# Add Interface 
-if [ $(cat ${CONFIG_DIR}/InterfacesList.xml | grep '<name>HVL</name>' | wc -l ) -eq 0 ]; then
-	sed -i ${CONFIG_DIR}/InterfacesList.xml -e "s/<\/interfaces>/<ipc><name>HVL<\/name><url>xmlrpc:\/\/127.0.0.1:8301<\/url><info>HVL<\/info><\/ipc><\/interfaces>/"
-fi
 # end check install needed
 fi
 

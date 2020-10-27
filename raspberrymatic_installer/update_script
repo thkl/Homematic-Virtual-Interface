@@ -32,6 +32,7 @@ cp -af rc.d/* ${RCD_DIR}
 
 #build system launcher
 chmod +x ${RCD_DIR}/hvl
+chmod +x ${RCD_DIR}/hvlrun
 
 #make postinstall executable / will launch via rc.d
 chmod +x ${ADDON_DIR}/etc/postinstall.sh
