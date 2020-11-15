@@ -1,0 +1,24 @@
+{
+  "name": "homematic-virtual-denonavr",
+  "version": "0.0.2",
+  "description": "Virtual Plugin - DenonAVR",
+  "license": "ISC",
+  "keywords": [
+    "homematic-virtual-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/"
+  },
+  "bugs": {
+    "url": "http://"
+  },
+  "engines": {
+    "node": ">=4.5.0",
+    "homematic-virtual-interface" : ">=0.0.4"
+  },
+  
+  "dependencies": {
+ 
+  }
+}

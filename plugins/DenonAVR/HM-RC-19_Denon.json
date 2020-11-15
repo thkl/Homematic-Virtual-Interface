@@ -1,0 +1,97 @@
+{
+  "channels": [
+    {
+		"flags": 3,
+		"paramsets": [{
+			"name": "MASTER",
+			"id": "maint_ch_master",
+			"parameter": []
+		}, {
+			"name": "VALUES",
+			"id": "maint_ch_values",
+			"parameter": [{
+				"flags": 9,
+				"operations": 5,
+				"name": "UNREACH",
+				"type": "BOOL",
+				"tab_order": 0
+			}, {
+				"flags": 24,
+				"operations": 7,
+				"name": "STICKY_UNREACH",
+				"type": "BOOL",
+				"tab_order": 1
+			}, {
+				"flags": 9,
+				"operations": 5,
+				"name": "CONFIG_PENDING",
+				"type": "BOOL",
+				"tab_order": 2
+			}, {
+				"flags": 9,
+				"operations": 5,
+				"name": "LOWBAT",
+				"type": "BOOL",
+				"tab_order": 3
+			}, {
+				"type": "INTEGER",
+				"max": 127,
+				"min": 0,
+				"flags": 0,
+				"tab_order": 4,
+				"name": "AES_KEY",
+				"operations": 1
+			}, {
+				"flags": 1,
+				"operations": 5,
+				"name": "RSSI_DEVICE",
+				"type": "INTEGER",
+				"tab_order": 5
+			}, {
+				"flags": 1,
+				"operations": 5,
+				"name": "RSSI_PEER",
+				"type": "INTEGER",
+				"tab_order": 6
+			}]
+		}],
+		"type": "MAINTENANCE",
+		"adress": "0",
+		"direction": 2
+	},
+
+    {
+      "adress": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19"],
+      "type": "KEY",
+      "flags":  1,
+      "direction" : 0,
+      "paramsets": [
+	      {
+          "name" : "MASTER",
+          "id" : "",
+          "parameter" : [{"name":"AES_ACTIVE","operations":3,"tab_order":2,"max":"","min":"","type":"BOOL","flags":3},{"name":"DBL_PRESS_TIME","operations":3,"tab_order":1,"unit":"s","max":1.5,"min":0,"type":"FLOAT","vdefault":0,"flags":1},{"name":"LONG_PRESS_TIME","operations":3,"tab_order":0,"unit":"s","max":1.8,"min":0.3,"type":"FLOAT","vdefault":0.4,"flags":1},{"name": "CMD_PRESS_SHORT","flags": 1,"vdefault":"","min":"","max":"","unit":"","operations": 3,"tab_order": 0,"type": "STRING"},{"name": "CMD_PRESS_LONG","flags": 1,"vdefault":"","min":"","max":"","unit":"","operations": 3,"tab_order": 0,"type": "STRING"}]
+		  },
+	      {
+          "name" : "VALUES",
+          "id" : "remote_ch_values",
+          "parameter" : [{"name":"INSTALL_TEST","operations":2,"tab_order":2,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_CONT","operations":4,"tab_order":3,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_LONG","operations":6,"tab_order":1,"max":"","control":"BUTTON.LONG","min":"","type":"ACTION","flags":1},{"name":"PRESS_LONG_RELEASE","operations":4,"tab_order":4,"max":"","min":"","type":"ACTION","flags":3},{"name":"PRESS_SHORT","operations":6,"tab_order":0,"max":"","control":"BUTTON.SHORT","min":"","type":"ACTION","flags":1}]
+		  },
+
+
+
+	      {
+          "name" : "LINK",
+          "id" : "remote_ch_link",
+          "parameter" :  [{"name":"EXPECT_AES","operations":3,"tab_order":1,"max":"","min":"","type":"BOOL","flags":1},{"name":"PEER_NEEDS_BURST","operations":3,"tab_order":0,"max":"","min":"","type":"BOOL","flags":1}]
+		  }
+
+	      
+      ]
+    }
+    ],
+   
+   
+  "type": "HM-RC-19",
+  "version": 41,
+  "paramsets": []
+}
