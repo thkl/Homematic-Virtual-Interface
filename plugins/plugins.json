@@ -234,6 +234,17 @@
 				"de-de": "&Uuml;bertr&auml;gt die Prozessortemperatur des Raspberrys zur CCU",
 				"en-en": "Will transmit the raspberry cpu temperaure into the ccu"
 			}
+		},
+		{
+			"name": "Denon AVR Telnet Support",
+			"npm": "homematic-virtual-denonavr",
+			"syname": "Denon",
+			"description": {
+				"de-de": "Fügt ein oder mehrere Remotes hinzu für die Steuerung eines Denon Receivers via Telnet",
+				"en-en": ""
+			}
 		}
+
+		
 	]
 }
