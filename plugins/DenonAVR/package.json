@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-denonavr",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "Virtual Plugin - DenonAVR",
   "license": "ISC",
   "keywords": [
@@ -19,6 +19,6 @@
   },
   
   "dependencies": {
- 
+    "telnet-client":"1.4.6"
   }
 }
