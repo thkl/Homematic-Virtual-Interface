@@ -15,7 +15,7 @@ module.exports = class DenonAVR extends HomematicVirtualPlatform {
   init () {
     this.hm_layer = this.server.getBridge()
     var devfile = path.join(__dirname, 'HM-RC-19_Denon.json')
-    this.server.publishHMDevice(this.getName(), 'HM-RC-19_Denon', devfile, 1)
+    this.server.publishHMDevice(this.getName(), 'HM-RC-19_Denon', devfile, 2)
     this.reinit()
     this.plugin.initialized = true
     this.log.info('initialization completed %s', this.plugin.initialized)
@@ -48,6 +48,11 @@ module.exports = class DenonAVR extends HomematicVirtualPlatform {
             self.log.debug('PRESS_LONG Command is %s', command)
             self.sendCommand(command)
           }
+        }
+
+        if (parameter.name === 'TARGET_VOLUME') {
+          let newVolume = parameter.newValue
+          self.sendCommand('MV' + newVolume)
         }
       })
       this.remotes.push(hmDevice)
