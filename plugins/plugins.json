@@ -243,6 +243,15 @@
 				"de-de": "Fügt ein oder mehrere Remotes hinzu für die Steuerung eines Denon Receivers via Telnet",
 				"en-en": ""
 			}
+		},
+		{
+			"name": "Denon AVR HTTP Support",
+			"npm": "homematic-virtual-denonavrhttp",
+			"syname": "Denon",
+			"description": {
+				"de-de": "Fügt ein oder mehrere Remotes hinzu für die Steuerung eines Denon Receivers via HTTP",
+				"en-en": ""
+			}
 		}
 
 		
