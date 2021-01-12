@@ -3,7 +3,6 @@
 var path = require('path')
 var appRoot = path.dirname(require.main.filename)
 const http = require('http')
-const querystring = require('querystring')
 if (appRoot.endsWith('bin')) { appRoot = appRoot + '/../lib' }
 if (appRoot.endsWith('node_modules/daemonize2/lib')) { appRoot = path.join(appRoot, '..', '..', '..', 'node_modules', 'homematic-virtual-interface', 'lib') }
 appRoot = path.normalize(appRoot)
@@ -11,6 +10,7 @@ appRoot = path.normalize(appRoot)
 var HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')
 
 const url = require('url')
+const zeroPad = (num, places) => String(num).padStart(places, '0')
 
 module.exports = class DenonAVRHTTP extends HomematicVirtualPlatform {
   init () {
@@ -52,15 +52,23 @@ module.exports = class DenonAVRHTTP extends HomematicVirtualPlatform {
         }
 
         if (parameter.name === 'TARGET_VOLUME') {
-          let newVolume = parameter.newValue
-          self.sendCommand('MV' + newVolume)
+          if (parameter.newValue === '--') {
+            self.sendCommand('MV00')
+          } else {
+            let newVolume = parseInt(parameter.newValue)
+            let sV = 0
+            if ((newVolume > -80) && (newVolume < 19)) {
+              sV = newVolume + 80
+            }
+            self.sendCommand('MV' + zeroPad(sV, 2))
+          }
         }
       })
       this.remotes.push(hmDevice)
     }
     setInterval(() => {
       self.getVolume()
-    }, 10000)
+    }, 180000)
   }
 
   getVolume () {
@@ -69,7 +77,7 @@ module.exports = class DenonAVRHTTP extends HomematicVirtualPlatform {
     if (hmDevice) {
       let host = this.config.getValueForPlugin(this.name, 'host')
       this.log.info('Connecting to %s', host)
-      let urlCommand = querystring.stringify('MV?')
+      let urlCommand = 'MV?'
       this.log.info('Command is %s', urlCommand)
       let responseData
       const options = {
@@ -106,7 +114,7 @@ module.exports = class DenonAVRHTTP extends HomematicVirtualPlatform {
     let self = this
     let host = this.config.getValueForPlugin(this.name, 'host')
     this.log.info('Connecting to %s', host)
-    let urlCommand = querystring.stringify(command)
+    let urlCommand = command
     this.log.info('Command is %s', urlCommand)
     const options = {
       hostname: host,

@@ -1,6 +1,6 @@
 {
   "name": "homematic-virtual-denonavrhttp",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Virtual Plugin - DenonAVRHTTP",
   "license": "ISC",
   "keywords": [
