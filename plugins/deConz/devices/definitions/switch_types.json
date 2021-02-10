@@ -1,0 +1,24 @@
+{
+    "generic": {
+        "*": {
+            "1": "contPress",
+            "2": "keyPress_short",
+            "3": "keyPress_long"
+        }
+    },
+
+    "lumi.sensor_cube.aqgl01": {
+        "0012": {
+            "1": "keyPress_short",
+            "2": "keyPress_short",
+            "5": "keyPress_long",
+            "6": "keyPress_short",
+            "7": "keyPress_long"
+        },
+
+        "000c": { 
+
+        }
+    }
+
+}
