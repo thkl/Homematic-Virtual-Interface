@@ -3,7 +3,9 @@
         "*": {
             "1": "contPress",
             "2": "keyPress_short",
-            "3": "keyPress_long"
+            "3": "keyPress_long",
+            "4": "keyPress_double",
+            "5": "keyPress_tripple"
         }
     },
 

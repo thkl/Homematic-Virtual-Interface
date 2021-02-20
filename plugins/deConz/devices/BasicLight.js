@@ -1,4 +1,3 @@
-const { timingSafeEqual } = require('crypto')
 /*
  * File: ExtendedColorLight.js
  * Project: homematic-virtual-deConz
@@ -31,60 +30,71 @@ const { timingSafeEqual } = require('crypto')
 
 const path = require('path')
 const DeConzDevice = require(path.join(__dirname, 'DeConzDevice.js'))
-
+const LightState = require(path.join(__dirname, '..', 'lib', 'model', 'lightstate', 'LightState.js'))
 class BasicLight extends DeConzDevice {
   constructor (plugin, light, hmType = 'HM-LC-Dim1T-Pl') {
     super(plugin, light, hmType)
     let self = this
     this.defaultTransitiontime = 0.5
     this.transitiontime = 0.5
+    this.hasTestMode = true
+    this.eventOwner = 'deConz'
 
     light.on('change', () => {
+      self.lastMessageTime = new Date()
       self.handleLightChangeEvent(light)
     })
 
-    self.hmDevice.on('device_channel_value_change', async (parameter) => {
-      if (await self.handleCCUEvent(parameter)) {
-        self.gwDevice.lightState = self.currentState
+    if (this.hmDevice === undefined) {
+      this.log.error('Error while initializing Light %s', light)
+    }
+    this.hmDevice.on('device_channel_value_change', async (parameter) => {
+      if ((parameter.name !== 'WORKING') && (parameter.eventOwner !== self.eventOwner)) { // Do not react on own events
+        if (await self.handleCCUEvent(parameter)) {
+          self.log.debug('Set New LightState %s', JSON.stringify(self.currentState))
+          self.gwDevice.lightState = self.currentState
+        }
       }
     })
+
+    this.hmDevice.on('device_channel_install_test', async (parameter) => {
+      self.test()
+    })
     // set the new Values at init
-    light.emit('change')
+    this.gateway.updateLightState(this.gwDevice).then(newState => {
+      self.currentState = newState
+    })
+  }
+
+  test () {
+    let newState = new LightState()
+    newState.alert('select')
+    this.log.info('Send New Lightstate %s', JSON.stringify(newState))
+    this.gwDevice.lightState = newState
   }
 
   async handleCCUEvent (parameter) {
-    let self = this
+    let changed = false
     var newValue = parameter.newValue
     var channel = this.hmDevice.getChannel(parameter.channel)
+
     this.log.debug('CCU Event on %s -  %s with %s', this.hmDevice.serialNumber, parameter.name, newValue)
-    this.log.debug('Get Current state')
-    await this.gateway.updateLightState(this.gwDevice)
-    this.currentState = this.gwDevice.lightState
-    this.log.debug('Get Current state done ')
-    var changed = false
 
     if (parameter.name === 'INSTALL_TEST') {
-      let max = this.currentState.max('bri')
-      let min = this.currentState.min('bri')
-      this.currentState.on()
-      this.currentState.bri(max)
-      changed = true
-
-      setTimeout(function () {
-        this.currentState.bri(min)
-        this.currentState.off()
-        self.gwDevice.lightState = this.currentState
-      }, 1000)
+      this.test()
+      changed = false
+      channel.updateValue('INSTALL_TEST', true, true, true, this.eventOwner)
     }
 
     if (parameter.name === 'LEVEL') {
-      this.setLevel(channel, newValue)
+      await this.setLevel(channel, newValue)
+      this.transitiontime = this.defaultTransitiontime
       changed = true
     }
 
     if ((parameter.name === 'RAMP_TIME') && (channel.index === '1')) {
-      this.transitiontime = newValue * 10
-      channel.updateValue('RAMP_TIME', newValue, true, true)
+      this.transitiontime = newValue
+      channel.updateValue('RAMP_TIME', newValue, true, true, false, this.eventOwner)
     }
 
     if (parameter.name === 'OLD_LEVEL') {
@@ -94,7 +104,7 @@ class BasicLight extends DeConzDevice {
           this.oldLevel = 1
           this.log.debug('No old level found set to 1')
         }
-        channel.updateValue('OLD_LEVEL', true)
+        channel.updateValue('OLD_LEVEL', true, false, false, this.eventOwner)
         this.setLevel(channel, this.oldLevel)
       }
       changed = true
@@ -103,34 +113,46 @@ class BasicLight extends DeConzDevice {
   }
 
   setLevel (channel, newLevel) {
-    this.log.debug('Set new Level %s', newLevel)
-    let max = this.currentState.max('bri')
-    let min = this.currentState.min('bri')
-    let value = (newLevel * max)
-    if (value < min) {
-      value = min
-    }
-    this.log.debug('Set Brightness %s', value)
-    this.currentState.bri(value)
+    let self = this
+    return new Promise(async (resolve, reject) => {
+      self.log.debug('Set new Level %s', newLevel)
+      self.log.debug('Get Current state')
+      await self.gateway.updateLightState(self.gwDevice)
+      self.currentState = self.gwDevice.lightState
+      self.log.debug('Get Current state done ')
 
-    if (value > min) {
-      this.currentState.on()
-      // We have to Send hue and sat cause they may have changed in off state
-      if (this.currentSat) {
-        this.currentState.sat(this.currentSat)
+      let max = self.currentState.max('bri')
+      let min = self.currentState.min('bri')
+      self.log.debug('Min is %s max is %s', min, max)
+      let value = (newLevel * max)
+      if (value < min) {
+        value = min
       }
-      if (this.currentHue) {
-        this.currentState.hue(this.currentHue)
+      self.log.debug('Set Brightness %s', value)
+      self.currentState.bri(value)
+
+      if (value > min) {
+        self.log.debug('Set On')
+        self.currentState.on()
+        // We have to Send hue and sat cause they may have changed in off state
+        if (self.currentSat) {
+          self.currentState.sat(self.currentSat)
+        }
+        if (self.currentHue) {
+          self.currentState.hue(self.currentHue)
+        }
+      } else {
+        self.currentState.off()
       }
-    } else {
-      this.currentState.off()
-    }
-    this.currentState.transitiontime(this.transitiontime * 10)
-    this.log.debug('Update Channel %s With Level %s', channel.address, newLevel)
-    channel.updateValue('LEVEL', newLevel, true, true)
-    if (newLevel > 0) {
-      this.oldLevel = newLevel
-    }
+      self.currentState.transitiontime(self.transitiontime * 10)
+      self.log.debug('Update Channel %s With Level %s', channel.address, newLevel)
+      channel.updateValue('LEVEL', newLevel, true, true, true, self.eventOwner)
+      if (newLevel > 0) {
+        self.oldLevel = newLevel
+      }
+      self.log.debug('NewState is %s', JSON.stringify(self.currentState))
+      resolve()
+    })
   }
 
   handleLightChangeEvent (light, dimmerChannel = 'DIMMER') {
@@ -139,16 +161,21 @@ class BasicLight extends DeConzDevice {
     // Check what was changed
     let state = light.lightState
     // fest set the brightness
+    this.log.debug('Updating Channel %s', dimmerChannel)
     let bChannel = self.hmDevice.getChannelWithTypeAndIndex(dimmerChannel, 1)
-    bChannel.startUpdating('LEVEL')
-    if (state.isOn()) {
-      let bri = state.bri()
-      let max = state.max('bri')
-      bChannel.updateValue('LEVEL', Number((bri / max).toFixed(2)), true, true)
+    if (bChannel) {
+      if (state.isOn()) {
+        let bri = state.bri()
+        let max = state.max('bri')
+        this.log.debug('Send ChannelUpdate %s', dimmerChannel)
+        bChannel.updateValue('LEVEL', Number((bri / max).toFixed(2)), true, true, true, this.eventOwner)
+      } else {
+        this.log.debug('Send ChannelUpdate  %s', dimmerChannel)
+        bChannel.updateValue('LEVEL', 0, true, true, true, this.eventOwner)
+      }
     } else {
-      bChannel.updateValue('LEVEL', 0, true, true)
+      this.log.error('Channel not found %s', dimmerChannel)
     }
-    bChannel.endUpdating('LEVEL')
   }
 }
 

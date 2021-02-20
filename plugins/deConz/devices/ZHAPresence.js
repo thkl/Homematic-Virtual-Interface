@@ -36,6 +36,7 @@ class ZHAPresence extends DeConzDevice {
     super(plugin, sensor, 'HM-Sec-MDIR')
     let self = this
     sensor.on('change', () => {
+      self.lastMessageTime = new Date()
       let channel = self.hmDevice.getChannelWithTypeAndIndex('MOTION_DETECTOR', 1)
       channel.updateValue('MOTION', sensor.presence, true, true)
     })

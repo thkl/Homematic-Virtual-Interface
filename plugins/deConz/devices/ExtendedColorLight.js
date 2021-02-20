@@ -33,7 +33,7 @@ const BasicLight = require(path.join(__dirname, 'BasicLight.js'))
 
 class ExtendedColorLight extends BasicLight {
   constructor (plugin, light) {
-    super(plugin, light, 'HM-LC-RGBW-WM')
+    super(plugin, light, 'VIR-LG-RGB-DIM')
   }
 
   async handleCCUEvent (parameter) {
@@ -41,32 +41,111 @@ class ExtendedColorLight extends BasicLight {
 
     var newValue = parameter.newValue
     var channel = this.hmDevice.getChannel(parameter.channel)
+    if (parameter.name === 'RGB') {
+      let regex = /(\s*[0-9]{1,3}),(\s*[0-9]{1,3}),(\s*[0-9]{1,3})/
+      let result = newValue.match(regex)
+      let r = parseInt(result[1].trim())
+      let g = parseInt(result[2].trim())
+      let b = parseInt(result[3].trim())
+      this.log.debug('RGB Event (%s,%s,%s)', r, g, b)
 
-    if (parameter.name === 'COLOR') {
-      if (newValue === 200) {
-        this.currentHue = 39609
-        this.currentSat = 128
-      } else {
-        this.currentHue = (newValue / 199) * 65535
-        this.currentSat = 254
+      let hsv = this.RGBtoHSV(r, g, b)
+
+      this.log.debug('Converted to HSV %s', JSON.stringify(hsv))
+      //      channel.updateValue('RGB', newValue)
+      if (!this.currentState === undefined) {
+        await this.gateway.updateLightState(this.gwDevice)
+        this.currentState = this.gwDevice.lightState
       }
+      this.currentState.hue((65536 * hsv.h / 360))
+      this.currentState.sat(((hsv.s / 100) * 254))
+      changed = true
+    }
+
+    if (parameter.name === 'USER_COLOR') {
+      this.log.info('VIR-LG_RGB-DIM-CH USER_COLOR %s', newValue)
+
       this.currentState.hue(this.currentHue)
       this.currentState.sat(this.currentSat)
-      channel.updateValue('COLOR', newValue)
+      channel.updateValue('USER_COLOR', newValue)
       changed = true
     }
     return changed
   }
 
   handleLightChangeEvent (light) {
-    let self = this
-    super.handleLightChangeEvent(light)
-
+    super.handleLightChangeEvent(light, 'VIR-LG_RGB-DIM-CH')
     let state = light.lightState
-    let cChannel = self.hmDevice.getChannelWithTypeAndIndex('RGBW_COLOR', 2)
-    cChannel.startUpdating('COLOR')
-    cChannel.updateValue('COLOR', Math.round((state.hue() / 65535) * 199))
-    cChannel.endUpdating('COLOR')
+    let bri = Math.floor(100 / (254 / (state.bri())))
+    let hue = Math.floor(360 / (65534 / (state.hue())))
+    let sat = Math.floor(100 / (254 / (state.sat())))
+
+    this.log.debug('Current LightState is %s,%s,%s', bri, hue, sat)
+    let rgb = this.HSVtoRGB(hue, sat, bri)
+    this.log.debug('RGB is %s', JSON.stringify(rgb))
+    let cChannel = this.hmDevice.getChannelWithTypeAndIndex('VIR-LG_RGB-DIM-CH', '1')
+    if (cChannel) {
+      let nval = 'rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')'
+      this.log.debug('Set %s', nval)
+      cChannel.updateValue('RGB', nval, true, true, false, this.eventOwner)
+    } else {
+      this.log.error('RGB Update Channel %s not found for device %s', 'VIR-LG_RGB-DIM-CH', this.hmDevice)
+    }
+  }
+
+  RGBtoHSV (r, g, b) {
+    var h, s, v
+    var max = Math.max(r, g, b)
+    var min = Math.min(r, g, b)
+    var delta = max - min
+
+    // hue
+    if (delta === 0) {
+      h = 0
+    } else if (r === max) {
+      h = ((g - b) / delta) % 6
+    } else if (g === max) {
+      h = (b - r) / delta + 2
+    } else if (b === max) {
+      h = (r - g) / delta + 4
+    }
+
+    h = Math.round(h * 60)
+    if (h < 0) h += 360
+
+    // saturation
+    s = Math.round((max === 0 ? 0 : (delta / max)) * 100)
+
+    // value
+    v = Math.round(max / 255 * 100)
+
+    return {h: h, s: s, v: v}
+  }
+
+  HSVtoRGB (h, s, v) {
+    s = s / 100
+    v = v / 100
+    var c = v * s
+    var hh = h / 60
+    var x = c * (1 - Math.abs(hh % 2 - 1))
+    var m = v - c
+
+    var p = parseInt(hh, 10)
+    var rgb = (
+      p === 0 ? [c, x, 0]
+        : p === 1 ? [x, c, 0]
+          : p === 2 ? [0, c, x]
+            : p === 3 ? [0, x, c]
+              : p === 4 ? [x, 0, c]
+                : p === 5 ? [c, 0, x]
+                  : []
+    )
+
+    return {
+      r: Math.round(255 * (rgb[0] + m)),
+      g: Math.round(255 * (rgb[1] + m)),
+      b: Math.round(255 * (rgb[2] + m))
+    }
   }
 }
 

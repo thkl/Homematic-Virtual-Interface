@@ -32,7 +32,7 @@
 
 const path = require('path')
 const fs = require('fs')
-const url = require('url')
+const { Decipher } = require('crypto')
 
 var appRoot = path.dirname(require.main.filename)
 if (appRoot.endsWith('bin')) { appRoot = appRoot + '/../lib' }
@@ -48,13 +48,16 @@ if (appRoot.endsWith('node_modules/daemonize2/lib')) {
 appRoot = path.normalize(appRoot)
 
 const HomematicVirtualPlatform = require(appRoot + '/HomematicVirtualPlatform.js')
-const Gateway = require(path.join(__dirname, 'lib', 'Gateway.js'))
+const Gateway = require(path.join(__dirname, 'lib', 'Gateway.js')) // rebuild this in production to the npm
 
-class DeConzPlatform extends HomematicVirtualPlatform {
+module.exports = class DeConzPlatform extends HomematicVirtualPlatform {
   init () {
+    this.myPath = __dirname
     this.configuration = this.server.configuration
     this.connect()
     this.plugin.initialized = true
+    this.hmDevices = []
+    this.gwDevices = []
     this.log.info('initialization completed %s', this.plugin.initialized)
   }
 
@@ -74,6 +77,7 @@ class DeConzPlatform extends HomematicVirtualPlatform {
 
     if (key !== undefined) {
       this.hmDevices = []
+      this.gwDevices = []
       this.gateway.setApikey(key)
       await this.gateway.connect()
       this.mapSensors()
@@ -100,90 +104,181 @@ class DeConzPlatform extends HomematicVirtualPlatform {
     let self = this
     var l
     this.gateway.getLights().map((light) => {
-      switch (light.type) {
-        case 'Extended color light':
+      l = undefined
+      switch (light.type.toLowerCase()) {
+        case 'color light':
+        case 'extended color light':
           self.log.debug('New Extended color light %s', light.uniqueid)
           const ExtendedColorLight = require(path.join(__dirname, 'devices', 'ExtendedColorLight.js'))
           l = new ExtendedColorLight(self, light)
           self.hmDevices.push(l.hmDevice)
           break
-        case 'Color temperature light':
+        case 'color temperature light':
           self.log.debug('Color temperature light %s', light.uniqueid)
           const ColorTemperatureLight = require(path.join(__dirname, 'devices', 'ColorTemperatureLight.js'))
           l = new ColorTemperatureLight(self, light)
           self.hmDevices.push(l.hmDevice)
-
           break
+        case 'dimmable light':
+          self.log.info('Dimmable light %s', light.uniqueid)
+          const BasicLight = require(path.join(__dirname, 'devices', 'BasicLight.js'))
+          l = new BasicLight(self, light)
+          self.hmDevices.push(l.hmDevice)
+          break
+
+        default:
+          self.log.info('unable to map %s (%s)', light.type, light.uniqueid)
       }
+      if (l) {
+        self.gwDevices.push(l)
+      }
+    })
+
+    this.gateway.getBlinds().map((blind) => {
+      const Blind = require(path.join(__dirname, 'devices', 'Blind.js'))
+      l = new Blind(self, blind)
+      self.hmDevices.push(l.hmDevice)
+      self.gwDevices.push(l)
     })
   }
 
   mapSensors () {
     let self = this
+    var s
     this.gateway.getSensors().map((sensor) => {
+      s = undefined
       switch (sensor.type) {
         case 'ZHASwitch':
           self.log.debug('New ZHASwitch with serial %s', sensor.uniqueid)
+
+          // the magic cube contains 2 sensors
+          let model = sensor.modelid
+
           const ZHASwitch = require(path.join(__dirname, 'devices', 'ZHASwitch.js'))
-          let d = new ZHASwitch(self, sensor)
-          self.hmDevices.push(d.hmDevice)
+          s = new ZHASwitch(self, sensor)
+          s.setModel(model)
+          self.hmDevices.push(s.hmDevice)
+          self.gwDevices.push(s)
           break
 
         case 'ZHAPresence':
           self.log.debug('New ZHAPresence with serial %s', sensor.uniqueid)
           const ZHAPresence = require(path.join(__dirname, 'devices', 'ZHAPresence.js'))
-          let s = new ZHAPresence(self, sensor)
+          s = new ZHAPresence(self, sensor)
           self.hmDevices.push(s.hmDevice)
+          self.gwDevices.push(s)
+          break
+
+        case 'ZHAWater':
+          self.log.debug('New ZHAWater with serial %s', sensor.uniqueid)
+          const ZHAWater = require(path.join(__dirname, 'devices', 'ZHAWater.js'))
+          s = new ZHAWater(self, sensor)
+          self.hmDevices.push(s.hmDevice)
+          self.gwDevices.push(s)
+          break
+
+        case 'ZHAHumidity':
+        case 'ZHAPressure':
+        case 'ZHATemperature':
+
+          // try to find a masterdevice
+          let master = self.gwDevices.filter((device) => {
+            return device.isCombo(sensor.uniqueid)
+          }).pop()
+          if (!master) {
+            const ZHAWeatherCombiSensor = require(path.join(__dirname, 'devices', 'ZHATemperature.js'))
+            s = new ZHAWeatherCombiSensor(self, sensor)
+            self.hmDevices.push(s.hmDevice)
+            self.gwDevices.push(s)
+            self.log.info('Adding new Temp Sensor %s', s.hmSerial)
+          } else {
+            self.log.info('Found existing Combo device adding %s', sensor.type)
+            if (master.addSensor) {
+              master.addSensor(sensor)
+            }
+          }
           break
       }
     })
   }
 
-  showSettings (dispatched_request) {
+  deviceWithId (id) {
+    let fltr = this.gwDevices.filter(device => {
+      return device.uniqueid === id
+    })
+    return (fltr.length > 0) ? fltr[0] : undefined
+  }
+
+  myDevices () {
+    // return my Devices here
+    var result = []
+
+    this.gwDevices.forEach(function (device) {
+      result.push({
+        'uuid': device.uniqueid,
+        'id': device.hmSerial,
+        'name': device.name,
+        'type': device.type,
+        'serial': device.hmSerial,
+        'hmType': device.hmType,
+        'lastMessage': device.lastMessage,
+        'lastMessageTime': device.lastMessageTime,
+        'hasTestMode': device.hasTestMode,
+        'plgtype': 'DECONZ'
+      })
+    })
+
+    return result
+  }
+
+  showSettings () {
     let host = this.configuration.getValueForPlugin(this.name, 'host', '')
     let key = this.configuration.getValueForPlugin(this.name, 'key', '')
 
     var result = []
     result.push({ 'control': 'text', 'name': 'host', 'label': 'Phoscon Gateway Host', 'value': host })
-    result.push({ 'control': 'text', 'name': 'key', 'label': 'Phoscon API Key', 'value': key })
+    result.push({ 'control': 'password', 'name': 'key', 'label': 'Phoscon API Key', 'value': key })
     return result
   }
 
   saveSettings (settings) {
+    this.log.debug(JSON.stringify(settings))
     let host = settings.host
     let key = settings.key
     if ((host) && (key)) {
       this.configuration.setValueForPlugin(this.name, 'host', host)
       this.configuration.setValueForPlugin(this.name, 'key', key)
       this.connect()
+      return null
     }
+    return 'host or key not commited'
   }
 
-  handleConfigurationRequest (dispatchedRequest) {
-    var template = 'index.html'
-    var requesturl = dispatchedRequest.request.url
-    var queryObject = url.parse(requesturl, true).query
-    var deviceList = ''
-
-    if (queryObject['do'] !== undefined) {
-      switch (queryObject['do']) {
-        case 'app.js':
-          template = 'app.js'
-          break
-      }
-    } else {
-      var devtemplate = dispatchedRequest.getTemplate(this.plugin.pluginPath, 'list_device_tmp.html', null)
-      this.hmDevices.map(hmdevice => {
-        deviceList = deviceList + dispatchedRequest.fillTemplate(devtemplate, {'device_id': hmdevice.serialNumber})
-      })
+  async _handleGetRequests (method, body, request, response) {
+    switch (request.query.method) {
+      case 'listDevices':
+        this.log.debug('Send Devices')
+        response.json(this.myDevices())
+        break
+      case 'testDevice':
+        let device = this.deviceWithId(body.uuid)
+        if (device) {
+          device.test()
+        } else {
+          this.log.error('Device with uuid %s not found', body.uuid)
+          console.log(this.gwDevices)
+        }
+        response.json({result: 'running'})
+        break
+      default:
+        response.json({error: 'dont know what todo'})
     }
-
-    dispatchedRequest.dispatchFile(this.plugin.pluginPath, template, {'listDevices': deviceList})
   }
 
   shutdown () {
     this.log.info('Shutdown')
-    this.gateway.shutdown()
+    if (this.gateway) {
+      this.gateway.shutdown()
+    }
   }
 }
-module.exports = DeConzPlatform

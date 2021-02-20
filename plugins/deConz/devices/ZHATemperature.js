@@ -56,7 +56,7 @@ class ZHAWeatherCombiSensor extends DeConzDevice {
     let self = this
     let channel
     sensor.on('change', () => {
-      self.lastMessage = new Date()
+      self.lastMessageTime = new Date()
       switch (sensor.type) {
         case 'ZHATemperature':
           channel = self.hmDevice.getChannelWithTypeAndIndex('WEATHER', 1)

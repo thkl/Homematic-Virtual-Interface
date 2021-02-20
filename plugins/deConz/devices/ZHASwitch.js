@@ -29,87 +29,101 @@
  */
 
 const path = require('path')
+const fs = require('fs')
 const DeConzDevice = require(path.join(__dirname, 'DeConzDevice.js'))
 
 class ZHASwitch extends DeConzDevice {
   constructor (plugin, sensor) {
     super(plugin, sensor, 'HM-RC-8')
     let self = this
+    this.buttons = {}
     sensor.on('change', () => {
-      switch (sensor.buttonevent) {
-        case 1001:
-          self.contPress(1)
-          break
-        case 1002:
-          self.keyPress(1, 'PRESS_SHORT', true)
-          break
-        case 1003:
-          self.keyPress(1, 'PRESS_LONG', true)
-          self.keyPress(1, 'PRESS_LONG_RELEASE', true)
-          break
-
-        case 2001:
-          self.contPress(2)
-          break
-        case 2002:
-          self.keyPress(2, 'PRESS_SHORT', true)
-          break
-        case 2003:
-          self.keyPress(2, 'PRESS_LONG', true)
-          self.keyPress(2, 'PRESS_LONG_RELEASE', true)
-          break
-
-        case 3001:
-          self.contPress(3)
-          break
-        case 3002:
-          self.keyPress(3, 'PRESS_SHORT', true)
-          break
-        case 3003:
-          self.keyPress(3, 'PRESS_LONG', true)
-          self.keyPress(3, 'PRESS_LONG_RELEASE', true)
-          break
-        case 4001:
-          self.contPress(4)
-          break
-        case 4002:
-          break
-        case 4003:
-          self.keyPress(4, 'PRESS_LONG', true)
-          self.keyPress(4, 'PRESS_LONG_RELEASE', true)
-          break
-
-        case 5001:
-          self.contPress(5)
-          break
-        case 5002:
-          self.keyPress(5, 'PRESS_SHORT', true)
-          break
-        case 5003:
-          self.keyPress(5, 'PRESS_LONG', true)
-          self.keyPress(5, 'PRESS_LONG_RELEASE', true)
-          break
-      }
+      self.lastMessageTime = new Date()
+      self.proceedButtons(sensor)
     })
+    this.sensor = sensor
+    this.setModel(null)
+    this.updateSensor()
+  }
+
+  updateSensor () {
+    let self = this
+    this.gateway.refreshSensor(this.sensor).then(() => {
+      let mC = self.hmDevice.getChannelWithTypeAndIndex('MAINTENANCE', 0)
+      mC.updateValue('LOWBAT', (this.sensor.battery < 40), true, true)
+    })
+    setTimeout(() => {
+      self.updateSensor()
+    }, 1000 * 1800)
+  }
+
+  setModel (type) {
+    let fl = path.join(__dirname, 'definitions', 'switch_types.json')
+    let config = JSON.parse(fs.readFileSync(fl))
+    let sensor = config[type]
+    if (sensor === undefined) {
+      sensor = config.generic
+    }
+    if (sensor[this.typeId]) {
+      this.buttons = sensor[this.typeId]
+    } else {
+      this.buttons = sensor['*']
+    }
+  }
+
+  proceedButtons (sensor) {
+    let channel = Math.round(sensor.buttonevent / 1000)
+    let event = sensor.buttonevent - (channel * 1000)
+    let btnE = this.buttons[String(event)]
+    switch (btnE) {
+      case 'contPress':
+        this.conCounter = 0
+        this.contPress(channel)
+        break
+      case 'keyPress_short':
+        this.keyPress(channel, 'PRESS_SHORT', true)
+        break
+      case 'keyPress_long':
+        this.keyPress(channel, 'PRESS_LONG', true)
+        break
+      case 'keyPress_double':
+        this.keyPress(channel, 'PRESS_DOUBLE', true)
+        break
+      case 'keyPress_tripple':
+        this.keyPress(channel, 'PRESS_TRIPPLE', true)
+        break
+      default:
+    }
   }
 
   contPress (channelId) {
+    let self = this
     clearInterval(this.tmr)
+    this.conCounter = 0
     let channel = this.hmDevice.getChannelWithTypeAndIndex('KEY', channelId)
     this.tmr = setInterval(() => {
-      channel.updateValue('PRESS_CONT', 1, true, true)
+      if (self.conCounter < 20) {
+        self.conCounter++
+        channel.updateValue('PRESS_CONT', 1, true, true)
+      } else {
+        clearInterval(self.tmr)
+      }
     }, 500)
   }
 
   keyPress (channelId, keyEvent, autoRelease) {
     clearInterval(this.tmr)
+    this.log.debug(channelId, keyEvent)
     let channel = this.hmDevice.getChannelWithTypeAndIndex('KEY', channelId)
+    this.lastMessage = channelId + ':' + keyEvent
     channel.updateValue(keyEvent, 1, true, true)
+    /*
     if (autoRelease) {
       setTimeout(function () {
         channel.updateValue(keyEvent, 0, true)
       }, 500)
     }
+    */
   }
 }
 

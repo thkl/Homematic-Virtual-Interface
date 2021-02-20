@@ -145,6 +145,20 @@
 				"name": "INSTALL_TEST",
 				"type": "",
 				"tab_order": 4
+			}, {
+				"flags": 1,
+				"control": "BUTTON.LONG",
+				"operations": 6,
+				"name": "PRESS_DOUBLE",
+				"type": "",
+				"tab_order": 5
+			}, {
+				"flags": 1,
+				"control": "BUTTON.LONG",
+				"operations": 6,
+				"name": "PRESS_TRIPPLE",
+				"type": "",
+				"tab_order": 16
 			}]
 		}, {
 			"name": "LINK",

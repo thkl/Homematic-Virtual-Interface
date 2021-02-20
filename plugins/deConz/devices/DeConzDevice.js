@@ -34,13 +34,30 @@ class DeConzDevice {
   constructor (plugin, device, hmType) {
     var devfile = path.join(__dirname, 'definitions', hmType + '.json')
     plugin.server.publishHMDevice(plugin.getName(), hmType, devfile, 1)
-    let dSer = 'DEC' + device.uniqueid.substring(13, 22).replace(/[.:#_()-]/g, '')
+    let dSer = 'DEC' + device.uniqueid.substring(13).replace(/[.:#_()-]/g, '')
     this.hmDevice = plugin.bridge.initDevice(plugin.getName(), dSer, hmType, dSer)
     this.gwDevice = device
+    this.hmSerial = dSer
     this.log = plugin.log
     this.plugin = plugin
+    this.hmType = hmType
+    this.type = device.type
+    this.name = device.name
+    this.uniqueid = device.uniqueid
+    this.masterId = device.uniqueid.substring(0, 26)
+    this.typeId = device.uniqueid.substring(27)
     this.gateway = plugin.gateway
-    this.log.debug('adding %s of type %s', dSer, hmType)
+    this.lastMessage = ''
+    this.hasTestMode = false
+    this.log.debug('adding %s of type %s device typid %s', dSer, hmType, this.typeId)
+  }
+
+  isCombo (uniqueid) {
+    return (uniqueid.indexOf(this.masterId) !== -1)
+  }
+
+  test () {
+
   }
 }
 

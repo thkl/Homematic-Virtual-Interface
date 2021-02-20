@@ -56,7 +56,7 @@ class ZHAWaterSensor extends DeConzDevice {
     let self = this
     let channel
     sensor.on('change', () => {
-      self.lastMessage = new Date()
+      self.lastMessageTime = new Date()
       switch (sensor.type) {
         case 'ZHAWater':
           channel = self.hmDevice.getChannelWithTypeAndIndex('WATERDETECTIONSENSOR', 1)
